@@ -1,0 +1,14 @@
+<MainViewModel>
+	<CurrentUser>
+		<DisplayName>Test</DisplayName>
+	</CurrentUser>
+	
+	<Contacts>
+		<Contact>
+			<DisplayName>Contact1</DisplayName>
+		</Contact>
+		<Contact>
+			<DisplayName>Contact1</DisplayName>
+		</Contact>
+	</Contacts>
+</MainViewModel>

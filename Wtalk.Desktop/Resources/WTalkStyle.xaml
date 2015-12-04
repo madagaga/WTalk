@@ -1,0 +1,144 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="Wtalk.Desktop.Resources.WTalkStyle">
+
+    <Style x:Key="window_style" TargetType="Window">
+        <Setter Property="AllowsTransparency" Value="True" />
+        <Setter Property="WindowStyle" Value="None" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="ResizeMode" Value="CanResizeWithGrip" />
+        <Setter Property="Template" Value="{DynamicResource window_template}" />
+        <Setter Property="Icon" Value="pack://application:,,,/Resources/talk.ico" />
+    </Style>
+    
+    
+    <ControlTemplate  TargetType="{x:Type Window}" x:Key="window_template">
+        <Border CornerRadius="5,5,0,0" BorderThickness="1" BorderBrush="#FFC1C1C1" Background="#fbfdfc">
+            <Border.Effect>
+                <DropShadowEffect Color="#FFC7C7C7"/>
+            </Border.Effect>
+            <Grid>
+                <Grid Height="30" VerticalAlignment="Top" Background="#eeeeee" MouseLeftButtonDown="Window_MouseLeftButtonDown">
+                    <TextBlock Margin="10,0,50,0" VerticalAlignment="Center" Foreground="Gray" FontWeight="Bold" Text="{TemplateBinding Title}" />
+                    <Button Height="20" Width="25" HorizontalAlignment="Right" Margin="0,0,0,0"  Style="{DynamicResource close_button}" Click="Button_Click" ></Button>
+                    <Button Height="20" Width="25" HorizontalAlignment="Right" Margin="0,0,27,0" Style="{DynamicResource minimize_button}" Click="Button_Click" ></Button>
+                    <Grid Height="3" VerticalAlignment="Bottom">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition></ColumnDefinition>
+                            <ColumnDefinition></ColumnDefinition>
+                            <ColumnDefinition></ColumnDefinition>
+                            <ColumnDefinition></ColumnDefinition>
+                        </Grid.ColumnDefinitions>
+                        <Rectangle Height="3" Fill="#006dae" HorizontalAlignment="Stretch" Grid.Column="0"/>
+                        <Rectangle Height="3" Fill="#db3a32" VerticalAlignment="Bottom"  Grid.Column="1"/>
+                        <Rectangle Height="3" Fill="#eac922" VerticalAlignment="Bottom"  Grid.Column="2"/>
+                        <Rectangle Height="3" Fill="#2ca651" VerticalAlignment="Bottom"  Grid.Column="3"/>
+                    </Grid>
+                </Grid>
+                <ContentPresenter Margin="0,30,0,0" ContentTemplate="{TemplateBinding ContentTemplate}" Content="{TemplateBinding Content}" ContentStringFormat="{TemplateBinding ContentStringFormat}" ClipToBounds="True"/>
+                <ResizeGrip VerticalAlignment="Bottom" HorizontalAlignment="Right" />
+            </Grid>
+        </Border>
+    </ControlTemplate>
+
+
+
+
+    <Style TargetType="Button" x:Key="toolbox_button">
+        <Setter Property="FocusVisualStyle">
+            <Setter.Value>
+                <Style>
+                    <Setter Property="Control.Template">
+                        <Setter.Value>
+                            <ControlTemplate>
+                                <Rectangle Margin="2" SnapsToDevicePixels="True" Stroke="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}" StrokeThickness="1" StrokeDashArray="1 2"/>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="Background" Value="Transparent"/>        
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Setter Property="Padding" Value="1"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type Button}">
+                    <Border x:Name="border" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" SnapsToDevicePixels="True">
+                        <ContentPresenter x:Name="contentPresenter" ContentTemplate="{TemplateBinding ContentTemplate}" Content="{TemplateBinding Content}" ContentStringFormat="{TemplateBinding ContentStringFormat}" Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                    </Border>
+
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>            
+                <Trigger Property="IsDefaulted" Value="True">
+                    <Setter Property="BorderBrush" Value="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}"/>
+                </Trigger>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#FFBEE6FD"/>
+                    <Setter Property="BorderBrush" Value="#FF3C7FB1"/>
+                </Trigger>
+                <Trigger Property="IsPressed" Value="True">
+                    <Setter Property="Background"  Value="#FFC4E5F6"/>
+                    <Setter Property="BorderBrush" Value="#FF2C628B"/>
+                </Trigger>                
+        </Style.Triggers>
+    </Style>
+    
+    <Style TargetType="Button" x:Key="close_button" BasedOn="{StaticResource toolbox_button}">
+        <Setter Property="Content">
+            <Setter.Value>                
+                <Path Data="F1M54.0573,47.8776L38.1771,31.9974 54.0547,16.1198C55.7604,14.4141 55.7604,11.6511 54.0573,9.94531 52.3516,8.23962 49.5859,8.23962 47.8802,9.94531L32.0026,25.8229 16.1224,9.94531C14.4167,8.23962 11.6511,8.23962 9.94794,9.94531 8.24219,11.6511 8.24219,14.4141 9.94794,16.1198L25.8255,32 9.94794,47.8776C8.24219,49.5834 8.24219,52.3477 9.94794,54.0534 11.6511,55.7572 14.4167,55.7585 16.1224,54.0534L32.0026,38.1745 47.8802,54.0534C49.5859,55.7585 52.3516,55.7572 54.0573,54.0534 55.7604,52.3477 55.763,49.5834 54.0573,47.8776z"
+                                    Stretch="Uniform" Fill="#FFAAAAAA" Width="10" Margin="0,0,0,0" ></Path>                
+            </Setter.Value>
+        </Setter>
+        
+    </Style>
+    <Style TargetType="Button" x:Key="minimize_button" BasedOn="{StaticResource toolbox_button}">
+        <Setter Property="Content">
+            <Setter.Value>                                
+                    <Path Data="M0,20L53.333,20 53.333,8.888 0,8.888z"
+                                        Stretch="Uniform" Fill="#FFAAAAAA" Width="10" Margin="0,10,0,5"></Path>                
+            </Setter.Value>
+        </Setter>
+
+    </Style>
+
+    <Style TargetType="TextBlock" x:Key="status_text">
+        <Setter Property="Foreground" Value="Gray" />        
+    </Style>
+    
+    <Style TargetType="Button" x:Key="contact">        
+        <Style.Triggers>            
+            <Trigger Property="IsMouseOver" Value="True">                
+                <Setter Property="Background" Value="Gainsboro" />
+                <Setter Property="Cursor" Value="Hand" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style TargetType="Border" x:Key="status_indicator">
+        <Style.Triggers>
+            <Trigger Property="IsEnabled" Value="True">
+                <Setter Property="Background" Value="#2eb356" />                
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="Background" Value="Gainsboro" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+    
+        <Style TargetType="TextBlock" x:Key="message_text">
+            <Setter Property="HorizontalAlignment" Value="Left" />
+            <Setter Property="IsEnabled" Value="True" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Sender}" Value="{x:Null}">
+                    <Setter Property="HorizontalAlignment" Value="Right"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>    
+
+</ResourceDictionary>

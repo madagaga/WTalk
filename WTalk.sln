@@ -1,0 +1,40 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.31101.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WTalk", "WTalk\WTalk.csproj", "{06291491-4F77-4473-9ED2-970552EDF115}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wtalk.Desktop", "Wtalk.Desktop\Wtalk.Desktop.csproj", "{0774E733-464C-4282-9A0E-7172498A094F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WTalk.MvvM", "WTalk.MvvM\WTalk.MvvM.csproj", "{6A4B16B0-98E9-43DE-9284-3CB5B65D1BA6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WTalk.Model", "WTalk.Model\WTalk.Model.csproj", "{C6D0B14E-B3D5-4212-B897-ED04CC8F188F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{06291491-4F77-4473-9ED2-970552EDF115}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{06291491-4F77-4473-9ED2-970552EDF115}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{06291491-4F77-4473-9ED2-970552EDF115}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{06291491-4F77-4473-9ED2-970552EDF115}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0774E733-464C-4282-9A0E-7172498A094F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0774E733-464C-4282-9A0E-7172498A094F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0774E733-464C-4282-9A0E-7172498A094F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0774E733-464C-4282-9A0E-7172498A094F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6A4B16B0-98E9-43DE-9284-3CB5B65D1BA6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6A4B16B0-98E9-43DE-9284-3CB5B65D1BA6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6A4B16B0-98E9-43DE-9284-3CB5B65D1BA6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6A4B16B0-98E9-43DE-9284-3CB5B65D1BA6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C6D0B14E-B3D5-4212-B897-ED04CC8F188F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C6D0B14E-B3D5-4212-B897-ED04CC8F188F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C6D0B14E-B3D5-4212-B897-ED04CC8F188F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C6D0B14E-B3D5-4212-B897-ED04CC8F188F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
