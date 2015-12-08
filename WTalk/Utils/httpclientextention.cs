@@ -14,21 +14,11 @@ namespace WTalk.Utils
 {
     public static class HttpClientExtention
     {
-        static string[] DEFAULT_HEADER = new string[] {"Authorization", "x-origin","x-goog-authuser"};
 
-        //public static void ClearCustomHeaders(this HttpClient client)
-        //{
-        //    foreach (string header in DEFAULT_HEADER)
-        //        if (client.DefaultRequestHeaders.Contains(header))
-        //            client.DefaultRequestHeaders.Remove(header);
-        //}
-
+        static NLog.Logger _logger = NLog.LogManager.GetLogger("HttpClient");        
 
         public static HttpResponseMessage Execute(this HttpClient client, string url, Dictionary<string, string> queryString = null, Dictionary<string, string> postData = null)
         {
-            if(!client.DefaultRequestHeaders.Contains("UserAgent"))
-                client.DefaultRequestHeaders.Add("UserAgent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.132 Safari/537.36");
-
             StringBuilder query = new StringBuilder(url);
 
             if (queryString != null)
@@ -37,13 +27,15 @@ namespace WTalk.Utils
                     query.Append("?");
                 query.Append(string.Join("&",queryString.Select(c=>string.Format("{0}={1}", c.Key, Uri.EscapeUriString(c.Value))).ToArray()));                                
             }
-
+            
             HttpResponseMessage message = null;
             if (postData != null)
                 message = client.PostAsync(query.ToString(), new FormUrlEncodedContent(postData)).Result;
             else
                 message = client.GetAsync(query.ToString()).Result;
-            
+
+            _logger.Debug("Received data : {0}", message.Content.ReadAsStringAsync().Result.Replace("\n", ""));
+
             return message;
         }
 
@@ -60,10 +52,12 @@ namespace WTalk.Utils
         static HttpResponseMessage execute(this HttpClient client, string apiKey, string endPoint, JArray body, bool useJson)
         {
             HttpResponseMessage message = null;
+            _logger.Debug("Sending Request : {0}", endPoint);
+            _logger.Debug("Sending data : {0}", body.ToString().Replace("\r\n", ""));
             string uri = string.Format("{0}{1}?key={2}&alt={3}",HangoutUri.CHAT_SERVER_URL,endPoint, Uri.EscapeUriString(apiKey), useJson ? "json" : "protojson");
             message = client.PostAsync(uri,new StringContent(body.ToString(),Encoding.UTF8,"application/json+protobuf")).Result;
             message.EnsureSuccessStatusCode();
-
+            _logger.Debug("Received data : {0}", message.Content.ReadAsStringAsync().Result.Replace("\n", ""));
             return message;
         }
 

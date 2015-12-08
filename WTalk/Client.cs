@@ -29,9 +29,6 @@ namespace WTalk
 
         bool _wasConnected = false;
 
-
-        int _last_active_secs = 0;
-        
         double _timestamp = 0;
         public WTalk.ProtoJson.Entity CurrentUser { get; private set; }
 
@@ -75,6 +72,8 @@ namespace WTalk
         public void Connect()
         {
             initializeChat();
+
+            _channel.setAppVer(_header_version);
 
             Task.Run(() =>
             {

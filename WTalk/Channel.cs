@@ -23,17 +23,27 @@ namespace WTalk
         public event EventHandler<JArray> OnDataReceived;
         #endregion
 
-        public bool Connected { get; set; }
+        public bool Connected { get; private set; }
+
+        private DateTime _last_response_date = DateTime.UtcNow;
 
         string _sid, _gsession_id,_aid = "0";
+        string _appver = "chat_frontend_20151111.11_p0"; // default 
+
         int ofs_count = 0;        
         bool _initialized = false;
+
 
         public Channel()
         {
             _client = new HttpClient(new SigningMessageHandler());
             _client.Timeout = new TimeSpan(0, 0, 30);
 
+        }
+
+        public void setAppVer(string appver)
+        {
+            _appver = appver;
         }
 
         public void Listen()
@@ -48,8 +58,10 @@ namespace WTalk
                     _logger.Info("Backing off for {0} seconds", backoff_seconds);
                     Thread.Sleep(backoff_seconds * 1000);
                 }
-                //if (!_initialized)
-                //    initialize();
+
+                if ((DateTime.UtcNow - _last_response_date).TotalMinutes > 2)
+                    _sid = null;
+
 
                 if (string.IsNullOrEmpty(_sid))
                     retrieve_sid();
@@ -58,6 +70,8 @@ namespace WTalk
                 {
                     LongPollRequest();
                     retries = MAX_RETRIES;
+
+                    _last_response_date = DateTime.UtcNow;
                 }
                 catch (Exception e)
                 {
@@ -91,7 +105,7 @@ namespace WTalk
            
             headerData.Add("ctype", "hangouts");  // client type
             headerData.Add("prop", "ChromeApp");
-            headerData.Add("appver", "chat_frontend_20151111.11_p0");  // client type
+            headerData.Add("appver", _appver);  // client type
             headerData.Add("gsessionid", _gsession_id);
             headerData.Add("VER", "8");  // channel protocol version
             headerData.Add("RID", "rpc");  // request identifier
@@ -147,8 +161,7 @@ namespace WTalk
 
         private void dataReceived(string data)
         {
-            
-            _logger.Info("Received data : {0}", data.Replace("\n", ""));
+
             Connected = true;
 
             // parse chunk data
@@ -235,8 +248,7 @@ namespace WTalk
 
 
             _logger.Info("Sending sid request");
-            string response = sendMapsRequest(new Dictionary<string, string>());
-            _logger.Info("Sid request result : {0}", response);
+            string response = sendMapsRequest(new Dictionary<string, string>());            
             JArray array = Parser.ParseData(response);
             _sid = array[0][1][1].ToString();
             if(array.Count>1)
@@ -254,7 +266,7 @@ namespace WTalk
 
             headerData.Add("ctype", "hangouts");  // client type
             headerData.Add("prop", "ChromeApp");
-            headerData.Add("appver", "chat_frontend_20151111.11_p0");  // client type
+            headerData.Add("appver", _appver);  // client type
             if(!string.IsNullOrEmpty(_gsession_id))
                 headerData.Add("gsessionid", _gsession_id);
             headerData.Add("VER", "8");  // channel protocol version

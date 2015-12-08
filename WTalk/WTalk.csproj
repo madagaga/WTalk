@@ -60,7 +60,7 @@
     <Compile Include="Utils\ByteExtension.cs" />
     <Compile Include="Utils\DateTimeExtension.cs" />
     <Compile Include="Utils\HttpClientExtention.cs" />
-    <Compile Include="Utils\New.cs" />
+    <Compile Include="Utils\DynamicConstructor.cs" />
     <Compile Include="Utils\Parser.cs" />
   </ItemGroup>
   <ItemGroup>

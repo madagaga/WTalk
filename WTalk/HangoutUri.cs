@@ -16,5 +16,10 @@ namespace WTalk
         //public const string CHAT_INIT_URL = "https://talkgadget.google.com/u/0/talkgadget/_/chat";
         public const string CHANNEL_URL = "https://0.client-channel.google.com/client-channel/";
         public const string CHAT_SERVER_URL = "https://clients6.google.com/chat/v1/";
+
+
+
+
+
     }
 }
