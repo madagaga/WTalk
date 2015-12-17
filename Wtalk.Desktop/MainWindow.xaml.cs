@@ -26,7 +26,14 @@ namespace Wtalk.Desktop
             InitializeComponent();
             this.DataContext = new MainViewModel();
             this.Closing += MainWindow_Closing;
+            this.Activated += MainWindow_Activated;
             
+        }
+
+        void MainWindow_Activated(object sender, EventArgs e)
+        {
+            if (this.WindowState == System.Windows.WindowState.Normal)
+                ((MainViewModel)this.DataContext).SetPresenceCommand.Execute(null);
         }
 
         void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)

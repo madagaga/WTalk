@@ -40,20 +40,24 @@ namespace Wtalk.Desktop.ViewModel
 
         void _client_NewConversationEventReceived(object sender, WTalk.ProtoJson.Event e)
         {
-            if(e.conversation_id.id == this._conversationCache.Id)
+            if (e.conversation_id.id == this._conversationCache.Id)
             {
                 if (_lastMessage.SenderId == e.sender_id.chat_id)
                     _lastMessage.AppendContent(e.chat_message);
                 else
                 {
+                    _lastMessage = new Message(_conversationCache.Participants[e.sender_id.chat_id], e.chat_message);
                     App.Current.Dispatcher.Invoke(() =>
                     {
-                        _lastMessage = new Message(_conversationCache.Participants[e.sender_id.chat_id], e.chat_message);
                         Messages.Add(_lastMessage);
-                        if (AttentionRequired != null)
-                            AttentionRequired(this, null);
                     });
                 }
+
+                App.Current.Dispatcher.Invoke(() =>
+                     {
+                         if (AttentionRequired != null)
+                             AttentionRequired(this, null);
+                     });
             }
         }
 

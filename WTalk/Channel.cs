@@ -25,8 +25,6 @@ namespace WTalk
 
         public bool Connected { get; private set; }
 
-        private DateTime _last_response_date = DateTime.UtcNow;
-
         string _sid, _gsession_id,_aid = "0";
         string _appver = "chat_frontend_20151111.11_p0"; // default 
 
@@ -59,10 +57,6 @@ namespace WTalk
                     Thread.Sleep(backoff_seconds * 1000);
                 }
 
-                if ((DateTime.UtcNow - _last_response_date).TotalMinutes > 2)
-                    _sid = null;
-
-
                 if (string.IsNullOrEmpty(_sid))
                     retrieve_sid();
 
@@ -70,8 +64,6 @@ namespace WTalk
                 {
                     LongPollRequest();
                     retries = MAX_RETRIES;
-
-                    _last_response_date = DateTime.UtcNow;
                 }
                 catch (Exception e)
                 {

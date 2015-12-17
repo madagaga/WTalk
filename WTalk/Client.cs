@@ -46,6 +46,7 @@ namespace WTalk
         public event EventHandler<WTalk.ProtoJson.PresenceResult> PresenceInformationReceived;
         #endregion
 
+        private DateTime _last_response_date = DateTime.UtcNow;
 
         public Client()
         {
@@ -188,7 +189,12 @@ namespace WTalk
             //Parse channel array and call the appropriate events.
             if (rawdata[0].ToString() == "noop")
             {
-                // nothing to do ?? 
+              // set active client if more than 120 sec of inactivity
+                if ((DateTime.UtcNow - _last_response_date).TotalSeconds > 120)
+                {
+                    SetActiveClient();
+                    _last_response_date = DateTime.UtcNow;
+                }
             }
             else if (rawdata[0]["p"] != null)
             {
@@ -216,6 +222,7 @@ namespace WTalk
 
                     foreach(WTalk.ProtoJson.StateUpdate state_update in batchUpdate.state_update)
                     {
+                        
                         if(state_update.event_notification != null)
                             if (state_update.event_notification.current_event.event_type == ProtoJson.EventType.EVENT_TYPE_REGULAR_CHAT_MESSAGE)
                             {
@@ -241,7 +248,18 @@ namespace WTalk
 
                         if (state_update.presence_notification != null)
                             foreach (var presence in state_update.presence_notification.presence)
-                            PresenceInformationReceived(this, presence);
+                                PresenceInformationReceived(this, presence);
+                        
+                        if(state_update.self_presence_notification != null)
+                            PresenceInformationReceived(this, new ProtoJson.PresenceResult()
+                            {
+                                user_id = CurrentUser.id,
+                                presence = new ProtoJson.Presence()
+                                {
+                                    available = state_update.self_presence_notification.client_presence_state.state == ProtoJson.ClientPresenceStateType.CLIENT_PRESENCE_STATE_DESKTOP_ACTIVE
+                                }
+                            });
+
                     }
 
 
@@ -335,6 +353,7 @@ namespace WTalk
             JArray arrayBody = ProtoJson.ProtoJsonSerializer.Serialize(request);            
             HttpResponseMessage message = _client.PostProtoJson(_api_key, "presence/setpresence", arrayBody);
             string result = message.Content.ReadAsStringAsync().Result;
+            //GetSelfInfo();
         }
 
         public void SetFocus(string conversationId)

@@ -45,20 +45,24 @@ namespace Wtalk.Desktop.WindowManager
             e.Cancel = true;
         }
 
-        public void Show()
+        public void Show(bool bringToFront = false)
         {
             Init();
             Window.ShowActivated = true;
-            Window.Show();            
+            Window.Show();
+            if (bringToFront)
+                Window.Activate();
         }
 
         private void message_textbox_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
         {
             if (e.Key == System.Windows.Input.Key.Enter)
-            {
+            {                
+                ((MainViewModel)System.Windows.Application.Current.MainWindow.DataContext).SetPresenceCommand.Execute(null);
                 System.Windows.Controls.TextBox box = sender as System.Windows.Controls.TextBox;
                 ViewModel.SendMessageCommand.Execute(box.Text);
                 box.Text = string.Empty;
+                
 
             }
         }

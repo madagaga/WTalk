@@ -2447,13 +2447,13 @@ major exception that "Client" prefixes have been removed.
         [ProtoMember(Position = 2)]
         public PresenceStateSetting presence_state_setting { get; set; }
 
-        [ProtoMember(Position = 3)]
+        [ProtoMember(Position = 3, Optional=true)]
         public DndSetting dnd_setting { get; set; }
 
-        [ProtoMember(Position = 5)]
+        [ProtoMember(Position = 5, Optional = true)]
         public DesktopOffSetting desktop_off_setting { get; set; }
 
-        [ProtoMember(Position = 8)]
+        [ProtoMember(Position = 8, Optional = true)]
         public MoodSetting mood_setting { get; set; }
 
     }

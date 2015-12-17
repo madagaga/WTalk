@@ -27,16 +27,17 @@ namespace Wtalk.Desktop.ViewModel
 
         Dictionary<string, ConversationWindowManager> _conversationCache;
 
-        public RelayCommand OpenConversationCommand { get; set; }
-        public RelayCommand SetAuthenticationCodeCommand { get; set; }
-        public RelayCommand GetCodeCommand { get; set; }
+        public RelayCommand OpenConversationCommand { get; private set; }
+        public RelayCommand SetAuthenticationCodeCommand { get; private set; }
+        public RelayCommand GetCodeCommand { get; private set; }
+        public RelayCommand SetPresenceCommand { get; private set; }
 
         public MainViewModel()
         {
-            OpenConversationCommand = new RelayCommand((p) => LoadConversation(p));
+            OpenConversationCommand = new RelayCommand((p) => LoadConversation(p, true));
             SetAuthenticationCodeCommand = new RelayCommand((p) => SetAuthenticationCode(p.ToString()));
             GetCodeCommand = new RelayCommand((p)=> GetCode());
-
+            SetPresenceCommand = new RelayCommand((p) => SetPresence());
 
 
             _authenticationManager = new AuthenticationManager();
@@ -65,7 +66,7 @@ namespace Wtalk.Desktop.ViewModel
             if(!_contactDictionary.ContainsKey(participantId))
             {
                 _client.GetEntityById(participantId);
-                LoadConversation(participantId);
+                LoadConversation(participantId, false);
             }
         }
 
@@ -146,16 +147,16 @@ namespace Wtalk.Desktop.ViewModel
                 _client.QueryPresences();
         }
 
-        public void LoadConversation(object selectedUser)
+        void LoadConversation(object selectedUser, bool bringToFront)
         {
             User participant = selectedUser as User;
 
             if (_conversationCache.ContainsKey(participant.Id))
-                _conversationCache[participant.Id].Show();             
+                _conversationCache[participant.Id].Show(bringToFront);             
 
         }
 
-        public void GetCode()
+        void GetCode()
         {
             string url = _authenticationManager.GetCodeUrl();
             System.Diagnostics.Process p = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo()
@@ -166,12 +167,18 @@ namespace Wtalk.Desktop.ViewModel
             });
         }
 
-        public void SetAuthenticationCode(string code)
+        void SetAuthenticationCode(string code)
         {
             _authenticationManager.AuthenticateWithCode(code);
             if (_authenticationManager.IsAuthenticated)
                 _client.Connect();
             OnPropertyChanged("AuthenticationRequiered");
+        }
+
+        void SetPresence()
+        {
+            if (this.CurrentUser != null && !this.CurrentUser.Online)
+                _client.SetPresence();
         }
 
     }
