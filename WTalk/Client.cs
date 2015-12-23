@@ -286,7 +286,7 @@ namespace WTalk
                 {
                     _requestHeader = new ProtoJson.RequestHeader();
                     _requestHeader.client_identifier = new ProtoJson.ClientIdentifier() { header_id = _header_id, resource = _client_id};
-                    _requestHeader.client_version = new ProtoJson.ClientVersion() { client_id = ProtoJson.ClientId.CLIENT_ID_CHROME, 
+                    _requestHeader.client_version = new ProtoJson.ClientVersion() { client_id = ProtoJson.ClientId.CLIENT_ID_WEB_GMAIL, 
                         build_type = ProtoJson.ClientBuildType.BUILD_TYPE_PRODUCTION_APP, major_version = _header_version, version_timestamp = long.Parse(_header_date) };
                     _requestHeader.language_code = "en";
 
@@ -347,7 +347,8 @@ namespace WTalk
             ProtoJson.SetPresenceRequest request = new ProtoJson.SetPresenceRequest()
             {
                 request_header = RequestHeaderBody,
-                presence_state_setting = new ProtoJson.PresenceStateSetting() {  type = ProtoJson.ClientPresenceStateType.CLIENT_PRESENCE_STATE_DESKTOP_ACTIVE, timeout_secs=720}
+                presence_state_setting = new ProtoJson.PresenceStateSetting() { type = ProtoJson.ClientPresenceStateType.CLIENT_PRESENCE_STATE_DESKTOP_ACTIVE, timeout_secs = 720 },
+                desktop_off_setting = new ProtoJson.DesktopOffSetting() {  desktop_off = false }
             };
 
             JArray arrayBody = ProtoJson.ProtoJsonSerializer.Serialize(request);            
