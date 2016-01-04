@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace WTalk.Utils
+namespace WTalk.Core.Utils
 {
     public static class ByteExtension
     {

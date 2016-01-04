@@ -31,8 +31,7 @@
                 </TextBlock>
         </Grid>
         <Border VerticalAlignment="Top" Height="20" Margin="10,51,10,0" BorderThickness="1" BorderBrush="#FFC1C1C1" CornerRadius="2" SnapsToDevicePixels="True">
-            <TextBox BorderThickness="0">               
-            </TextBox>
+            <TextBox BorderThickness="0" Text="{Binding FilterText}" />
         </Border>
         
         <ScrollViewer Margin="0,75,0,20">

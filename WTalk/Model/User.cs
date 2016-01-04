@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Wtalk.MvvM;
-using WTalk.ProtoJson;
+using WTalk.Core.ProtoJson.Schema;
 
 namespace WTalk.Model
 {
@@ -31,4 +31,18 @@ namespace WTalk.Model
             OnPropertyChanged("Online");
         }
     }
+
+    public class UserSorter : System.Collections.IComparer
+    {
+        public int Compare(User x, User y)
+        {
+            return x.DisplayName.CompareTo(y.DisplayName);// +x.Online.CompareTo(y.Online);
+        }
+
+        public int Compare(object x, object y)
+        {
+            return Compare(x as User, y as User);
+        }
+    }
+
 }

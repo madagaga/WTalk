@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Wtalk.MvvM;
 using WTalk;
+using WTalk.Core.ProtoJson.Schema;
 using WTalk.Model;
 
 namespace Wtalk.Desktop.ViewModel
@@ -13,7 +14,7 @@ namespace Wtalk.Desktop.ViewModel
     public class ConversationViewModel : ObservableObject
     {
         public Participant Participant { get; set; }
-        Conversation _conversationCache;
+        WTalk.Model.Conversation _conversationCache;
         Message _lastMessage;
         public ObservableCollection<Message> Messages { get; private set; }
 
@@ -24,7 +25,7 @@ namespace Wtalk.Desktop.ViewModel
         public RelayCommand SendMessageCommand { get; private set; }
         public RelayCommand SetFocusCommand { get; private set; }
 
-        public ConversationViewModel(Conversation conversationCache, Client client)
+        public ConversationViewModel(WTalk.Model.Conversation conversationCache, Client client)
         {
             this.Participant = conversationCache.Participants.Values.FirstOrDefault(c=>c.Id != client.CurrentUser.id.chat_id);
             this.Messages = new ObservableCollection<Message>(conversationCache.MessagesHistory);
@@ -38,7 +39,7 @@ namespace Wtalk.Desktop.ViewModel
             SetFocusCommand = new RelayCommand((p) => SetFocus(_conversationCache.Id));            
         }
 
-        void _client_NewConversationEventReceived(object sender, WTalk.ProtoJson.Event e)
+        void _client_NewConversationEventReceived(object sender, Event e)
         {
             if (e.conversation_id.id == this._conversationCache.Id)
             {

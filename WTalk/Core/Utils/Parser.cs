@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using WTalk.Model;
 
-namespace WTalk.Utils
+namespace WTalk.Core.Utils
 {
     public static class Parser
     {

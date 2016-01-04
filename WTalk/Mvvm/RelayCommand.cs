@@ -28,11 +28,11 @@ namespace Wtalk.MvvM
             return _canExecute == null ? true : _canExecute(parameter);
         }
 
-        public event EventHandler CanExecuteChanged
-        {
-            add { CommandManager.RequerySuggested += value; }
-            remove { CommandManager.RequerySuggested -= value; }
-        }
+        public virtual event EventHandler CanExecuteChanged;
+        //{
+        //    add { CommandManager.RequerySuggested += value; }
+        //    remove { CommandManager.RequerySuggested -= value; }
+        //}
 
         public void Execute(object parameter)
         {

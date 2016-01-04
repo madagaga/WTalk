@@ -8,9 +8,9 @@ namespace WTalk.Model
 {
     public class Participant
     {
-        private ProtoJson.ConversationParticipantData _conversationParticipantData;
+        private WTalk.Core.ProtoJson.Schema.ConversationParticipantData _conversationParticipantData;
 
-        public Participant(ProtoJson.ConversationParticipantData conversationParticipantData)
+        public Participant(WTalk.Core.ProtoJson.Schema.ConversationParticipantData conversationParticipantData)
         {
             // TODO: Complete member initialization
             _conversationParticipantData = conversationParticipantData;

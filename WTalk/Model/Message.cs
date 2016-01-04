@@ -9,7 +9,7 @@ namespace WTalk.Model
 {
     public class Message : ObservableObject
     {
-        private ProtoJson.ChatMessage _chatMessage;
+        private WTalk.Core.ProtoJson.Schema.ChatMessage _chatMessage;
         private Participant _participant;
         
 
@@ -17,7 +17,7 @@ namespace WTalk.Model
         {
         }
 
-        public Message(Participant participant, ProtoJson.ChatMessage chatMessage)
+        public Message(Participant participant, WTalk.Core.ProtoJson.Schema.ChatMessage chatMessage)
         {
             // TODO: Complete member initialization
             this._participant = participant;
@@ -30,16 +30,17 @@ namespace WTalk.Model
         public string SenderId { get { return _participant.Id; } }
         //public Enums.MessageType Type { get; internal set; }
         public string Content { get; internal set; }
+        public DateTime MessageDate { get; internal set; }
 
-        public void AppendContent(ProtoJson.ChatMessage chatMessage)
+        public void AppendContent(WTalk.Core.ProtoJson.Schema.ChatMessage chatMessage)
         {
             StringBuilder builder = new StringBuilder(Content);
-            chatMessage.message_content.segment.ForEach(c =>
-            {
+            foreach( var c in chatMessage.message_content.segment)
                 builder.AppendLine(c.text);
-            });
+
             Content = builder.ToString();
             OnPropertyChanged("Content");
+
         }
     }
 }

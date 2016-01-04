@@ -18,6 +18,8 @@ namespace WTalk
         public const string CHANNEL_URL = "https://0.client-channel.google.com/client-channel/";
         public const string CHAT_SERVER_URL = "https://clients6.google.com/chat/v1/";
 
+        public const string COOKIE_URI = "https://google.com/";
+
 
 
 

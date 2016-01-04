@@ -5,7 +5,7 @@ using System.Linq.Expressions;
 using System.Runtime.Serialization;
 using System.Text;
 
-namespace WTalk.ProtoJson
+namespace WTalk.Core.ProtoJson
 {
     internal static class New
     {

@@ -7,8 +7,8 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using WTalk.HttpHandler;
-using WTalk.Utils;
+using WTalk.Core.HttpHandler;
+using WTalk.Core.Utils;
 
 namespace WTalk
 {
@@ -54,7 +54,8 @@ namespace WTalk
                 {
                     int backoff_seconds = 2 * (MAX_RETRIES - retries);
                     _logger.Info("Backing off for {0} seconds", backoff_seconds);
-                    Thread.Sleep(backoff_seconds * 1000);
+
+                    System.Threading.Tasks.Task.Delay(backoff_seconds * 1000).Wait();                    
                 }
 
                 if (string.IsNullOrEmpty(_sid))
@@ -195,7 +196,7 @@ namespace WTalk
             // tdryer version
             subscribeData.Add("req0_p", "{\"3\": {\"1\": {\"1\": \"babel\"}}}");
 
-            System.Threading.Thread.Sleep(1000);
+            System.Threading.Tasks.Task.Delay(1000).Wait();           
             string response = sendMapsRequest(subscribeData);
                         
         }

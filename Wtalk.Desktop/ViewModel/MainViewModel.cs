@@ -9,6 +9,7 @@ using WTalk.Model;
 
 using System.Collections.ObjectModel;
 using Wtalk.Desktop.WindowManager;
+using WTalk.Core.ProtoJson.Schema;
 
 namespace Wtalk.Desktop.ViewModel
 {
@@ -59,10 +60,10 @@ namespace Wtalk.Desktop.ViewModel
             
         }
 
-        void _client_NewConversationCreated(object sender, WTalk.ProtoJson.ConversationState e)
+        void _client_NewConversationCreated(object sender, ConversationState e)
         {
             string participantId = e.conversation.current_participant.FirstOrDefault(c => c.chat_id != CurrentUser.Id).chat_id;
-            _conversationCache.Add(participantId,new ConversationWindowManager(new ConversationViewModel(new Conversation(e), _client)));
+            _conversationCache.Add(participantId,new ConversationWindowManager(new ConversationViewModel(new WTalk.Model.Conversation(e), _client)));
             if(!_contactDictionary.ContainsKey(participantId))
             {
                 _client.GetEntityById(participantId);
@@ -70,7 +71,7 @@ namespace Wtalk.Desktop.ViewModel
             }
         }
 
-        void _client_ContactInformationReceived(object sender, WTalk.ProtoJson.Entity e)
+        void _client_ContactInformationReceived(object sender, Entity e)
         {
             if (!_contactDictionary.ContainsKey(e.id.chat_id))
             {
@@ -83,7 +84,7 @@ namespace Wtalk.Desktop.ViewModel
             }
         }
 
-        void _client_PresenceInformationReceived(object sender, WTalk.ProtoJson.PresenceResult e)
+        void _client_PresenceInformationReceived(object sender, PresenceResult e)
         {
             if (_contactDictionary.ContainsKey(e.user_id.chat_id))
             {
@@ -95,19 +96,19 @@ namespace Wtalk.Desktop.ViewModel
                 CurrentUser.SetPresence(e.presence);
         }
 
-        void _client_UserInformationLoaded(object sender, WTalk.ProtoJson.Entity e)
+        void _client_UserInformationLoaded(object sender, Entity e)
         {
             CurrentUser = new User(_client.CurrentUser);
             OnPropertyChanged("CurrentUser");
         }
 
-        void _client_ConversationHistoryLoaded(object sender, List<WTalk.ProtoJson.ConversationState> e)
+        void _client_ConversationHistoryLoaded(object sender, List<ConversationState> e)
         {
             // associate contact list and last active conversation
             // only 1 to 1 conversation supported
             _conversationCache = new Dictionary<string, ConversationWindowManager>();
-            List<Conversation> filteredConversations = e.Where(c => c.conversation.type == WTalk.ProtoJson.ConversationType.CONVERSATION_TYPE_ONE_TO_ONE)
-                .Select(c => new Conversation(c)).ToList();
+            List<WTalk.Model.Conversation> filteredConversations = e.Where(c => c.conversation.type == ConversationType.CONVERSATION_TYPE_ONE_TO_ONE)
+                .Select(c => new WTalk.Model.Conversation(c)).ToList();
 
             string participantId = null;
             filteredConversations.ForEach((convCache) =>
@@ -118,7 +119,7 @@ namespace Wtalk.Desktop.ViewModel
             });
         }
 
-        void _client_ContactListLoaded(object sender, List<WTalk.ProtoJson.Entity> e)
+        void _client_ContactListLoaded(object sender, List<Entity> e)
         {
             _contactDictionary = e.ToDictionary(c => c.id.chat_id, c => new User(c));
             Contacts = new ObservableCollection<User>(_contactDictionary.Values);            

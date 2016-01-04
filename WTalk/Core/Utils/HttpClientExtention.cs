@@ -6,11 +6,10 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Reflection;
-using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace WTalk.Utils
+namespace WTalk.Core.Utils
 {
     public static class HttpClientExtention
     {
@@ -61,46 +60,38 @@ namespace WTalk.Utils
             return message;
         }
 
-
-
-        public static IEnumerable<Cookie> GetAllCookies(this CookieContainer c)
-        {
-            Hashtable k = (Hashtable)c.GetType().GetField("m_domainTable", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(c);
-            foreach (DictionaryEntry element in k)
-            {
-                SortedList l = (SortedList)element.Value.GetType().GetField("m_list", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(element.Value);
-                foreach (var e in l)
-                {
-                    var cl = (CookieCollection)((DictionaryEntry)e).Value;
-                    foreach (Cookie fc in cl)
-                    {
-                        yield return fc;
-                    }
-                }
-            }
-        }
-
-        public static Cookie GetCookie(this CookieContainer c, string domain, string key)
-        {
-            Hashtable k = (Hashtable)c.GetType().GetField("m_domainTable", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(c);
-            if (!k.ContainsKey(domain))
-                return null;
-            DictionaryEntry element = new DictionaryEntry("",k[domain]);
-            SortedList list = (SortedList)element.Value.GetType().GetField("m_list", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(element.Value);
-            if(list.Count > 0)
-            {
-                foreach (var e in list)
-                {
-                    var cl = (CookieCollection)((DictionaryEntry)e).Value;
-                    foreach (Cookie fc in cl)
-                    {
-                        if(fc.Name == key)
-                        return fc;
-                    }
-                }
-            }
+        //public static Cookie GetCookie(this CookieContainer c, string domain, string key)
+        //{
+        //    CookieCollection collection = c.GetCookies(new Uri(domain));
+        //    foreach(Cookie cookie in collection)
+        //    {
+        //        if (cookie.Name == key)
+        //            return cookie;
+        //    }
+        //    return null;
+        //}
+        
+        //public static Cookie GetCookie(this CookieContainer c, string domain, string key)
+        //{
+        //    Hashtable k = (Hashtable)c.GetType().GetField("m_domainTable", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(c);
+        //    if (!k.ContainsKey(domain))
+        //        return null;
+        //    DictionaryEntry element = new DictionaryEntry("",k[domain]);
+        //    SortedList list = (SortedList)element.Value.GetType().GetField("m_list", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(element.Value);
+        //    if(list.Count > 0)
+        //    {
+        //        foreach (var e in list)
+        //        {
+        //            var cl = (CookieCollection)((DictionaryEntry)e).Value;
+        //            foreach (Cookie fc in cl)
+        //            {
+        //                if(fc.Name == key)
+        //                return fc;
+        //            }
+        //        }
+        //    }
                         
-            return null;
-        }
+        //    return null;
+        //}
     }
 }

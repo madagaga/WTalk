@@ -8,8 +8,10 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using WTalk.Model;
-using WTalk.HttpHandler;
-using WTalk.Utils;
+using WTalk.Core.HttpHandler;
+using WTalk.Core.Utils;
+using WTalk.Core.ProtoJson.Schema;
+using WTalk.Core.ProtoJson;
 
 namespace WTalk
 {
@@ -30,20 +32,21 @@ namespace WTalk
         bool _wasConnected = false;
 
         double _timestamp = 0;
-        public WTalk.ProtoJson.Entity CurrentUser { get; private set; }
+        public Entity CurrentUser { get; private set; }
 
         internal List<string> _contact_ids = new List<string>();
         internal List<string> _active_conversation_ids = new List<string>();
+        
         #region events
-        public event EventHandler<List<WTalk.ProtoJson.ConversationState>> ConversationHistoryLoaded;
-        public event EventHandler<List<WTalk.ProtoJson.Entity>> ContactListLoaded;
+        public event EventHandler<List<ConversationState>> ConversationHistoryLoaded;
+        public event EventHandler<List<Entity>> ContactListLoaded;
         public event EventHandler ConnectionEstablished;
-        public event EventHandler<ProtoJson.ConversationState> NewConversationCreated;
-        public event EventHandler<ProtoJson.Event> NewConversationEventReceived;
-        public event EventHandler<ProtoJson.Entity> UserInformationReceived;
-        public event EventHandler<ProtoJson.Entity> ContactInformationReceived;
+        public event EventHandler<ConversationState> NewConversationCreated;
+        public event EventHandler<Event> NewConversationEventReceived;
+        public event EventHandler<Entity> UserInformationReceived;
+        public event EventHandler<Entity> ContactInformationReceived;
 
-        public event EventHandler<WTalk.ProtoJson.PresenceResult> PresenceInformationReceived;
+        public event EventHandler<PresenceResult> PresenceInformationReceived;
         #endregion
 
         private DateTime _last_response_date = DateTime.UtcNow;
@@ -142,8 +145,8 @@ namespace WTalk
                         break;
                     case "cgserp":
                         jarray[0][0].Remove();
-                        ProtoJson.GetSuggestedEntitiesResponse cgserp = ProtoJson.ProtoJsonSerializer.Deserialize<ProtoJson.GetSuggestedEntitiesResponse>(jarray[0] as JArray);
-                        if (cgserp.response_header.status == ProtoJson.ResponseStatus.RESPONSE_STATUS_OK)
+                        GetSuggestedEntitiesResponse cgserp = ProtoJsonSerializer.Deserialize<GetSuggestedEntitiesResponse>(jarray[0] as JArray);
+                        if (cgserp.response_header.status == ResponseStatus.RESPONSE_STATUS_OK)
                         {
                             if(ContactListLoaded != null)
                                 ContactListLoaded(this, cgserp.contacts_you_hangout_with.contact.Select(c => c.entity).ToList());
@@ -152,8 +155,8 @@ namespace WTalk
                         break;
                     case "cgsirp":
                         jarray[0][0].Remove();
-                        ProtoJson.GetSelfInfoResponse cgsirp = ProtoJson.ProtoJsonSerializer.Deserialize<ProtoJson.GetSelfInfoResponse>(jarray[0] as JArray);
-                        if (cgsirp.response_header.status == ProtoJson.ResponseStatus.RESPONSE_STATUS_OK)
+                        GetSelfInfoResponse cgsirp = ProtoJsonSerializer.Deserialize<GetSelfInfoResponse>(jarray[0] as JArray);
+                        if (cgsirp.response_header.status == ResponseStatus.RESPONSE_STATUS_OK)
                         {
                             this.CurrentUser = cgsirp.self_entity;
                             if (!string.IsNullOrEmpty(_email))
@@ -164,8 +167,8 @@ namespace WTalk
                         break;
                     case "csrcrp":
                         jarray[0][0].Remove();
-                        ProtoJson.SyncRecentConversationsResponse csrcrp = ProtoJson.ProtoJsonSerializer.Deserialize<ProtoJson.SyncRecentConversationsResponse>(jarray[0] as JArray);
-                        if (csrcrp.response_header.status == ProtoJson.ResponseStatus.RESPONSE_STATUS_OK)
+                        SyncRecentConversationsResponse csrcrp = ProtoJsonSerializer.Deserialize<SyncRecentConversationsResponse>(jarray[0] as JArray);
+                        if (csrcrp.response_header.status == ResponseStatus.RESPONSE_STATUS_OK)
                         {
                             if (ConversationHistoryLoaded != null)
                                 ConversationHistoryLoaded(this, csrcrp.conversation_state);
@@ -218,13 +221,13 @@ namespace WTalk
                 {
                     JArray cbu = JArray.Parse(wrapper["2"]["2"].ToString());
                     cbu.RemoveAt(0);
-                    ProtoJson.BatchUpdate batchUpdate = ProtoJson.ProtoJsonSerializer.Deserialize<ProtoJson.BatchUpdate>(cbu as JArray);
+                    BatchUpdate batchUpdate = ProtoJsonSerializer.Deserialize<BatchUpdate>(cbu as JArray);
 
-                    foreach(WTalk.ProtoJson.StateUpdate state_update in batchUpdate.state_update)
+                    foreach(StateUpdate state_update in batchUpdate.state_update)
                     {
                         
                         if(state_update.event_notification != null)
-                            if (state_update.event_notification.current_event.event_type == ProtoJson.EventType.EVENT_TYPE_REGULAR_CHAT_MESSAGE)
+                            if (state_update.event_notification.current_event.event_type == EventType.EVENT_TYPE_REGULAR_CHAT_MESSAGE)
                             {
                                 if (_active_conversation_ids.Contains(state_update.event_notification.current_event.conversation_id.id))
                                 {
@@ -235,11 +238,11 @@ namespace WTalk
                                 {
                                     if(NewConversationCreated != null)
                                     {
-                                        ProtoJson.ConversationState s = new ProtoJson.ConversationState()
+                                        ConversationState s = new ConversationState()
                                         {
                                             conversation_id = state_update.event_notification.current_event.conversation_id,
                                             conversation = state_update.conversation,
-                                            events = new List<ProtoJson.Event>(){ state_update.event_notification.current_event}
+                                            events = new List<Event>(){ state_update.event_notification.current_event}
                                         };
                                         NewConversationCreated(this, s);
                                     }
@@ -251,12 +254,12 @@ namespace WTalk
                                 PresenceInformationReceived(this, presence);
                         
                         if(state_update.self_presence_notification != null)
-                            PresenceInformationReceived(this, new ProtoJson.PresenceResult()
+                            PresenceInformationReceived(this, new PresenceResult()
                             {
                                 user_id = CurrentUser.id,
-                                presence = new ProtoJson.Presence()
+                                presence = new Presence()
                                 {
-                                    available = state_update.self_presence_notification.client_presence_state.state == ProtoJson.ClientPresenceStateType.CLIENT_PRESENCE_STATE_DESKTOP_ACTIVE
+                                    available = state_update.self_presence_notification.client_presence_state.state == ClientPresenceStateType.CLIENT_PRESENCE_STATE_DESKTOP_ACTIVE
                                 }
                             });
 
@@ -276,18 +279,18 @@ namespace WTalk
 
         #region API
 
-        private ProtoJson.RequestHeader _requestHeader;
+        private RequestHeader _requestHeader;
 
-        ProtoJson.RequestHeader RequestHeaderBody
+        RequestHeader RequestHeaderBody
         {
             get
             {
                 if(_requestHeader == null)
                 {
-                    _requestHeader = new ProtoJson.RequestHeader();
-                    _requestHeader.client_identifier = new ProtoJson.ClientIdentifier() { header_id = _header_id, resource = _client_id};
-                    _requestHeader.client_version = new ProtoJson.ClientVersion() { client_id = ProtoJson.ClientId.CLIENT_ID_WEB_GMAIL, 
-                        build_type = ProtoJson.ClientBuildType.BUILD_TYPE_PRODUCTION_APP, major_version = _header_version, version_timestamp = long.Parse(_header_date) };
+                    _requestHeader = new RequestHeader();
+                    _requestHeader.client_identifier = new ClientIdentifier() { header_id = _header_id, resource = _client_id};
+                    _requestHeader.client_version = new ClientVersion() { client_id = ClientId.CLIENT_ID_WEB_GMAIL, 
+                        build_type = ClientBuildType.BUILD_TYPE_PRODUCTION_APP, major_version = _header_version, version_timestamp = long.Parse(_header_date) };
                     _requestHeader.language_code = "en";
 
                 }
@@ -303,14 +306,14 @@ namespace WTalk
 
         public void QueryPresences()
         {
-            ProtoJson.QueryPresenceRequest request = new ProtoJson.QueryPresenceRequest()
+            QueryPresenceRequest request = new QueryPresenceRequest()
             {
                 request_header = RequestHeaderBody,
-                participant_id = this._contact_ids.Select(c => new ProtoJson.ParticipantId() { chat_id = c }).ToList(),
-                field_mask = new List<ProtoJson.FieldMask>() { ProtoJson.FieldMask.FIELD_MASK_AVAILABLE, ProtoJson.FieldMask.FIELD_MASK_DEVICE, ProtoJson.FieldMask.FIELD_MASK_REACHABLE }
+                participant_id = this._contact_ids.Select(c => new ParticipantId() { chat_id = c }).ToList(),
+                field_mask = new List<FieldMask>() { FieldMask.FIELD_MASK_AVAILABLE, FieldMask.FIELD_MASK_DEVICE, FieldMask.FIELD_MASK_REACHABLE }
             };
 
-            JArray arrayBody = ProtoJson.ProtoJsonSerializer.Serialize(request);
+            JArray arrayBody = ProtoJsonSerializer.Serialize(request);
             HttpResponseMessage message = _client.PostProtoJson(_api_key, "presence/querypresence", arrayBody);
             string result = message.Content.ReadAsStringAsync().Result;
 
@@ -319,7 +322,7 @@ namespace WTalk
 
                 arrayBody = JArray.Parse(result);
                 arrayBody.RemoveAt(0);
-                ProtoJson.QueryPresenceResponse response = ProtoJson.ProtoJsonSerializer.Deserialize<ProtoJson.QueryPresenceResponse>(arrayBody);
+                QueryPresenceResponse response = ProtoJsonSerializer.Deserialize<QueryPresenceResponse>(arrayBody);
 
                 foreach (var presence in response.presence_result)
                     PresenceInformationReceived(this, presence);
@@ -329,7 +332,7 @@ namespace WTalk
         public void SetActiveClient()
         {
 
-            ProtoJson.SetActiveClientRequest request = new ProtoJson.SetActiveClientRequest()
+            SetActiveClientRequest request = new SetActiveClientRequest()
             {
                 request_header = RequestHeaderBody,
                 full_jid = string.Format("{0}/{1}", _email, _client_id),
@@ -337,21 +340,21 @@ namespace WTalk
                 timeout_secs = 120
             };
 
-            JArray arrayBody = ProtoJson.ProtoJsonSerializer.Serialize(request);
+            JArray arrayBody = ProtoJsonSerializer.Serialize(request);
             HttpResponseMessage message = _client.PostProtoJson(_api_key, "clients/setactiveclient", arrayBody);
             string result = message.Content.ReadAsStringAsync().Result;
         }
 
         public void SetPresence()
         {
-            ProtoJson.SetPresenceRequest request = new ProtoJson.SetPresenceRequest()
+            SetPresenceRequest request = new SetPresenceRequest()
             {
                 request_header = RequestHeaderBody,
-                presence_state_setting = new ProtoJson.PresenceStateSetting() { type = ProtoJson.ClientPresenceStateType.CLIENT_PRESENCE_STATE_DESKTOP_ACTIVE, timeout_secs = 720 },
-                desktop_off_setting = new ProtoJson.DesktopOffSetting() {  desktop_off = false }
+                presence_state_setting = new PresenceStateSetting() { type = ClientPresenceStateType.CLIENT_PRESENCE_STATE_DESKTOP_ACTIVE, timeout_secs = 720 },
+                desktop_off_setting = new DesktopOffSetting() {  desktop_off = false }
             };
 
-            JArray arrayBody = ProtoJson.ProtoJsonSerializer.Serialize(request);            
+            JArray arrayBody = ProtoJsonSerializer.Serialize(request);            
             HttpResponseMessage message = _client.PostProtoJson(_api_key, "presence/setpresence", arrayBody);
             string result = message.Content.ReadAsStringAsync().Result;
             //GetSelfInfo();
@@ -359,45 +362,45 @@ namespace WTalk
 
         public void SetFocus(string conversationId)
         {
-            ProtoJson.SetFocusRequest request = new ProtoJson.SetFocusRequest()
+            SetFocusRequest request = new SetFocusRequest()
             {
                 request_header = RequestHeaderBody,
-                conversation_id = new ProtoJson.ConversationId() { id = conversationId },
-                type = ProtoJson.FocusType.FOCUS_TYPE_FOCUSED,
+                conversation_id = new ConversationId() { id = conversationId },
+                type = FocusType.FOCUS_TYPE_FOCUSED,
                 timeout_secs = 20
             };
 
-            JArray arrayBody = ProtoJson.ProtoJsonSerializer.Serialize(request);
+            JArray arrayBody = ProtoJsonSerializer.Serialize(request);
             HttpResponseMessage message = _client.PostProtoJson(_api_key, "conversations/setfocus", arrayBody);
             string result = message.Content.ReadAsStringAsync().Result;
         }
 
         public void SetUserTyping(string conversationId)
         {
-            ProtoJson.SetTypingRequest request = new ProtoJson.SetTypingRequest()
+            SetTypingRequest request = new SetTypingRequest()
             {
                 request_header = RequestHeaderBody,
-                conversation_id = new ProtoJson.ConversationId() {  id = conversationId },
-                type = ProtoJson.TypingType.TYPING_TYPE_STARTED
+                conversation_id = new ConversationId() {  id = conversationId },
+                type = TypingType.TYPING_TYPE_STARTED
             };
 
-            JArray arrayBody = ProtoJson.ProtoJsonSerializer.Serialize(request);
+            JArray arrayBody = ProtoJsonSerializer.Serialize(request);
             HttpResponseMessage message = _client.PostProtoJson(_api_key, "conversations/settyping", arrayBody);
             string result = message.Content.ReadAsStringAsync().Result;
         }
         
         public void SendChatMessage(string conversationId, string messageText)
         {
-            ProtoJson.SendChatMessageRequest request = new ProtoJson.SendChatMessageRequest()
+            SendChatMessageRequest request = new SendChatMessageRequest()
             {
                 request_header = RequestHeaderBody,
-                annotation = new List<ProtoJson.EventAnnotation>(),
-                message_content = new ProtoJson.MessageContent() { attachment = new List<ProtoJson.Attachment>(), segment = new List<ProtoJson.Segment>() { new ProtoJson.Segment() { text=messageText, type = ProtoJson.SegmentType.SEGMENT_TYPE_TEXT, formatting = new ProtoJson.Formatting() { bold = false, italic = false, strikethrough = false, underline = false }, link_data = new ProtoJson.LinkData() } } },
-                event_request_header = new ProtoJson.EventRequestHeader { conversation_id = new ProtoJson.ConversationId() { id = conversationId }, client_generated_id = randomId, expected_otr = ProtoJson.OffTheRecordStatus.OFF_THE_RECORD_STATUS_ON_THE_RECORD, delivery_medium = new ProtoJson.DeliveryMedium() { medium_type = ProtoJson.DeliveryMediumType.DELIVERY_MEDIUM_BABEL }, event_type = ProtoJson.EventType.EVENT_TYPE_REGULAR_CHAT_MESSAGE }
+                annotation = new List<EventAnnotation>(),
+                message_content = new MessageContent() { attachment = new List<Attachment>(), segment = new List<Segment>() { new Segment() { text=messageText, type = SegmentType.SEGMENT_TYPE_TEXT, formatting = new Formatting() { bold = false, italic = false, strikethrough = false, underline = false }, link_data = new LinkData() } } },
+                event_request_header = new EventRequestHeader { conversation_id = new ConversationId() { id = conversationId }, client_generated_id = randomId, expected_otr = OffTheRecordStatus.OFF_THE_RECORD_STATUS_ON_THE_RECORD, delivery_medium = new DeliveryMedium() { medium_type = DeliveryMediumType.DELIVERY_MEDIUM_BABEL }, event_type = EventType.EVENT_TYPE_REGULAR_CHAT_MESSAGE }
 
 
             };
-            JArray arrayBody = ProtoJson.ProtoJsonSerializer.Serialize(request);
+            JArray arrayBody = ProtoJsonSerializer.Serialize(request);
             HttpResponseMessage message = _client.PostProtoJson(_api_key, "conversations/sendchatmessage", arrayBody);
             string result = message.Content.ReadAsStringAsync().Result;
         }
@@ -405,15 +408,15 @@ namespace WTalk
 
         public void GetEntityById(params string[] chat_ids)
         {
-            ProtoJson.GetEntityByIdRequest request = new ProtoJson.GetEntityByIdRequest()
+            GetEntityByIdRequest request = new GetEntityByIdRequest()
             {
                 request_header = RequestHeaderBody,
-                batch_lookup_spec = chat_ids.Select(c => new WTalk.ProtoJson.EntityLookupSpec() { gaia_id = c }).ToList(),
-                field_mask = new List<ProtoJson.FieldMask>() { ProtoJson.FieldMask.FIELD_MASK_AVAILABLE, ProtoJson.FieldMask.FIELD_MASK_DEVICE, ProtoJson.FieldMask.FIELD_MASK_REACHABLE }
+                batch_lookup_spec = chat_ids.Select(c => new EntityLookupSpec() { gaia_id = c }).ToList(),
+                field_mask = new List<FieldMask>() { FieldMask.FIELD_MASK_AVAILABLE, FieldMask.FIELD_MASK_DEVICE, FieldMask.FIELD_MASK_REACHABLE }
             };
 
 
-            JArray arrayBody = ProtoJson.ProtoJsonSerializer.Serialize(request);
+            JArray arrayBody = ProtoJsonSerializer.Serialize(request);
             HttpResponseMessage message = _client.PostProtoJson(_api_key, "contacts/getentitybyid", arrayBody);
             string result = message.Content.ReadAsStringAsync().Result;
 
@@ -421,7 +424,7 @@ namespace WTalk
             {
                 arrayBody = JArray.Parse(result);
                 arrayBody.RemoveAt(0);
-                ProtoJson.GetEntityByIdResponse response = ProtoJson.ProtoJsonSerializer.Deserialize<ProtoJson.GetEntityByIdResponse>(arrayBody);
+                GetEntityByIdResponse response = ProtoJsonSerializer.Deserialize<GetEntityByIdResponse>(arrayBody);
 
                 foreach (var contact in response.entity.Where(c=>c.id != null))
                 {   
@@ -435,11 +438,11 @@ namespace WTalk
 
         public void GetSelfInfo()
         {
-            ProtoJson.GetSelfInfoRequest request = new ProtoJson.GetSelfInfoRequest()
+            GetSelfInfoRequest request = new GetSelfInfoRequest()
             {
                 request_header = RequestHeaderBody
             };
-            JArray arrayBody = ProtoJson.ProtoJsonSerializer.Serialize(request);
+            JArray arrayBody = ProtoJsonSerializer.Serialize(request);
             HttpResponseMessage message = _client.PostProtoJson(_api_key, "contacts/getselfinfo", arrayBody);
             string result = message.Content.ReadAsStringAsync().Result;
 
@@ -447,7 +450,7 @@ namespace WTalk
             {
                 arrayBody = JArray.Parse(result);
                 arrayBody.RemoveAt(0);
-                ProtoJson.GetSelfInfoResponse response = ProtoJson.ProtoJsonSerializer.Deserialize<ProtoJson.GetSelfInfoResponse>(arrayBody);
+                GetSelfInfoResponse response = ProtoJsonSerializer.Deserialize<GetSelfInfoResponse>(arrayBody);
 
                 CurrentUser = response.self_entity;
                 UserInformationReceived(this,CurrentUser);
@@ -456,12 +459,12 @@ namespace WTalk
 
         public void SyncRecentConversations()
         {
-            ProtoJson.SyncRecentConversationsRequest request = new ProtoJson.SyncRecentConversationsRequest()
+            SyncRecentConversationsRequest request = new SyncRecentConversationsRequest()
             {
                 request_header = RequestHeaderBody
             };
 
-            JArray arrayBody = ProtoJson.ProtoJsonSerializer.Serialize(request);
+            JArray arrayBody = ProtoJsonSerializer.Serialize(request);
             HttpResponseMessage message = _client.PostProtoJson(_api_key, "conversations/syncrecentconversations", arrayBody);
             string result = message.Content.ReadAsStringAsync().Result;
 
@@ -469,7 +472,7 @@ namespace WTalk
             {
                 arrayBody = JArray.Parse(result);
                 arrayBody.RemoveAt(0);
-                ProtoJson.SyncRecentConversationsResponse response = ProtoJson.ProtoJsonSerializer.Deserialize<ProtoJson.SyncRecentConversationsResponse>(arrayBody);
+                SyncRecentConversationsResponse response = ProtoJsonSerializer.Deserialize<SyncRecentConversationsResponse>(arrayBody);
 
                 ConversationHistoryLoaded(this, response.conversation_state);
                 _active_conversation_ids = response.conversation_state.Select(c => c.conversation_id.id).ToList();
