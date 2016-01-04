@@ -13,7 +13,7 @@ namespace WTalk.Core.Reflection
     {
         public bool IsProtoContract { get; private set; }
         public bool IsList { get; private set; }
-        public Type GenericElementType { get; private set; }
+        public Type UnderlyingType { get; private set; }
         public bool IsEnum { get; private set; }
 
         public bool IsOptional { get; private set; }
@@ -21,15 +21,22 @@ namespace WTalk.Core.Reflection
 
         public ProtoJsonPropertyAccessor(PropertyInfo p) :base(p)
         {
-            TypeInfo ti = p.PropertyType.GetTypeInfo();
-            IsProtoContract = ti.IsDefined(typeof(ProtoContractAttribute), false);
+            TypeInfo ti = p.PropertyType.GetTypeInfo();            
             IsList = p.PropertyType != typeof(string) && typeof(IEnumerable).GetTypeInfo().IsAssignableFrom(ti);
-            if (IsList)
-                GenericElementType = ti.GenericTypeArguments.FirstOrDefault();
-            IsEnum = ti.IsEnum;
-            ProtoMemberAttribute attribute = p.GetCustomAttribute <ProtoMemberAttribute>();
+
+            ProtoMemberAttribute attribute = p.GetCustomAttribute<ProtoMemberAttribute>();
             IsOptional = attribute.Optional;
             Position = attribute.Position;
+            
+            if (IsList)
+            {
+                UnderlyingType = ti.GenericTypeArguments.FirstOrDefault();
+                ti = UnderlyingType.GetTypeInfo();
+            }
+
+            IsProtoContract = ti.IsDefined(typeof(ProtoContractAttribute), false);
+            IsEnum = ti.IsEnum;
+            
         }
     }
 }

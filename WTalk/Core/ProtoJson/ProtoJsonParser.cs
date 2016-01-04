@@ -56,8 +56,8 @@ namespace WTalk.Core.ProtoJson
                     {
                         JArray list = new JArray();                        
                         foreach (var item in currentValue as IEnumerable)
-                            if (property.GenericElementType != null)
-                                list.Add(ToJson(property.GenericElementType, item));
+                            if (property.IsProtoContract)
+                                list.Add(ToJson(property.UnderlyingType, item));
                             else
                                 list.Add(item);
 
@@ -98,17 +98,16 @@ namespace WTalk.Core.ProtoJson
                 {
                     if (jArray.Count > property.Position && jArray[property.Position] != null)
                     {
-
-                        if (property.IsProtoContract)
-                            property.Set(result, ParseObject(property.Property.PropertyType, jArray[property.Position] as JArray));
-                        else if (property.IsList)
+                        if (property.IsList)
                         {
-                            var genericType = typeof(List<>).MakeGenericType(property.GenericElementType);
+                            var genericType = typeof(List<>).MakeGenericType(property.UnderlyingType);
                             IList list = (IList)Expression.Lambda(Expression.New(genericType)).Compile().DynamicInvoke(null);
                             foreach (var jtoken in jArray[property.Position])
-                                list.Add(ParseObject(property.GenericElementType, jtoken as JArray));
+                                list.Add(ParseObject(property.UnderlyingType, jtoken as JArray));
                             property.Set(result, list);
                         }
+                        else if (property.IsProtoContract)
+                            property.Set(result, ParseObject(property.Property.PropertyType, jArray[property.Position] as JArray));
                         else if (property.IsEnum)
                         {
                             if (!string.IsNullOrEmpty(jArray[property.Position].ToString()))
