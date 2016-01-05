@@ -8,6 +8,7 @@ using System.Net.Http;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using WTalk.Core.ProtoJson;
 
 namespace WTalk.Core.Utils
 {
@@ -43,8 +44,9 @@ namespace WTalk.Core.Utils
             return client.execute(apiKey, endPoint, body, true);
         }
 
-        public static HttpResponseMessage PostProtoJson(this HttpClient client, string apiKey, string endPoint, JArray body)
+        public static HttpResponseMessage PostProtoJson<T>(this HttpClient client, string apiKey, string endPoint, T protoJsonObject) where T:class
         {
+            JArray body = ProtoJsonSerializer.Serialize(protoJsonObject);
             return client.execute(apiKey, endPoint, body, false);
         }
 
@@ -60,38 +62,11 @@ namespace WTalk.Core.Utils
             return message;
         }
 
-        //public static Cookie GetCookie(this CookieContainer c, string domain, string key)
-        //{
-        //    CookieCollection collection = c.GetCookies(new Uri(domain));
-        //    foreach(Cookie cookie in collection)
-        //    {
-        //        if (cookie.Name == key)
-        //            return cookie;
-        //    }
-        //    return null;
-        //}
-        
-        //public static Cookie GetCookie(this CookieContainer c, string domain, string key)
-        //{
-        //    Hashtable k = (Hashtable)c.GetType().GetField("m_domainTable", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(c);
-        //    if (!k.ContainsKey(domain))
-        //        return null;
-        //    DictionaryEntry element = new DictionaryEntry("",k[domain]);
-        //    SortedList list = (SortedList)element.Value.GetType().GetField("m_list", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(element.Value);
-        //    if(list.Count > 0)
-        //    {
-        //        foreach (var e in list)
-        //        {
-        //            var cl = (CookieCollection)((DictionaryEntry)e).Value;
-        //            foreach (Cookie fc in cl)
-        //            {
-        //                if(fc.Name == key)
-        //                return fc;
-        //            }
-        //        }
-        //    }
-                        
-        //    return null;
-        //}
+        public static T ReadAsProtoJson<T>(this HttpContent content) where T:new() 
+        {
+            JArray arrayBody = JArray.Parse(content.ReadAsStringAsync().Result);
+            arrayBody.RemoveAt(0);
+            return ProtoJsonSerializer.Deserialize<T>(arrayBody);
+        }
     }
 }

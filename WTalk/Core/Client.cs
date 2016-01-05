@@ -313,16 +313,11 @@ namespace WTalk
                 field_mask = new List<FieldMask>() { FieldMask.FIELD_MASK_AVAILABLE, FieldMask.FIELD_MASK_DEVICE, FieldMask.FIELD_MASK_REACHABLE }
             };
 
-            JArray arrayBody = ProtoJsonSerializer.Serialize(request);
-            HttpResponseMessage message = _client.PostProtoJson(_api_key, "presence/querypresence", arrayBody);
-            string result = message.Content.ReadAsStringAsync().Result;
-
+            HttpResponseMessage message = _client.PostProtoJson(_api_key, "presence/querypresence", request);
+            
             if (PresenceInformationReceived != null)
             {
-
-                arrayBody = JArray.Parse(result);
-                arrayBody.RemoveAt(0);
-                QueryPresenceResponse response = ProtoJsonSerializer.Deserialize<QueryPresenceResponse>(arrayBody);
+                QueryPresenceResponse response = message.Content.ReadAsProtoJson<QueryPresenceResponse>();
 
                 foreach (var presence in response.presence_result)
                     PresenceInformationReceived(this, presence);
@@ -339,10 +334,8 @@ namespace WTalk
                 is_active = true,
                 timeout_secs = 120
             };
-
-            JArray arrayBody = ProtoJsonSerializer.Serialize(request);
-            HttpResponseMessage message = _client.PostProtoJson(_api_key, "clients/setactiveclient", arrayBody);
-            string result = message.Content.ReadAsStringAsync().Result;
+                        
+            HttpResponseMessage message = _client.PostProtoJson(_api_key, "clients/setactiveclient", request);            
         }
 
         public void SetPresence()
@@ -354,14 +347,17 @@ namespace WTalk
                 desktop_off_setting = new DesktopOffSetting() {  desktop_off = false }
             };
 
-            JArray arrayBody = ProtoJsonSerializer.Serialize(request);            
-            HttpResponseMessage message = _client.PostProtoJson(_api_key, "presence/setpresence", arrayBody);
-            string result = message.Content.ReadAsStringAsync().Result;
+            
+            HttpResponseMessage message = _client.PostProtoJson(_api_key, "presence/setpresence", request);
+            
             //GetSelfInfo();
         }
 
         public void SetFocus(string conversationId)
         {
+            if (conversationId.Length == 0)
+                return;
+
             SetFocusRequest request = new SetFocusRequest()
             {
                 request_header = RequestHeaderBody,
@@ -369,10 +365,8 @@ namespace WTalk
                 type = FocusType.FOCUS_TYPE_FOCUSED,
                 timeout_secs = 20
             };
-
-            JArray arrayBody = ProtoJsonSerializer.Serialize(request);
-            HttpResponseMessage message = _client.PostProtoJson(_api_key, "conversations/setfocus", arrayBody);
-            string result = message.Content.ReadAsStringAsync().Result;
+                        
+            HttpResponseMessage message = _client.PostProtoJson(_api_key, "conversations/setfocus", request);            
         }
 
         public void SetUserTyping(string conversationId)
@@ -384,9 +378,8 @@ namespace WTalk
                 type = TypingType.TYPING_TYPE_STARTED
             };
 
-            JArray arrayBody = ProtoJsonSerializer.Serialize(request);
-            HttpResponseMessage message = _client.PostProtoJson(_api_key, "conversations/settyping", arrayBody);
-            string result = message.Content.ReadAsStringAsync().Result;
+            HttpResponseMessage message = _client.PostProtoJson(_api_key, "conversations/settyping", request);
+            
         }
         
         public void SendChatMessage(string conversationId, string messageText)
@@ -400,9 +393,9 @@ namespace WTalk
 
 
             };
-            JArray arrayBody = ProtoJsonSerializer.Serialize(request);
-            HttpResponseMessage message = _client.PostProtoJson(_api_key, "conversations/sendchatmessage", arrayBody);
-            string result = message.Content.ReadAsStringAsync().Result;
+            
+            HttpResponseMessage message = _client.PostProtoJson(_api_key, "conversations/sendchatmessage", request);
+            
         }
 
 
@@ -415,16 +408,11 @@ namespace WTalk
                 field_mask = new List<FieldMask>() { FieldMask.FIELD_MASK_AVAILABLE, FieldMask.FIELD_MASK_DEVICE, FieldMask.FIELD_MASK_REACHABLE }
             };
 
-
-            JArray arrayBody = ProtoJsonSerializer.Serialize(request);
-            HttpResponseMessage message = _client.PostProtoJson(_api_key, "contacts/getentitybyid", arrayBody);
-            string result = message.Content.ReadAsStringAsync().Result;
-
+            HttpResponseMessage message = _client.PostProtoJson(_api_key, "contacts/getentitybyid", request);
+            
             if (ContactInformationReceived != null)
             {
-                arrayBody = JArray.Parse(result);
-                arrayBody.RemoveAt(0);
-                GetEntityByIdResponse response = ProtoJsonSerializer.Deserialize<GetEntityByIdResponse>(arrayBody);
+                GetEntityByIdResponse response = message.Content.ReadAsProtoJson<GetEntityByIdResponse>();
 
                 foreach (var contact in response.entity.Where(c=>c.id != null))
                 {   
@@ -442,15 +430,13 @@ namespace WTalk
             {
                 request_header = RequestHeaderBody
             };
-            JArray arrayBody = ProtoJsonSerializer.Serialize(request);
-            HttpResponseMessage message = _client.PostProtoJson(_api_key, "contacts/getselfinfo", arrayBody);
-            string result = message.Content.ReadAsStringAsync().Result;
+            
+            HttpResponseMessage message = _client.PostProtoJson(_api_key, "contacts/getselfinfo", request);
+            
 
             if (UserInformationReceived != null)
             {
-                arrayBody = JArray.Parse(result);
-                arrayBody.RemoveAt(0);
-                GetSelfInfoResponse response = ProtoJsonSerializer.Deserialize<GetSelfInfoResponse>(arrayBody);
+                GetSelfInfoResponse response = message.Content.ReadAsProtoJson<GetSelfInfoResponse>();
 
                 CurrentUser = response.self_entity;
                 UserInformationReceived(this,CurrentUser);
@@ -464,15 +450,12 @@ namespace WTalk
                 request_header = RequestHeaderBody
             };
 
-            JArray arrayBody = ProtoJsonSerializer.Serialize(request);
-            HttpResponseMessage message = _client.PostProtoJson(_api_key, "conversations/syncrecentconversations", arrayBody);
-            string result = message.Content.ReadAsStringAsync().Result;
-
+            
+            HttpResponseMessage message = _client.PostProtoJson(_api_key, "conversations/syncrecentconversations", request);
+            
             if (ConversationHistoryLoaded != null)
-            {
-                arrayBody = JArray.Parse(result);
-                arrayBody.RemoveAt(0);
-                SyncRecentConversationsResponse response = ProtoJsonSerializer.Deserialize<SyncRecentConversationsResponse>(arrayBody);
+            {   
+                SyncRecentConversationsResponse response = message.Content.ReadAsProtoJson<SyncRecentConversationsResponse>();
 
                 ConversationHistoryLoaded(this, response.conversation_state);
                 _active_conversation_ids = response.conversation_state.Select(c => c.conversation_id.id).ToList();
