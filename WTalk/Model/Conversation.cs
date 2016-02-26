@@ -5,16 +5,29 @@ using System.Linq;
 using System.Text;
 using WTalk.Core.ProtoJson;
 using WTalk.Core.ProtoJson.Schema;
+using WTalk.Core.Utils;
 
 namespace WTalk.Model
 {
     public class Conversation
     {
         WTalk.Core.ProtoJson.Schema.Conversation _conversation;
+        public DateTime ReadState { get; internal set; }
+        public bool HasUnreadMessages
+        {
+            get
+            {
+                return MessagesHistory.Count(c => c.MessageDate > ReadState) != 0;
+            }
+        }
 
         public Conversation(ConversationState conversationState)
         {
-            _conversation = conversationState.conversation;            
+            _conversation = conversationState.conversation;
+            if (_conversation.read_state.Count > 0)
+                ReadState = DateTime.Now.FromMillisecondsSince1970(_conversation.read_state.Last().latest_read_timestamp / 1000);
+
+
             Participants = _conversation.participant_data.ToDictionary(c=>c.id.chat_id, c => new Participant(c));
             MessagesHistory = new List<Message>();
             Message message = null;
@@ -24,7 +37,7 @@ namespace WTalk.Model
                     message.AppendContent(cse.chat_message);
                 else 
                 {
-                    message = new Message(Participants[cse.sender_id.chat_id], cse.chat_message);
+                    message = new Message(Participants[cse.sender_id.chat_id], cse);
                     MessagesHistory.Add(message);
                 }
             }

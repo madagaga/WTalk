@@ -47,7 +47,7 @@ namespace Wtalk.Desktop.ViewModel
                     _lastMessage.AppendContent(e.chat_message);
                 else
                 {
-                    _lastMessage = new Message(_conversationCache.Participants[e.sender_id.chat_id], e.chat_message);
+                    _lastMessage = new Message(_conversationCache.Participants[e.sender_id.chat_id], e);
                     App.Current.Dispatcher.Invoke(() =>
                     {
                         Messages.Add(_lastMessage);
@@ -55,10 +55,12 @@ namespace Wtalk.Desktop.ViewModel
                 }
 
                 App.Current.Dispatcher.Invoke(() =>
-                     {
-                         if (AttentionRequired != null)
-                             AttentionRequired(this, null);
-                     });
+                {
+                    if (AttentionRequired != null)
+                        AttentionRequired(this, null);
+                });
+
+                
             }
         }
 

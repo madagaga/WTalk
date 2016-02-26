@@ -79,10 +79,11 @@ namespace WTalk
 
             _channel.setAppVer(_header_version);
 
-            Task.Run(() =>
-            {
-                _channel.Listen();
-            });            
+                Task.Run(() =>
+                {
+                    _channel.Listen();
+                });
+            
             
         }
 

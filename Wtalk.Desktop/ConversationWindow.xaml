@@ -25,8 +25,9 @@
                 <StackPanel>                        
                     <ItemsControl ItemsSource="{Binding Messages, Mode=OneWay,UpdateSourceTrigger=PropertyChanged}">
                         <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <Border BorderThickness="1" BorderBrush="Gainsboro" CornerRadius="3" Padding="5" Margin="2" Background="#f8f8f8">                                
+                        <DataTemplate>
+                            <StackPanel>
+                            <Border BorderThickness="1" BorderBrush="Gainsboro" CornerRadius="3" Padding="5" Margin="2" Background="#f8f8f8">                                
                                 <TextBox Text="{Binding Content, Mode=OneWay}" TextWrapping="Wrap" Tag="{Binding SenderId}" BorderThickness="0" Background="Transparent" IsReadOnly="True">
                                     <TextBox.TextAlignment>
                                         <MultiBinding Converter="{StaticResource textAlignmentConverter}">
@@ -35,7 +36,9 @@
                                         </MultiBinding> 
                                     </TextBox.TextAlignment>                                    
                                 </TextBox>
-                                </Border>                            
+                                </Border>
+                                <TextBlock Foreground="Gray" FontStyle="Italic" FontSize="10" Text="{Binding MessageDate, StringFormat={}{0:dd/MM HH:mm} }" Padding="5,0"/>
+                            </StackPanel>
                         </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>                        

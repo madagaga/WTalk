@@ -14,9 +14,10 @@ namespace WTalk.Core.Utils
             return t;
         }
 
-        public static void FromMillisecondsSince1970(this DateTime date, double milliseconds)
+        public static DateTime FromMillisecondsSince1970(this DateTime date, double milliseconds)
         {
             date = new DateTime(1970, 1, 1, 0, 0, 0).AddMilliseconds(milliseconds);
+            return date;
         }
     }
 }

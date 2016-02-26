@@ -4,12 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Wtalk.MvvM;
+using WTalk.Core.Utils;
 
 namespace WTalk.Model
 {
     public class Message : ObservableObject
-    {
-        private WTalk.Core.ProtoJson.Schema.ChatMessage _chatMessage;
+    {   
         private Participant _participant;
         
 
@@ -17,12 +17,15 @@ namespace WTalk.Model
         {
         }
 
-        public Message(Participant participant, WTalk.Core.ProtoJson.Schema.ChatMessage chatMessage)
+        public Message(Participant participant, WTalk.Core.ProtoJson.Schema.Event chatEvent)
         {
             // TODO: Complete member initialization
-            this._participant = participant;
-            this._chatMessage = chatMessage;
-            AppendContent(chatMessage);
+            this._participant = participant;            
+            AppendContent(chatEvent.chat_message);
+
+            MessageDate = DateTime.Now.FromMillisecondsSince1970(chatEvent.timestamp / 1000);
+            
+            
         }
 
         public string Id { get; internal set; }

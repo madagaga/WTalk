@@ -31,30 +31,42 @@ namespace Wtalk.Desktop.ViewModel
 
             Messages = new ObservableCollection<Message>();
             Messages.Add(
-                new Message(Participant, new ChatMessage()
+                new Message(Participant, new Event()
                 {
-                    message_content = new MessageContent()
+                    chat_message = new ChatMessage()
                     {
-                        segment = new List<Segment>() { new Segment() { text = "segment 1" } }
-                    }
+                        message_content = new MessageContent()
+                        {
+                            segment = new List<Segment>() { new Segment() { text = "segment 1" } }
+                        }
+                    },
+                    timestamp = 1456479966813000
                 }));
 
             Messages.Add(
-                new Message(p, new ChatMessage()
+                new Message(p, new Event()
                 {
-                    message_content = new MessageContent()
+                    chat_message = new ChatMessage()
                     {
-                        segment = new List<Segment>() { new Segment() { text = "segment 2" } }
-                    }
+                        message_content = new MessageContent()
+                        {
+                            segment = new List<Segment>() { new Segment() { text = "segment 2" } }
+                        }
+                    },
+                    timestamp = 1456479966813000
                 }));
             Messages.Add(
-               new Message(p, new ChatMessage()
-               {
-                   message_content = new MessageContent()
-                   {
-                       segment = new List<Segment>() { new Segment() { text = "segment 3 segment 3 segment 3 segment 3 segment 3 segment 3 segment 3 segment 3 segment 3 segment 3 segment 3 segment 3 segment 3 segment 3 segment 3" } }
-                   }
-               }));
+               new Message(p, new Event()
+                {
+                    chat_message = new ChatMessage()
+                    {
+                        message_content = new MessageContent()
+                        {
+                            segment = new List<Segment>() { new Segment() { text = "segment 3 segment 3 segment 3 segment 3 segment 3 segment 3 segment 3 segment 3 segment 3 segment 3 segment 3 segment 3 segment 3 segment 3 segment 3" } }
+                        }
+                    },
+                    timestamp = 1456479966813000
+                }));
                  
         }
     }
