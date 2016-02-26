@@ -52,13 +52,22 @@ namespace WTalk.Core.Utils
 
         static HttpResponseMessage execute(this HttpClient client, string apiKey, string endPoint, JArray body, bool useJson)
         {
-            HttpResponseMessage message = null;
-            _logger.Debug("Sending Request : {0}", endPoint);
-            _logger.Debug("Sending data : {0}", body.ToString().Replace("\r\n", ""));
-            string uri = string.Format("{0}{1}?key={2}&alt={3}",HangoutUri.CHAT_SERVER_URL,endPoint, Uri.EscapeUriString(apiKey), useJson ? "json" : "protojson");
-            message = client.PostAsync(uri,new StringContent(body.ToString(),Encoding.UTF8,"application/json+protobuf")).Result;
-            message.EnsureSuccessStatusCode();
-            _logger.Debug("Received data : {0}", message.Content.ReadAsStringAsync().Result.Replace("\n", ""));
+             HttpResponseMessage message = null;
+            try
+            {
+               
+                _logger.Debug("Sending Request : {0}", endPoint);
+                _logger.Debug("Sending data : {0}", body.ToString().Replace("\r\n", ""));
+                string uri = string.Format("{0}{1}?key={2}&alt={3}", HangoutUri.CHAT_SERVER_URL, endPoint, Uri.EscapeUriString(apiKey), useJson ? "json" : "protojson");
+                message = client.PostAsync(uri, new StringContent(body.ToString(), Encoding.UTF8, "application/json+protobuf")).Result;
+                message.EnsureSuccessStatusCode();
+                _logger.Debug("Received data : {0}", message.Content.ReadAsStringAsync().Result.Replace("\n", ""));
+                
+            }
+            catch(Exception e)
+            {
+
+            }
             return message;
         }
 

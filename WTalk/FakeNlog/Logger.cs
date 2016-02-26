@@ -38,13 +38,12 @@ namespace WTalk.NLog
 
         internal void Debug(string format, params object[] args)         
         {
-            write("Debug : "+ format, args);
+            write("Debug : " + format, args);
         }     
 
         void write(string format, params object[] args)
         {
-            System.Diagnostics.Debug.WriteLine(_name);
-            System.Diagnostics.Debug.WriteLine(format, args);
+            System.Diagnostics.Debug.WriteLine(_name + " " + string.Format(format, args));
             //Console.Write(_name);
             //Console.WriteLine(format, args);
         }

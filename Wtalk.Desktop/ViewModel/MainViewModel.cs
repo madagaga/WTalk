@@ -86,7 +86,7 @@ namespace Wtalk.Desktop.ViewModel
 
         void _client_PresenceInformationReceived(object sender, PresenceResult e)
         {
-            if (_contactDictionary.ContainsKey(e.user_id.chat_id))
+            if (_contactDictionary != null && _contactDictionary.ContainsKey(e.user_id.chat_id))
             {
                 _contactDictionary[e.user_id.chat_id].SetPresence(e.presence);
                 Contacts = new ObservableCollection<User>(Contacts.OrderBy(c => !c.Online).ThenBy(c => c.DisplayName));
@@ -179,7 +179,13 @@ namespace Wtalk.Desktop.ViewModel
         void SetPresence()
         {
             if (this.CurrentUser != null && !this.CurrentUser.Online)
+            {
                 _client.SetPresence();
+                _client.SetActiveClient();
+            }
+
+            _client.QuerySelfPresence();
+            
         }
 
     }

@@ -102,8 +102,14 @@ namespace WTalk.Core.ProtoJson
                         {
                             var genericType = typeof(List<>).MakeGenericType(property.UnderlyingType);
                             IList list = (IList)Expression.Lambda(Expression.New(genericType)).Compile().DynamicInvoke(null);
+
+                            object listItem  = null ;
                             foreach (var jtoken in jArray[property.Position])
-                                list.Add(ParseObject(property.UnderlyingType, jtoken as JArray));
+                            {
+                                listItem = ParseObject(property.UnderlyingType, jtoken as JArray);
+                                if (listItem != null)
+                                    list.Add(listItem);
+                            }
                             property.Set(result, list);
                         }
                         else if (property.IsProtoContract)

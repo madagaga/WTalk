@@ -36,8 +36,14 @@ namespace Wtalk.Desktop.WindowManager
                 Window.Activated+=Window_Activated;
                 Window.Closing += Window_Closing;
                 Window.message_textbox.PreviewKeyDown+=message_textbox_KeyDown;
+                Window.message_textbox.GotFocus += message_textbox_GotFocus;
                 Window.DataContext = ViewModel;
             }
+        }
+
+        void message_textbox_GotFocus(object sender, System.Windows.RoutedEventArgs e)
+        {
+            ViewModel.SetFocusCommand.Execute(null);
         }
 
         void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
@@ -78,8 +84,7 @@ namespace Wtalk.Desktop.WindowManager
         {
             if (Window.WindowState == System.Windows.WindowState.Normal)
             {
-                Window.scrollBar.ScrollToBottom();
-                ViewModel.SetFocusCommand.Execute(null);
+                Window.scrollBar.ScrollToBottom();                
                 Window.StopFlashingWindow();
             }
         }

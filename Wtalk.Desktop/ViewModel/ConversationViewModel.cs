@@ -66,7 +66,8 @@ namespace Wtalk.Desktop.ViewModel
 
         private void SetFocus(string conversationId)
         {
-            _client.SetFocus(conversationId);
+            this._conversationCache.UpdateReadState();
+            _client.SetFocus(conversationId);            
         }
 
       

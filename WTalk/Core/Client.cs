@@ -311,11 +311,31 @@ namespace WTalk
             {
                 request_header = RequestHeaderBody,
                 participant_id = this._contact_ids.Select(c => new ParticipantId() { chat_id = c }).ToList(),
-                field_mask = new List<FieldMask>() { FieldMask.FIELD_MASK_AVAILABLE, FieldMask.FIELD_MASK_DEVICE, FieldMask.FIELD_MASK_REACHABLE }
+                field_mask = Enum.GetValues(typeof(FieldMask)).Cast<FieldMask>().ToList()
             };
 
             HttpResponseMessage message = _client.PostProtoJson(_api_key, "presence/querypresence", request);
             
+            if (PresenceInformationReceived != null)
+            {
+                QueryPresenceResponse response = message.Content.ReadAsProtoJson<QueryPresenceResponse>();
+
+                foreach (var presence in response.presence_result)
+                    PresenceInformationReceived(this, presence);
+            }
+        }
+
+        public void QuerySelfPresence()
+        {
+            QueryPresenceRequest request = new QueryPresenceRequest()
+            {
+                request_header = RequestHeaderBody,
+                participant_id = new List<ParticipantId>() { new ParticipantId() { chat_id = CurrentUser.id.chat_id }},
+                field_mask = new List<FieldMask>() { FieldMask.FIELD_MASK_AVAILABLE, FieldMask.FIELD_MASK_DEVICE, FieldMask.FIELD_MASK_REACHABLE }
+            };
+
+            HttpResponseMessage message = _client.PostProtoJson(_api_key, "presence/querypresence", request);
+
             if (PresenceInformationReceived != null)
             {
                 QueryPresenceResponse response = message.Content.ReadAsProtoJson<QueryPresenceResponse>();
@@ -333,7 +353,8 @@ namespace WTalk
                 request_header = RequestHeaderBody,
                 full_jid = string.Format("{0}/{1}", _email, _client_id),
                 is_active = true,
-                timeout_secs = 120
+                timeout_secs = 120,
+                unknown = true
             };
                         
             HttpResponseMessage message = _client.PostProtoJson(_api_key, "clients/setactiveclient", request);            
@@ -344,8 +365,7 @@ namespace WTalk
             SetPresenceRequest request = new SetPresenceRequest()
             {
                 request_header = RequestHeaderBody,
-                presence_state_setting = new PresenceStateSetting() { type = ClientPresenceStateType.CLIENT_PRESENCE_STATE_DESKTOP_ACTIVE, timeout_secs = 720 },
-                desktop_off_setting = new DesktopOffSetting() {  desktop_off = false }
+                presence_state_setting = new PresenceStateSetting() { type = ClientPresenceStateType.CLIENT_PRESENCE_STATE_DESKTOP_ACTIVE, timeout_secs = 720 }
             };
 
             

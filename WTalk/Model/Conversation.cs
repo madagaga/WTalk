@@ -13,12 +13,9 @@ namespace WTalk.Model
     {
         WTalk.Core.ProtoJson.Schema.Conversation _conversation;
         public DateTime ReadState { get; internal set; }
-        public bool HasUnreadMessages
+        public void UpdateReadState()
         {
-            get
-            {
-                return MessagesHistory.Count(c => c.MessageDate > ReadState) != 0;
-            }
+            this.ReadState = DateTime.UtcNow;
         }
 
         public Conversation(ConversationState conversationState)

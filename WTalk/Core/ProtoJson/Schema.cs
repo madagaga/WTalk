@@ -134,7 +134,10 @@ major exception that "Client" prefixes have been removed.
         public DeviceStatus device_status { get; set; }
 
         [ProtoMember(Position = 9)]
-        public MoodSetting mood_setting { get; set; }
+        public MoodMessage mood_message { get; set; }
+
+        [ProtoMember(Position = 10)]
+        public LastSeen last_seen { get; set; }
 
     }
 
@@ -1302,7 +1305,10 @@ major exception that "Client" prefixes have been removed.
     {
         FIELD_MASK_REACHABLE = 1,
         FIELD_MASK_AVAILABLE = 2,
-        FIELD_MASK_DEVICE = 7
+        FIELD_MASK_MOOD = 3,
+        FIELD_MASK_IN_CALL = 6,
+        FIELD_MASK_DEVICE = 7,
+        FIELD_MASK_LAST_SEEN = 10
     }
 
     [ProtoContract]
@@ -1376,6 +1382,13 @@ major exception that "Client" prefixes have been removed.
         [ProtoMember(Position = 1)]
         public MoodMessage mood_message { get; set; }
 
+    }
+
+    [ProtoContract]
+    public class LastSeen
+    {
+        [ProtoMember(Position = 1)]
+        public long last_seen_timestamp_usec { get; set; }
     }
 
     [ProtoContract]
@@ -2351,7 +2364,8 @@ major exception that "Client" prefixes have been removed.
         [ProtoMember(Position = 4)]
         public long timeout_secs { get; set; }
 
-
+        [ProtoMember(Position = 5, Optional = true)]
+        public bool unknown { get; set; }
         // TODO:
         // unknown (true) = 5;
     }
