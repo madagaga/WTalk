@@ -19,6 +19,20 @@ namespace Wtalk.Desktop.ViewModel
         Dictionary<string, User> _contactDictionary;
         public User CurrentUser { get; set; }
 
+        int _currentPresenceIndex = 0;
+        DateTime _lastStateUpdate = DateTime.Now;
+        public int CurrentPresenceIndex
+        {
+            get { return _currentPresenceIndex; }
+            set {       
+                if(value == 2)
+                    System.Windows.Application.Current.Shutdown();
+                _currentPresenceIndex = value;
+                _lastStateUpdate = DateTime.Now.AddSeconds(-750);
+                SetPresence();
+            }
+        }
+
         public bool AuthenticationRequiered
         {
             get { return !_authenticationManager.IsAuthenticated; }
@@ -177,14 +191,15 @@ namespace Wtalk.Desktop.ViewModel
         }
 
         void SetPresence()
-        {
-            if (this.CurrentUser != null && !this.CurrentUser.Online)
+        {            
+            if (this.CurrentUser != null && (DateTime.Now - _lastStateUpdate).TotalSeconds > 720)
             {
-                _client.SetPresence();
                 _client.SetActiveClient();
+                _client.SetPresence(_currentPresenceIndex == 0 ? 40 : 1);
+                _lastStateUpdate = DateTime.Now;
             }
 
-            _client.QuerySelfPresence();
+            //_client.QuerySelfPresence();
             
         }
 

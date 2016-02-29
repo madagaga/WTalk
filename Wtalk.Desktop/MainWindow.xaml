@@ -24,11 +24,27 @@
                 <Grid.Background>
                     <ImageBrush ImageSource="Resources/talk.png" Stretch="Uniform" AlignmentX="Left"/>
                 </Grid.Background>
-            <Border Height="10" Width="10" CornerRadius="10" Margin="47,9,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" IsEnabled="{Binding Online, FallbackValue=False}" Style="{StaticResource status_indicator}"></Border>
-                <TextBlock Margin="55,0,0,0" Padding="5" VerticalAlignment="Top">
-                    <Run Text="{Binding DisplayName, Mode=OneWay}"/>
-                    <Run Text="{Binding Email, Mode=OneWay, StringFormat='&lt;{0}&gt;'}" Foreground="Gray"/>
-                </TextBlock>
+            <ComboBox  Margin="55,0,5,0" Height="30" SelectedIndex="{Binding DataContext.CurrentPresenceIndex,ElementName=mainWindow}">
+                <ComboBoxItem IsSelected="True">
+                    <Grid>
+                        <Border Margin="0,8" Height="10" Width="10" CornerRadius="10" VerticalAlignment="Top" HorizontalAlignment="Left" IsEnabled="True" Style="{StaticResource status_indicator}"></Border>
+                        <TextBlock Padding="4" Margin="10,0" VerticalAlignment="Top">
+                        <Run Text="{Binding DisplayName, Mode=OneWay}"/>
+                        <Run Text="Online" Foreground="Gray" FontSize="10"/>
+                        </TextBlock>
+                    </Grid>
+                </ComboBoxItem>
+                <ComboBoxItem>
+                    <Grid>
+                        <Border Margin="0,8" Height="10" Width="10" CornerRadius="10" VerticalAlignment="Top" HorizontalAlignment="Left" IsEnabled="False" Style="{StaticResource status_indicator}"></Border>
+                        <TextBlock Padding="4" Margin="10,0" VerticalAlignment="Top">
+                        <Run Text="{Binding DisplayName, Mode=OneWay}"/>
+                        <Run Text="Invisible" Foreground="Gray" FontSize="10"/>
+                        </TextBlock>
+                    </Grid>
+                </ComboBoxItem>
+            </ComboBox>
+               
         </Grid>
         <Border VerticalAlignment="Top" Height="20" Margin="10,51,10,0" BorderThickness="1" BorderBrush="#FFC1C1C1" CornerRadius="2" SnapsToDevicePixels="True">
             <TextBox BorderThickness="0" Text="{Binding FilterText}" />
