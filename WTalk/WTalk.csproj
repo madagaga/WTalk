@@ -61,6 +61,7 @@
     <Compile Include="Model\Message.cs" />
     <Compile Include="Model\Participant.cs" />
     <Compile Include="Model\User.cs" />
+    <Compile Include="Mvvm\ObservableDictionary.cs" />
     <Compile Include="Mvvm\ObservableObject.cs" />
     <Compile Include="Mvvm\RelayCommand.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -19,9 +19,8 @@ namespace WTalk
     { 
         Dictionary<string, string> _initParams = new Dictionary<string, string>();        
         Channel _channel;
-        public static CookieContainer CookieContainer = new CookieContainer();
+        internal static CookieContainer CookieContainer = new CookieContainer();
         HttpClient _client;
-
         string _api_key;
         string _email;
         string _header_date;
@@ -31,34 +30,38 @@ namespace WTalk
 
         bool _wasConnected = false;
 
+        DateTime _last_response_date = DateTime.UtcNow;
         double _timestamp = 0;
-        public Entity CurrentUser { get; private set; }
 
-        internal List<string> _contact_ids = new List<string>();
-        internal List<string> _active_conversation_ids = new List<string>();
-        
-        #region events
-        public event EventHandler<List<ConversationState>> ConversationHistoryLoaded;
-        public event EventHandler<List<Entity>> ContactListLoaded;
-        public event EventHandler ConnectionEstablished;
-        public event EventHandler<ConversationState> NewConversationCreated;
-        public event EventHandler<Event> NewConversationEventReceived;
-        public event EventHandler<Entity> UserInformationReceived;
-        public event EventHandler<Entity> ContactInformationReceived;
-
-        public event EventHandler<PresenceResult> PresenceInformationReceived;
+        #region public properties
+        public User CurrentUser { get; private set; }
+        Dictionary<string, User> _contacts = new Dictionary<string, User>();
+        Dictionary<string, WTalk.Model.Conversation> _active_conversations = new Dictionary<string, Model.Conversation>();
         #endregion
 
-        private DateTime _last_response_date = DateTime.UtcNow;
+
+        #region events
+        public event EventHandler<List<WTalk.Model.Conversation>> ConversationHistoryLoaded;
+        public event EventHandler<List<User>> ContactListLoaded;
+        public event EventHandler ConnectionEstablished;
+        public event EventHandler<WTalk.Model.Conversation> NewConversationCreated;
+        
+        public event EventHandler<User> UserInformationReceived;
+        public event EventHandler<User> ContactInformationReceived;
+
+//        public event EventHandler<PresenceResult> PresenceInformationReceived;
+        #endregion
+
+        
 
         public Client()
         {
 
             //_initParams.Add("prop", "StartPage");
-            _initParams.Add("client", "sm");
-            _initParams.Add("stime", DateTime.Now.TimeIntervalSince1970().TotalSeconds.ToString("0"));
-            _initParams.Add("nav", "true");
-            _initParams.Add("prop", "ChromeApp");
+            //_initParams.Add("client", "sm");
+            //_initParams.Add("stime", DateTime.Now.TimeIntervalSince1970().TotalSeconds.ToString("0"));
+            //_initParams.Add("nav", "true");
+            _initParams.Add("prop", "aChromeExtension");
             _initParams.Add("fid", "gtn-roster-iframe-id");
             _initParams.Add("ec", "[\"ci:ec\",true,true,false]");
             _initParams.Add("pvt", "");
@@ -79,23 +82,23 @@ namespace WTalk
 
             _channel.setAppVer(_header_version);
 
-                Task.Run(() =>
-                {
-                    _channel.Listen();
-                });
+            Task.Run(() =>
+            {
+                _channel.Listen();
+            });
             
-            
+
         }
 
         void initializeChat()
         {
-            
+
             // We first need to fetch the 'pvt' token, which is required for the
             // initialization request (otherwise it will return 400).
             HttpResponseMessage message = _client.Execute(HangoutUri.PVT_TOKEN_URL, _initParams);
             string data = message.Content.ReadAsStringAsync().Result;
             Newtonsoft.Json.Linq.JArray array = Parser.ParseData(data);
-            
+
             _initParams["pvt"] = array[1].ToString();
 
             // Now make the actual initialization request:
@@ -108,17 +111,9 @@ namespace WTalk
 
             Dictionary<string, Newtonsoft.Json.Linq.JArray> dataDictionary = Parser.ParseInitParams(data);
 
-            //this._api_key = dataDictionary["ds:7"][0][2].ToString(); // cin:cac
-            //this._email = dataDictionary["ds:31"][0][2].ToString(); // cic:vd
-            //this._header_date = dataDictionary["ds:2"][0][4].ToString(); //cin:acc
-            //this._header_version = dataDictionary["ds:2"][0][6].ToString();
-            //this._header_id = dataDictionary["ds:4"][0][7].ToString(); // cin:bcsc
-
-
-
             // a this time we can not fix key as index can change.
             string key = null;
-            foreach(JArray jarray in dataDictionary.Values)
+            foreach (JArray jarray in dataDictionary.Values)
             {
                 try
                 {
@@ -149,9 +144,10 @@ namespace WTalk
                         GetSuggestedEntitiesResponse cgserp = ProtoJsonSerializer.Deserialize<GetSuggestedEntitiesResponse>(jarray[0] as JArray);
                         if (cgserp.response_header.status == ResponseStatus.RESPONSE_STATUS_OK)
                         {
-                            if(ContactListLoaded != null)
-                                ContactListLoaded(this, cgserp.contacts_you_hangout_with.contact.Select(c => c.entity).ToList());
-                            _contact_ids = cgserp.contacts_you_hangout_with.contact.Select(c => c.entity.id.chat_id).ToList();
+                            _contacts = cgserp.contacts_you_hangout_with.contact.ToDictionary(c => c.entity.id.chat_id, c => new User(c.entity));
+                            if (ContactListLoaded != null)
+                                ContactListLoaded(this, _contacts.Values.ToList());
+                            
                         }
                         break;
                     case "cgsirp":
@@ -159,9 +155,10 @@ namespace WTalk
                         GetSelfInfoResponse cgsirp = ProtoJsonSerializer.Deserialize<GetSelfInfoResponse>(jarray[0] as JArray);
                         if (cgsirp.response_header.status == ResponseStatus.RESPONSE_STATUS_OK)
                         {
-                            this.CurrentUser = cgsirp.self_entity;
                             if (!string.IsNullOrEmpty(_email))
-                                this.CurrentUser.properties.canonical_email = _email;
+                                cgsirp.self_entity.properties.canonical_email = _email;
+                            this.CurrentUser = new User(cgsirp.self_entity);
+                                
                             if (UserInformationReceived != null)
                                 UserInformationReceived(this, this.CurrentUser);
                         }
@@ -171,10 +168,20 @@ namespace WTalk
                         SyncRecentConversationsResponse csrcrp = ProtoJsonSerializer.Deserialize<SyncRecentConversationsResponse>(jarray[0] as JArray);
                         if (csrcrp.response_header.status == ResponseStatus.RESPONSE_STATUS_OK)
                         {
-                            if (ConversationHistoryLoaded != null)
-                                ConversationHistoryLoaded(this, csrcrp.conversation_state);
+                            _active_conversations = csrcrp.conversation_state.ToDictionary(c => c.conversation_id.id, c => new WTalk.Model.Conversation(c));
 
-                            _active_conversation_ids = csrcrp.conversation_state.Select(c => c.conversation_id.id).ToList() ;
+                            if (_contacts == null || _contacts.Count == 0)
+                            {
+                                string[] chat_ids = csrcrp.conversation_state.SelectMany(c => c.conversation.current_participant.Where(p=>p.chat_id != CurrentUser.Id).Select(p => p.chat_id)).Distinct().ToArray();
+                                GetEntityById(chat_ids);
+                            }
+
+                            if (ConversationHistoryLoaded != null)
+                                ConversationHistoryLoaded(this, _active_conversations.Values.ToList());
+
+                           
+
+                         
                         }
                         break;
 
@@ -183,7 +190,7 @@ namespace WTalk
 
 
             //this._timestamp = double.Parse(dataDictionary["ds:21"][0][1][4].ToString());
-            
+
         }
 
 
@@ -194,8 +201,8 @@ namespace WTalk
             if (rawdata[0].ToString() == "noop")
             {
               // set active client if more than 120 sec of inactivity
-                if ((DateTime.UtcNow - _last_response_date).TotalSeconds > 120)
-                {
+                if ((DateTime.UtcNow - _last_response_date).TotalSeconds > 120 && _client_id != null)
+                {                    
                     SetActiveClient();
                     _last_response_date = DateTime.UtcNow;
                 }
@@ -211,10 +218,13 @@ namespace WTalk
                     _channel.SendAck(0);
 
                     if (_channel.Connected && !_wasConnected)
-                    {
+                    {                        
                         _wasConnected = _channel.Connected;
                         if (ConnectionEstablished != null)
                             ConnectionEstablished(this, null);
+                       
+                       
+
                     }
                 }
 
@@ -228,53 +238,50 @@ namespace WTalk
                     {
                         
                         if(state_update.event_notification != null)
-                            if (state_update.event_notification.current_event.event_type == EventType.EVENT_TYPE_REGULAR_CHAT_MESSAGE)
+                            switch(state_update.event_notification.current_event.event_type)
                             {
-                                if (_active_conversation_ids.Contains(state_update.event_notification.current_event.conversation_id.id))
-                                {
-                                     if (NewConversationEventReceived != null)
-                                        NewConversationEventReceived(this, state_update.event_notification.current_event);
-                                }                                    
-                                else
-                                {
-                                    if(NewConversationCreated != null)
+                                case EventType.EVENT_TYPE_REGULAR_CHAT_MESSAGE:
+                                    if (_active_conversations.ContainsKey(state_update.event_notification.current_event.conversation_id.id))
+                                    {
+                                        _active_conversations[state_update.event_notification.current_event.conversation_id.id].NewEventReceived(this, state_update.event_notification.current_event);
+                                    }
+                                    else
                                     {
                                         ConversationState s = new ConversationState()
                                         {
                                             conversation_id = state_update.event_notification.current_event.conversation_id,
                                             conversation = state_update.conversation,
-                                            events = new List<Event>(){ state_update.event_notification.current_event}
+                                            events = new List<Event>() { state_update.event_notification.current_event }
                                         };
-                                        NewConversationCreated(this, s);
+
+                                        _active_conversations.Add(s.conversation_id.id, new Model.Conversation(s));
+                                        if (NewConversationCreated != null)
+                                            NewConversationCreated(this, _active_conversations.Last().Value);
                                     }
-                                }
+                                    break;
+                                case EventType.EVENT_TYPE_OTR_MODIFICATION:
+                                    _active_conversations[state_update.event_notification.current_event.conversation_id.id]._conversation.otr_status = state_update.event_notification.current_event.otr_status;
+                                    break;
                             }
+                            
 
                         if (state_update.presence_notification != null)
                             foreach (var presence in state_update.presence_notification.presence)
-                                PresenceInformationReceived(this, presence);
+                                if (_contacts.ContainsKey(presence.user_id.chat_id))
+                                    _contacts[presence.user_id.chat_id].SetPresence(presence.presence);
+                                
                         
                         if(state_update.self_presence_notification != null)
-                            PresenceInformationReceived(this, new PresenceResult()
-                            {
-                                user_id = CurrentUser.id,
-                                presence = new Presence()
+                            CurrentUser.SetPresence(new Presence()
                                 {
                                     available = state_update.self_presence_notification.client_presence_state.state == ClientPresenceStateType.CLIENT_PRESENCE_STATE_DESKTOP_ACTIVE
                                 }
-                            });
-
+                            );
                     }
-
-
 
                     this._timestamp = long.Parse(wrapper["1"]["4"].ToString());
                 }
-
-            }           
-
-           
-
+            }    
         }
 
 
@@ -291,7 +298,7 @@ namespace WTalk
                     _requestHeader = new RequestHeader();
                     _requestHeader.client_identifier = new ClientIdentifier() { header_id = _header_id, resource = _client_id};
                     _requestHeader.client_version = new ClientVersion() { client_id = ClientId.CLIENT_ID_WEB_GMAIL, 
-                        build_type = ClientBuildType.BUILD_TYPE_PRODUCTION_APP, major_version = _header_version, version_timestamp = long.Parse(_header_date) };
+                        build_type = ClientBuildType.BUILD_TYPE_PRODUCTION_APP, major_version = _header_version , version_timestamp = long.Parse(_header_date) };
                     _requestHeader.language_code = "en";
 
                 }
@@ -310,19 +317,15 @@ namespace WTalk
             QueryPresenceRequest request = new QueryPresenceRequest()
             {
                 request_header = RequestHeaderBody,
-                participant_id = this._contact_ids.Select(c => new ParticipantId() { chat_id = c }).ToList(),
+                participant_id = this._contacts.Keys.Select(c => new ParticipantId() { chat_id = c }).ToList(),
                 field_mask = Enum.GetValues(typeof(FieldMask)).Cast<FieldMask>().ToList()
             };
 
-            HttpResponseMessage message = _client.PostProtoJson(_api_key, "presence/querypresence", request);
-            
-            if (PresenceInformationReceived != null)
-            {
-                QueryPresenceResponse response = message.Content.ReadAsProtoJson<QueryPresenceResponse>();
+            HttpResponseMessage message = _client.PostProtoJson("presence/querypresence", request);
+            QueryPresenceResponse response = message.Content.ReadAsProtoJson<QueryPresenceResponse>();
+            foreach (var presence in response.presence_result)
+                _contacts[presence.user_id.chat_id].SetPresence(presence.presence);
 
-                foreach (var presence in response.presence_result)
-                    PresenceInformationReceived(this, presence);
-            }
         }
 
         public void QuerySelfPresence()
@@ -330,46 +333,44 @@ namespace WTalk
             QueryPresenceRequest request = new QueryPresenceRequest()
             {
                 request_header = RequestHeaderBody,
-                participant_id = new List<ParticipantId>() { new ParticipantId() { chat_id = CurrentUser.id.chat_id }},
-                field_mask = new List<FieldMask>() { FieldMask.FIELD_MASK_AVAILABLE, FieldMask.FIELD_MASK_DEVICE, FieldMask.FIELD_MASK_REACHABLE }
+                participant_id = new List<ParticipantId>() { new ParticipantId() { chat_id = CurrentUser.Id } },
+                field_mask = Enum.GetValues(typeof(FieldMask)).Cast<FieldMask>().ToList()
             };
 
-            HttpResponseMessage message = _client.PostProtoJson(_api_key, "presence/querypresence", request);
+            HttpResponseMessage message = _client.PostProtoJson( "presence/querypresence", request);
+            QueryPresenceResponse response = message.Content.ReadAsProtoJson<QueryPresenceResponse>();
 
-            if (PresenceInformationReceived != null)
-            {
-                QueryPresenceResponse response = message.Content.ReadAsProtoJson<QueryPresenceResponse>();
+            foreach (var presence in response.presence_result)
+                CurrentUser.SetPresence(presence.presence);
 
-                foreach (var presence in response.presence_result)
-                    PresenceInformationReceived(this, presence);
-            }
         }
 
+        
         public void SetActiveClient()
         {
 
             SetActiveClientRequest request = new SetActiveClientRequest()
             {
                 request_header = RequestHeaderBody,
-                full_jid = string.Format("{0}/{1}", _email, _client_id),
+                full_jid = string.Format("{0}/{1}", CurrentUser.Email, _client_id),
                 is_active = true,
                 timeout_secs = 120,
                 unknown = true
             };
                         
-            HttpResponseMessage message = _client.PostProtoJson(_api_key, "clients/setactiveclient", request);            
+            HttpResponseMessage message = _client.PostProtoJson( "clients/setactiveclient", request);            
         }
 
-        public void SetPresence()
+        public void SetPresence(int state = 40)
         {
             SetPresenceRequest request = new SetPresenceRequest()
             {
                 request_header = RequestHeaderBody,
-                presence_state_setting = new PresenceStateSetting() { type = ClientPresenceStateType.CLIENT_PRESENCE_STATE_DESKTOP_ACTIVE, timeout_secs = 720 }
+                presence_state_setting = new PresenceStateSetting() { type = (ClientPresenceStateType)state, timeout_secs = 720 }
             };
 
             
-            HttpResponseMessage message = _client.PostProtoJson(_api_key, "presence/setpresence", request);
+            HttpResponseMessage message = _client.PostProtoJson("presence/setpresence", request);
             
             //GetSelfInfo();
         }
@@ -387,7 +388,7 @@ namespace WTalk
                 timeout_secs = 20
             };
                         
-            HttpResponseMessage message = _client.PostProtoJson(_api_key, "conversations/setfocus", request);            
+            HttpResponseMessage message = _client.PostProtoJson("conversations/setfocus", request);            
         }
 
         public void SetUserTyping(string conversationId)
@@ -399,7 +400,7 @@ namespace WTalk
                 type = TypingType.TYPING_TYPE_STARTED
             };
 
-            HttpResponseMessage message = _client.PostProtoJson(_api_key, "conversations/settyping", request);
+            HttpResponseMessage message = _client.PostProtoJson("conversations/settyping", request);
             
         }
         
@@ -410,12 +411,12 @@ namespace WTalk
                 request_header = RequestHeaderBody,
                 annotation = new List<EventAnnotation>(),
                 message_content = new MessageContent() { attachment = new List<Attachment>(), segment = new List<Segment>() { new Segment() { text=messageText, type = SegmentType.SEGMENT_TYPE_TEXT, formatting = new Formatting() { bold = false, italic = false, strikethrough = false, underline = false }, link_data = new LinkData() } } },
-                event_request_header = new EventRequestHeader { conversation_id = new ConversationId() { id = conversationId }, client_generated_id = randomId, expected_otr = OffTheRecordStatus.OFF_THE_RECORD_STATUS_ON_THE_RECORD, delivery_medium = new DeliveryMedium() { medium_type = DeliveryMediumType.DELIVERY_MEDIUM_BABEL }, event_type = EventType.EVENT_TYPE_REGULAR_CHAT_MESSAGE }
+                event_request_header = new EventRequestHeader { conversation_id = new ConversationId() { id = conversationId }, client_generated_id = randomId, /*expected_otr = OffTheRecordStatus.OFF_THE_RECORD_STATUS_ON_THE_RECORD,*/ delivery_medium = new DeliveryMedium() { medium_type = DeliveryMediumType.DELIVERY_MEDIUM_BABEL }, event_type = EventType.EVENT_TYPE_REGULAR_CHAT_MESSAGE }
 
 
             };
             
-            HttpResponseMessage message = _client.PostProtoJson(_api_key, "conversations/sendchatmessage", request);
+            HttpResponseMessage message = _client.PostProtoJson("conversations/sendchatmessage", request);
             
         }
 
@@ -429,18 +430,28 @@ namespace WTalk
                 field_mask = new List<FieldMask>() { FieldMask.FIELD_MASK_AVAILABLE, FieldMask.FIELD_MASK_DEVICE, FieldMask.FIELD_MASK_REACHABLE }
             };
 
-            HttpResponseMessage message = _client.PostProtoJson(_api_key, "contacts/getentitybyid", request);
+            HttpResponseMessage message = _client.PostProtoJson("contacts/getentitybyid", request);
             
             if (ContactInformationReceived != null)
             {
                 GetEntityByIdResponse response = message.Content.ReadAsProtoJson<GetEntityByIdResponse>();
-
-                foreach (var contact in response.entity.Where(c=>c.id != null))
-                {   
-                    _contact_ids.Add(contact.id.chat_id);
-                    ContactInformationReceived(this, contact);
+                if (_contacts.Count == 0)
+                {
+                    _contacts = response.entity.Where(c => c.id != null).ToDictionary(c => c.id.chat_id, c => new User(c));
+                    ContactListLoaded(this, _contacts.Values.ToList());
                 }
+                else
+                {
 
+                    foreach (var contact in response.entity.Where(c => c.id != null))
+                    {
+                        if (_contacts.ContainsKey(contact.id.chat_id))
+                            _contacts[contact.id.chat_id] = new User(contact);
+                        else
+                            _contacts.Add(contact.id.chat_id, new User(contact));
+                        ContactInformationReceived(this, _contacts[contact.id.chat_id]);
+                    }
+                }
                 QueryPresences();
             }
         }
@@ -452,14 +463,13 @@ namespace WTalk
                 request_header = RequestHeaderBody
             };
             
-            HttpResponseMessage message = _client.PostProtoJson(_api_key, "contacts/getselfinfo", request);
+            HttpResponseMessage message = _client.PostProtoJson("contacts/getselfinfo", request);
             
-
             if (UserInformationReceived != null)
             {
                 GetSelfInfoResponse response = message.Content.ReadAsProtoJson<GetSelfInfoResponse>();
 
-                CurrentUser = response.self_entity;
+                CurrentUser = new User(response.self_entity);
                 UserInformationReceived(this,CurrentUser);
             }
         }
@@ -468,24 +478,41 @@ namespace WTalk
         {
             SyncRecentConversationsRequest request = new SyncRecentConversationsRequest()
             {
-                request_header = RequestHeaderBody
+                request_header = RequestHeaderBody    
             };
 
             
-            HttpResponseMessage message = _client.PostProtoJson(_api_key, "conversations/syncrecentconversations", request);
+            HttpResponseMessage message = _client.PostProtoJson("conversations/syncrecentconversations", request);
             
             if (ConversationHistoryLoaded != null)
             {   
-                SyncRecentConversationsResponse response = message.Content.ReadAsProtoJson<SyncRecentConversationsResponse>();
-
-                ConversationHistoryLoaded(this, response.conversation_state);
-                _active_conversation_ids = response.conversation_state.Select(c => c.conversation_id.id).ToList();
+                SyncRecentConversationsResponse response = message.Content.ReadAsProtoJson<SyncRecentConversationsResponse>();                
+                _active_conversations = response.conversation_state.ToDictionary(c => c.conversation_id.id, c=> new WTalk.Model.Conversation(c));
+                ConversationHistoryLoaded(this, _active_conversations.Values.ToList());
             }
         }
 
         public void SyncAllNewEvents()
         {
 
+        }
+
+        public void ModifyOTRStatus(string conversationId, bool enable)
+        {
+            ModifyOTRStatusRequest request = new ModifyOTRStatusRequest()
+            {
+                request_header = RequestHeaderBody,
+                otr_status = enable ? OffTheRecordStatus.OFF_THE_RECORD_STATUS_ON_THE_RECORD : OffTheRecordStatus.OFF_THE_RECORD_STATUS_OFF_THE_RECORD,
+                event_request_header = new EventRequestHeader()
+                {
+                    conversation_id = new ConversationId() { id = conversationId },
+                    event_type = EventType.EVENT_TYPE_OTR_MODIFICATION,
+                    client_generated_id = randomId,
+                    expected_otr = enable ? OffTheRecordStatus.OFF_THE_RECORD_STATUS_ON_THE_RECORD : OffTheRecordStatus.OFF_THE_RECORD_STATUS_OFF_THE_RECORD
+                }
+            };
+
+            HttpResponseMessage message = _client.PostProtoJson("conversations/modifyotrstatus", request);
         }
 
 

@@ -3,45 +3,39 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Wtalk.MvvM;
+using WTalk.Mvvm;
 using WTalk.Core.Utils;
 
 namespace WTalk.Model
 {
     public class Message : ObservableObject
     {   
-        private Participant _participant;
-        
-
         public Message()
         {
         }
 
-        public Message(Participant participant, WTalk.Core.ProtoJson.Schema.Event chatEvent)
+        internal Message(WTalk.Core.ProtoJson.Schema.Event chatEvent)
         {
-            // TODO: Complete member initialization
-            this._participant = participant;            
+            Id = chatEvent.event_id;
+            SenderId = chatEvent.sender_id.chat_id;
+            selfUserId = chatEvent.self_event_state.user_id.chat_id;
             AppendContent(chatEvent.chat_message);
-
-            MessageDate = DateTime.Now.FromMillisecondsSince1970(chatEvent.timestamp / 1000);
-            
-            
+            MessageDate = DateTime.Now.FromMillisecondsSince1970(chatEvent.timestamp / 1000);            
         }
 
+        string selfUserId;
         public string Id { get; internal set; }
-        public string Sender { get { return _participant.DisplayName; } }
-        public string SenderId { get { return _participant.Id; } }
+        public string SenderId { get; internal set; }
+        public bool IncomingMessage { get { return SenderId != selfUserId; } }
         //public Enums.MessageType Type { get; internal set; }
-        public string Content { get; internal set; }
+        public string Content { get { return string.Join<string>("\r\n", _content); } }
         public DateTime MessageDate { get; internal set; }
 
-        public void AppendContent(WTalk.Core.ProtoJson.Schema.ChatMessage chatMessage)
-        {
-            StringBuilder builder = new StringBuilder(Content);
-            foreach( var c in chatMessage.message_content.segment)
-                builder.AppendLine(c.text);
+        List<string> _content = new List<string>();
 
-            Content = builder.ToString();
+        internal void AppendContent(WTalk.Core.ProtoJson.Schema.ChatMessage chatMessage)
+        {
+            _content.AddRange(chatMessage.message_content.segment.Select(c => c.text));
             OnPropertyChanged("Content");
 
         }

@@ -26,7 +26,7 @@ major exception that "Client" prefixes have been removed.
 
 
     // Describes which Hangouts client is active.
-    public enum ActiveClientState : int
+    internal enum ActiveClientState : int
     {
         // No client is active.
         ACTIVE_CLIENT_STATE_NO_ACTIVE = 0,
@@ -39,7 +39,7 @@ major exception that "Client" prefixes have been removed.
     // The state of do-not-disturb mode. Not to be confused with DndSetting, which
     // is used to change the state of do-not-disturb mode.
     [ProtoContract]
-    public class DoNotDisturbSetting
+    internal class DoNotDisturbSetting
     {
         // Whether do-not-disturb mode is enabled.
         [ProtoMember(Position = 1)]
@@ -57,21 +57,21 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class NotificationSettings
+    internal class NotificationSettings
     {
         [ProtoMember(Position = 1)]
         public DoNotDisturbSetting dnd_settings { get; set; }
 
     }
 
-    public enum FocusType : int
+    internal enum FocusType : int
     {
         FOCUS_TYPE_UNKNOWN = 0,
         FOCUS_TYPE_FOCUSED = 1,
         FOCUS_TYPE_UNFOCUSED = 2
     }
 
-    public enum FocusDevice : int
+    internal enum FocusDevice : int
     {
         FOCUS_DEVICE_UNSPECIFIED = 0,
         FOCUS_DEVICE_DESKTOP = 20,
@@ -80,7 +80,7 @@ major exception that "Client" prefixes have been removed.
 
     // Identifies a conversation.
     [ProtoContract]
-    public class ConversationId
+    internal class ConversationId
     {
         // Unique identifier for a conversation.
         [ProtoMember(Position = 1)]
@@ -90,7 +90,7 @@ major exception that "Client" prefixes have been removed.
 
     // Identifies a user.
     [ProtoContract]
-    public class ParticipantId
+    internal class ParticipantId
     {
         // Unique identifier for a user's Google account.
         [ProtoMember(Position = 1, Optional = true)]
@@ -105,7 +105,7 @@ major exception that "Client" prefixes have been removed.
     // Indicates whether Hangouts is active (running in the foreground) on
     // different types of devices.
     [ProtoContract]
-    public class DeviceStatus
+    internal class DeviceStatus
     {
         // True if a mobile phone is active.
         [ProtoMember(Position = 1)]
@@ -122,7 +122,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class Presence
+    internal class Presence
     {
         [ProtoMember(Position = 1)]
         public bool reachable { get; set; }
@@ -142,7 +142,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class PresenceResult
+    internal class PresenceResult
     {
         [ProtoMember(Position = 1)]
         public ParticipantId user_id { get; set; }
@@ -152,7 +152,7 @@ major exception that "Client" prefixes have been removed.
 
     }
 
-    public enum TypingType : int
+    internal enum TypingType : int
     {
         TYPING_TYPE_UNKNOWN = 0,
         // Started typing.
@@ -164,7 +164,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class ClientIdentifier
+    internal class ClientIdentifier
     {
         // (client_id in hangups).
         [ProtoMember(Position = 1)]
@@ -176,7 +176,7 @@ major exception that "Client" prefixes have been removed.
 
     }
 
-    public enum ClientPresenceStateType : int
+    internal enum ClientPresenceStateType : int
     {
         CLIENT_PRESENCE_STATE_UNKNOWN = 0,
         CLIENT_PRESENCE_STATE_NONE = 1,
@@ -187,7 +187,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class ClientPresenceState
+    internal class ClientPresenceState
     {
         [ProtoMember(Position = 1)]
         public ClientIdentifier identifier { get; set; }
@@ -197,7 +197,7 @@ major exception that "Client" prefixes have been removed.
 
     }
 
-    public enum NotificationLevel : int
+    internal enum NotificationLevel : int
     {
         NOTIFICATION_LEVEL_UNKNOWN = 0,
         // Notifications are disabled.
@@ -207,7 +207,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class UserEventState
+    internal class UserEventState
     {
         [ProtoMember(Position = 1)]
         public ParticipantId user_id { get; set; }
@@ -220,7 +220,7 @@ major exception that "Client" prefixes have been removed.
 
     }
 
-    public enum SegmentType : int
+    internal enum SegmentType : int
     {
         // Segment is text.
         SEGMENT_TYPE_TEXT = 0,
@@ -231,7 +231,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class Formatting
+    internal class Formatting
     {
         [ProtoMember(Position = 1)]
         public bool bold { get; set; }
@@ -248,7 +248,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class LinkData
+    internal class LinkData
     {
         [ProtoMember(Position = 1)]
         public string link_target { get; set; }
@@ -258,7 +258,7 @@ major exception that "Client" prefixes have been removed.
     // A segment of a message. Message are broken into segments that may be of
     // different types and have different formatting.
     [ProtoContract]
-    public class Segment
+    internal class Segment
     {
         // Note: This field is required because Hangouts for Chrome misbehaves if it
         // isn't serialized.
@@ -280,7 +280,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     // A type of embedded item.
-    public enum ItemType : int
+    internal enum ItemType : int
     {
         ITEM_TYPE_THING = 0,
         // Google Plus photo.
@@ -292,12 +292,12 @@ major exception that "Client" prefixes have been removed.
 
     // Google Plus photo that can be embedded in a chat message.
     [ProtoContract]
-    public class PlusPhoto
+    internal class PlusPhoto
     {
 
         // Metadata for displaying an image thumbnail.
         [ProtoContract]
-        public class Thumbnail
+        internal class Thumbnail
         {
 
             // URL to navigate to when thumbnail is selected (a Google Plus album
@@ -320,7 +320,7 @@ major exception that "Client" prefixes have been removed.
         }
 
         // Media type.
-        public enum MediaType
+        internal enum MediaType
         {
             MEDIA_TYPE_UNKNOWN = 0,
             MEDIA_TYPE_PHOTO = 1
@@ -363,12 +363,12 @@ major exception that "Client" prefixes have been removed.
 
     // Place that can be embedded in a chat message via Google Maps.
     [ProtoContract]
-    public class Place
+    internal class Place
     {
 
         // Representative image of a place.
         [ProtoContract]
-        public class RepresentativeImage
+        internal class RepresentativeImage
         {
             // URL of image.
             [ProtoMember(Position = 2)]
@@ -392,7 +392,7 @@ major exception that "Client" prefixes have been removed.
 
     // An item of some type embedded in a chat message.
     [ProtoContract]
-    public class EmbedItem
+    internal class EmbedItem
     {
         // List of embedded item types in this message.
         [ProtoMember(Position = 1)]
@@ -414,7 +414,7 @@ major exception that "Client" prefixes have been removed.
 
     // An attachment for a chat message.
     [ProtoContract]
-    public class Attachment
+    internal class Attachment
     {
         [ProtoMember(Position = 1)]
         public EmbedItem embed_item { get; set; }
@@ -423,7 +423,7 @@ major exception that "Client" prefixes have been removed.
 
     // Chat message content.
     [ProtoContract]
-    public class MessageContent
+    internal class MessageContent
     {
         [ProtoMember(Position = 1)]
         public List<Segment> segment { get; set; }
@@ -436,7 +436,7 @@ major exception that "Client" prefixes have been removed.
     // Annotation that can be applied to a chat message event. The only known use
     // for this is "\me" actions supported by the Chrome client (type 4).
     [ProtoContract]
-    public class EventAnnotation
+    internal class EventAnnotation
     {
         // Annotation type.
         [ProtoMember(Position = 1)]
@@ -450,7 +450,7 @@ major exception that "Client" prefixes have been removed.
 
     // A chat message in a conversation.
     [ProtoContract]
-    public class ChatMessage
+    internal class ChatMessage
     {
         // Optional annotation to attach to message.
         [ProtoMember(Position = 2)]
@@ -465,14 +465,14 @@ major exception that "Client" prefixes have been removed.
         // always 0? = 1;
     }
 
-    public enum MembershipChangeType : int
+    internal enum MembershipChangeType : int
     {
         MEMBERSHIP_CHANGE_TYPE_JOIN = 1,
         MEMBERSHIP_CHANGE_TYPE_LEAVE = 2
     }
 
     [ProtoContract]
-    public class MembershipChange
+    internal class MembershipChange
     {
         [ProtoMember(Position = 1)]
         public MembershipChangeType type { get; set; }
@@ -487,7 +487,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class ConversationRename
+    internal class ConversationRename
     {
         [ProtoMember(Position = 1)]
         public string new_name { get; set; }
@@ -497,7 +497,7 @@ major exception that "Client" prefixes have been removed.
 
     }
 
-    public enum HangoutEventType : int
+    internal enum HangoutEventType : int
     {
         HANGOUT_EVENT_TYPE_UNKNOWN = 0,
         HANGOUT_EVENT_TYPE_START = 1,
@@ -509,7 +509,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class HangoutEvent
+    internal class HangoutEvent
     {
         [ProtoMember(Position = 1)]
         public HangoutEventType event_type { get; set; }
@@ -524,7 +524,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class OTRModification
+    internal class OTRModification
     {
         [ProtoMember(Position = 1)]
         public OffTheRecordStatus old_otr_status { get; set; }
@@ -541,14 +541,14 @@ major exception that "Client" prefixes have been removed.
     }
 
     // Whether the OTR toggle is available to the user.
-    public enum OffTheRecordToggle : int
+    internal enum OffTheRecordToggle : int
     {
         OFF_THE_RECORD_TOGGLE_UNKNOWN = 0,
         OFF_THE_RECORD_TOGGLE_ENABLED = 1,
         OFF_THE_RECORD_TOGGLE_DISABLED = 2,
     }
 
-    public enum OffTheRecordStatus : int
+    internal enum OffTheRecordStatus : int
     {
         OFF_THE_RECORD_STATUS_UNKNOWN = 0,
         // Conversation is off-the-record (history disabled).
@@ -557,12 +557,12 @@ major exception that "Client" prefixes have been removed.
         OFF_THE_RECORD_STATUS_ON_THE_RECORD = 2
     }
 
-    public enum SourceType : int
+    internal enum SourceType : int
     {
         SOURCE_TYPE_UNKNOWN = 0,
     }
 
-    public enum EventType : int
+    internal enum EventType : int
     {
         EVENT_TYPE_UNKNOWN = 0,
         EVENT_TYPE_REGULAR_CHAT_MESSAGE = 1,
@@ -580,7 +580,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class HashModifier
+    internal class HashModifier
     {
         [ProtoMember(Position = 1)]
         public string update_id { get; set; }
@@ -595,7 +595,7 @@ major exception that "Client" prefixes have been removed.
 
     // Event that becomes part of a conversation's history.
     [ProtoContract]
-    public class Event
+    internal class Event
     {
         // ID of the conversation this event belongs to.
         [ProtoMember(Position = 1)]
@@ -662,7 +662,7 @@ major exception that "Client" prefixes have been removed.
 
     }
 
-    public enum ConversationType : int
+    internal enum ConversationType : int
     {
         CONVERSATION_TYPE_UNKNOWN = 0,
         // Conversation is one-to-one (only 2 participants).
@@ -672,7 +672,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class UserReadState
+    internal class UserReadState
     {
         [ProtoMember(Position = 1)]
         public ParticipantId participant_id { get; set; }
@@ -684,7 +684,7 @@ major exception that "Client" prefixes have been removed.
         // TODO: is latest_read_timestamp always 0?
     }
 
-    public enum ConversationStatus : int
+    internal enum ConversationStatus : int
     {
         CONVERSATION_STATUS_UNKNOWN = 0,
         // User is invited to conversation.
@@ -695,7 +695,7 @@ major exception that "Client" prefixes have been removed.
         CONVERSATION_STATUS_LEFT = 3
     }
 
-    public enum ConversationView : int
+    internal enum ConversationView : int
     {
         CONVERSATION_VIEW_UNKNOWN = 0,
         // Conversation is in inbox.
@@ -704,7 +704,7 @@ major exception that "Client" prefixes have been removed.
         CONVERSATION_VIEW_ARCHIVED = 2
     }
 
-    public enum DeliveryMediumType : int
+    internal enum DeliveryMediumType : int
     {
         DELIVERY_MEDIUM_UNKNOWN = 0,
         DELIVERY_MEDIUM_BABEL = 1,
@@ -713,7 +713,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class DeliveryMedium
+    internal class DeliveryMedium
     {
         [ProtoMember(Position = 1)]
         public DeliveryMediumType medium_type { get; set; }
@@ -725,7 +725,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class DeliveryMediumOption
+    internal class DeliveryMediumOption
     {
         [ProtoMember(Position = 1)]
         public DeliveryMedium delivery_medium { get; set; }
@@ -736,7 +736,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class UserConversationState
+    internal class UserConversationState
     {
         [ProtoMember(Position = 2)]
         public string client_generated_id { get; set; }
@@ -770,13 +770,13 @@ major exception that "Client" prefixes have been removed.
 
     }
 
-    public enum ParticipantType : int
+    internal enum ParticipantType : int
     {
         PARTICIPANT_TYPE_UNKNOWN = 0,
         PARTICIPANT_TYPE_GAIA = 2
     }
 
-    public enum InvitationStatus : int
+    internal enum InvitationStatus : int
     {
         INVITATION_STATUS_UNKNOWN = 0,
         INVITATION_STATUS_PENDING = 1,
@@ -784,7 +784,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class ConversationParticipantData
+    internal class ConversationParticipantData
     {
         [ProtoMember(Position = 1)]
         public ParticipantId id { get; set; }
@@ -803,13 +803,13 @@ major exception that "Client" prefixes have been removed.
 
     }
 
-    public enum ForceHistory : int
+    internal enum ForceHistory : int
     {
         FORCE_HISTORY_UNKNOWN = 0,
         FORCE_HISTORY_NO = 1
     }
 
-    public enum NetworkType : int
+    internal enum NetworkType : int
     {
         NETWORK_TYPE_UNKNOWN = 0,
         NETWORK_TYPE_BABEL = 1
@@ -817,7 +817,7 @@ major exception that "Client" prefixes have been removed.
 
     // A conversation between two or more users.
     [ProtoContract]
-    public class Conversation
+    internal class Conversation
     {
         [ProtoMember(Position = 1)]
         public ConversationId conversation_id { get; set; }
@@ -864,14 +864,14 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class EasterEgg
+    internal class EasterEgg
     {
         [ProtoMember(Position = 1)]
         public string message { get; set; }
 
     }
 
-    public enum BlockState : int
+    internal enum BlockState : int
     {
         BLOCK_STATE_UNKNOWN = 0,
         BLOCK_STATE_BLOCK = 1,
@@ -879,7 +879,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class BlockStateChange
+    internal class BlockStateChange
     {
         [ProtoMember(Position = 1)]
         public ParticipantId participant_id { get; set; }
@@ -889,7 +889,7 @@ major exception that "Client" prefixes have been removed.
 
     }
 
-    public enum ReplyToInviteType : int
+    internal enum ReplyToInviteType : int
     {
         REPLY_TO_INVITE_TYPE_UNKNOWN = 0,
         REPLY_TO_INVITE_TYPE_ACCEPT = 1,
@@ -897,7 +897,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class Photo
+    internal class Photo
     {
         [ProtoMember(Position = 1)]
         public string photo_id { get; set; }
@@ -910,7 +910,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class ExistingMedia
+    internal class ExistingMedia
     {
         [ProtoMember(Position = 1)]
         public Photo photo { get; set; }
@@ -918,7 +918,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class EventRequestHeader
+    internal class EventRequestHeader
     {
         [ProtoMember(Position = 1)]
         public ConversationId conversation_id { get; set; }
@@ -938,7 +938,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     // Identifies the client.
-    public enum ClientId : int
+    internal enum ClientId : int
     {
         CLIENT_ID_UNKNOWN = 0,
         // Hangouts app for Android.
@@ -956,7 +956,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     // Build type of the client.
-    public enum ClientBuildType : int
+    internal enum ClientBuildType : int
     {
         BUILD_TYPE_UNKNOWN = 0,
         // Web app.
@@ -967,7 +967,7 @@ major exception that "Client" prefixes have been removed.
 
     // The client and device version.
     [ProtoContract]
-    public class ClientVersion
+    internal class ClientVersion
     {
         // Identifies the client.
         [ProtoMember(Position = 1)]
@@ -997,7 +997,7 @@ major exception that "Client" prefixes have been removed.
 
     // Header for requests from the client to the server.
     [ProtoContract]
-    public class RequestHeader
+    internal class RequestHeader
     {
         [ProtoMember(Position = 1)]
         public ClientVersion client_version { get; set; }
@@ -1016,7 +1016,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     // Status of the response from the server to the client.
-    public enum ResponseStatus : int
+    internal enum ResponseStatus : int
     {
         RESPONSE_STATUS_UNKNOWN = 0,
         RESPONSE_STATUS_OK = 1,
@@ -1026,7 +1026,7 @@ major exception that "Client" prefixes have been removed.
 
     // Header for responses from the server to the client.
     [ProtoContract]
-    public class ResponseHeader
+    internal class ResponseHeader
     {
         [ProtoMember(Position = 1)]
         public ResponseStatus status { get; set; }
@@ -1047,7 +1047,7 @@ major exception that "Client" prefixes have been removed.
 
     // A user that can participate in conversations.
     [ProtoContract]
-    public class Entity
+    internal class Entity
     {
         // The user's ID.
         [ProtoMember(Position = 9)]
@@ -1064,7 +1064,7 @@ major exception that "Client" prefixes have been removed.
         [ProtoMember(Position = 13)]
         public ParticipantType entity_type { get; set; }
 
-        public enum PastHangoutState
+        internal enum PastHangoutState
         {
             PAST_HANGOUT_STATE_UNKNOWN = 0,
             PAST_HANGOUT_STATE_HAD_PAST_HANGOUT = 1,
@@ -1080,7 +1080,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class EntityProperties
+    internal class EntityProperties
     {
         [ProtoMember(Position = 1)]
         public ProfileType type { get; set; }
@@ -1115,7 +1115,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     // Status of EntityProperties.photo_url.
-    public enum PhotoUrlStatus : int
+    internal enum PhotoUrlStatus : int
     {
         PHOTO_URL_STATUS_UNKNOWN = 0,
         // URL is a placeholder.
@@ -1124,14 +1124,14 @@ major exception that "Client" prefixes have been removed.
         PHOTO_URL_STATUS_USER_PHOTO = 2,
     }
 
-    public enum Gender : int
+    internal enum Gender : int
     {
         GENDER_UNKNOWN = 0,
         GENDER_MALE = 1,
         GENDER_FEMALE = 2,
     }
 
-    public enum ProfileType : int
+    internal enum ProfileType : int
     {
         PROFILE_TYPE_NONE = 0,
         PROFILE_TYPE_ES_USER = 1,
@@ -1139,7 +1139,7 @@ major exception that "Client" prefixes have been removed.
 
     // State of a conversation and recent events.
     [ProtoContract]
-    public class ConversationState
+    internal class ConversationState
     {
         [ProtoMember(Position = 1)]
         public ConversationId conversation_id { get; set; }
@@ -1157,7 +1157,7 @@ major exception that "Client" prefixes have been removed.
     // Token that allows retrieving more events from a position in a conversation.
     // Specifying event_timestamp is sufficient.
     [ProtoContract]
-    public class EventContinuationToken
+    internal class EventContinuationToken
     {
         [ProtoMember(Position = 1)]
         public string event_id { get; set; }
@@ -1171,7 +1171,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class EntityLookupSpec
+    internal class EntityLookupSpec
     {
         [ProtoMember(Position = 1)]
         public string gaia_id { get; set; }
@@ -1181,7 +1181,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     // A type of binary configuration option.
-    public enum ConfigurationBitType : int
+    internal enum ConfigurationBitType : int
     {
 
         // TODO
@@ -1254,7 +1254,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class ConfigurationBit
+    internal class ConfigurationBit
     {
         [ProtoMember(Position = 1)]
         public ConfigurationBitType configuration_bit_type { get; set; }
@@ -1264,7 +1264,7 @@ major exception that "Client" prefixes have been removed.
 
     }
 
-    public enum RichPresenceType : int
+    internal enum RichPresenceType : int
     {
         RICH_PRESENCE_TYPE_UNKNOWN = 0,
         RICH_PRESENCE_TYPE_IN_CALL_STATE = 1,
@@ -1283,7 +1283,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class RichPresenceState
+    internal class RichPresenceState
     {
         [ProtoMember(Position = 3)]
         public List<RichPresenceEnabledState> get_rich_presence_enabled_state { get; set; }
@@ -1291,7 +1291,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class RichPresenceEnabledState
+    internal class RichPresenceEnabledState
     {
         [ProtoMember(Position = 1)]
         public RichPresenceType type { get; set; }
@@ -1301,7 +1301,7 @@ major exception that "Client" prefixes have been removed.
 
     }
 
-    public enum FieldMask : int
+    internal enum FieldMask : int
     {
         FIELD_MASK_REACHABLE = 1,
         FIELD_MASK_AVAILABLE = 2,
@@ -1312,7 +1312,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class DesktopOffSetting
+    internal class DesktopOffSetting
     {
         // State of "desktop off" setting.
         [ProtoMember(Position = 1)]
@@ -1321,7 +1321,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class DesktopOffState
+    internal class DesktopOffState
     {
         // Whether Hangouts desktop is signed off or on.
         [ProtoMember(Position = 1)]
@@ -1336,7 +1336,7 @@ major exception that "Client" prefixes have been removed.
     // DoNotDisturbSetting, which is used to indicate the state of do-not-disturb
     // mode.
     [ProtoContract]
-    public class DndSetting
+    internal class DndSetting
     {
         // Whether to enable or disable do-not-disturb mode.
         [ProtoMember(Position = 1)]
@@ -1349,7 +1349,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class PresenceStateSetting
+    internal class PresenceStateSetting
     {
         [ProtoMember(Position = 1)]
         public long timeout_secs { get; set; }
@@ -1360,7 +1360,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class MoodMessage
+    internal class MoodMessage
     {
         [ProtoMember(Position = 1)]
         public MoodContent mood_content { get; set; }
@@ -1368,7 +1368,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class MoodContent
+    internal class MoodContent
     {
         [ProtoMember(Position = 1)]
         public List<Segment> segment { get; set; }
@@ -1377,7 +1377,7 @@ major exception that "Client" prefixes have been removed.
 
     // The user's mood message.
     [ProtoContract]
-    public class MoodSetting
+    internal class MoodSetting
     {
         [ProtoMember(Position = 1)]
         public MoodMessage mood_message { get; set; }
@@ -1385,28 +1385,28 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class LastSeen
+    internal class LastSeen
     {
         [ProtoMember(Position = 1)]
         public long last_seen_timestamp_usec { get; set; }
     }
 
     [ProtoContract]
-    public class MoodState
+    internal class MoodState
     {
         [ProtoMember(Position = 4)]
         public MoodSetting mood_setting { get; set; }
 
     }
 
-    public enum DeleteType : int
+    internal enum DeleteType : int
     {
         DELETE_TYPE_UNKNOWN = 0,
         DELETE_TYPE_UPPER_BOUND = 1
     }
 
     [ProtoContract]
-    public class DeleteAction
+    internal class DeleteAction
     {
         [ProtoMember(Position = 1)]
         public long delete_action_timestamp { get; set; }
@@ -1420,7 +1420,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class InviteeID
+    internal class InviteeID
     {
         [ProtoMember(Position = 1)]
         public string gaia_id { get; set; }
@@ -1430,7 +1430,7 @@ major exception that "Client" prefixes have been removed.
 
     }
 
-    public enum SyncFilter : int
+    internal enum SyncFilter : int
     {
         SYNC_FILTER_UNKNOWN = 0,
         SYNC_FILTER_INBOX = 1,
@@ -1441,7 +1441,7 @@ major exception that "Client" prefixes have been removed.
 
     // Describes a user's country.
     [ProtoContract]
-    public class Country
+    internal class Country
     {
         // Abbreviated region code (eg. "CA").
         [ProtoMember(Position = 1)]
@@ -1453,7 +1453,7 @@ major exception that "Client" prefixes have been removed.
 
     }
 
-    public enum SoundState : int
+    internal enum SoundState : int
     {
         SOUND_STATE_UNKNOWN = 0,
         SOUND_STATE_ON = 1,
@@ -1462,7 +1462,7 @@ major exception that "Client" prefixes have been removed.
 
     // Sound settings in the desktop Hangouts client.
     [ProtoContract]
-    public class DesktopSoundSetting
+    internal class DesktopSoundSetting
     {
         // Whether to play sound for incoming messages.
         [ProtoMember(Position = 1)]
@@ -1474,14 +1474,14 @@ major exception that "Client" prefixes have been removed.
 
     }
 
-    public enum CallerIdSettingsMask : int
+    internal enum CallerIdSettingsMask : int
     {
         CALLER_ID_SETTINGS_MASK_UNKNOWN = 0,
         CALLER_ID_SETTINGS_MASK_PROVIDED = 1
     }
 
     [ProtoContract]
-    public class PhoneData
+    internal class PhoneData
     {
         [ProtoMember(Position = 1)]
         public List<Phone> phone { get; set; }
@@ -1491,20 +1491,20 @@ major exception that "Client" prefixes have been removed.
 
     }
 
-    public enum PhoneVerificationStatus : int
+    internal enum PhoneVerificationStatus : int
     {
         PHONE_VERIFICATION_STATUS_UNKNOWN = 0,
         PHONE_VERIFICATION_STATUS_VERIFIED = 1
     }
 
-    public enum PhoneDiscoverabilityStatus : int
+    internal enum PhoneDiscoverabilityStatus : int
     {
         PHONE_DISCOVERABILITY_STATUS_UNKNOWN = 0,
         PHONE_DISCOVERABILITY_STATUS_OPTED_IN_BUT_NOT_DISCOVERABLE = 2
     }
 
     [ProtoContract]
-    public class Phone
+    internal class Phone
     {
         [ProtoMember(Position = 1)]
         public PhoneNumber phone_number { get; set; }
@@ -1526,13 +1526,13 @@ major exception that "Client" prefixes have been removed.
 
     }
 
-    public enum PhoneValidationResult : int
+    internal enum PhoneValidationResult : int
     {
         PHONE_VALIDATION_RESULT_IS_POSSIBLE = 0
     }
 
     [ProtoContract]
-    public class I18nData
+    internal class I18nData
     {
         [ProtoMember(Position = 1)]
         public string national_number { get; set; }
@@ -1555,7 +1555,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class PhoneNumber
+    internal class PhoneNumber
     {
         // Phone number as string (eg. "+15551234567").
         [ProtoMember(Position = 1)]
@@ -1567,7 +1567,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class SuggestedContactGroupHash
+    internal class SuggestedContactGroupHash
     {
         // Number of results to return from this group.
         [ProtoMember(Position = 1)]
@@ -1580,7 +1580,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class SuggestedContact
+    internal class SuggestedContact
     {
         [ProtoMember(Position = 1)]
         public Entity entity { get; set; }
@@ -1591,7 +1591,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class SuggestedContactGroup
+    internal class SuggestedContactGroup
     {
         [ProtoMember(Position = 1)]
         public bool hash_matched { get; set; }
@@ -1613,7 +1613,7 @@ major exception that "Client" prefixes have been removed.
     // exactly one type of notification, and optionally updates the attributes of a
     // conversation.
     [ProtoContract]
-    public class StateUpdate
+    internal class StateUpdate
     {
 
         [ProtoMember(Position = 1)]
@@ -1667,7 +1667,7 @@ major exception that "Client" prefixes have been removed.
 
     // Header for StateUpdate messages.
     [ProtoContract]
-    public class StateUpdateHeader
+    internal class StateUpdateHeader
     {
         [ProtoMember(Position = 1)]
         public ActiveClientState active_client_state { get; set; }
@@ -1692,7 +1692,7 @@ major exception that "Client" prefixes have been removed.
     // List of StateUpdate messages to allow pushing multiple notifications from
     // the server to the client simultaneously.
     [ProtoContract]
-    public class BatchUpdate
+    internal class BatchUpdate
     {
         [ProtoMember(Position = 1)]
         public List<StateUpdate> state_update { get; set; }
@@ -1700,7 +1700,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class EventNotification
+    internal class EventNotification
     {
         [ProtoMember(Position = 1)]
         public Event current_event { get; set; }
@@ -1708,7 +1708,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class SetFocusNotification
+    internal class SetFocusNotification
     {
         [ProtoMember(Position = 1)]
         public ConversationId conversation_id { get; set; }
@@ -1728,7 +1728,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class SetTypingNotification
+    internal class SetTypingNotification
     {
         [ProtoMember(Position = 1)]
         public ConversationId conversation_id { get; set; }
@@ -1745,7 +1745,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class SetConversationNotificationLevelNotification
+    internal class SetConversationNotificationLevelNotification
     {
         [ProtoMember(Position = 1)]
         public ConversationId conversation_id { get; set; }
@@ -1762,7 +1762,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class ReplyToInviteNotification
+    internal class ReplyToInviteNotification
     {
         [ProtoMember(Position = 1)]
         public ConversationId conversation_id { get; set; }
@@ -1775,7 +1775,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class WatermarkNotification
+    internal class WatermarkNotification
     {
         [ProtoMember(Position = 1)]
         public ParticipantId sender_id { get; set; }
@@ -1789,7 +1789,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class ConversationViewModification
+    internal class ConversationViewModification
     {
         [ProtoMember(Position = 1)]
         public ConversationId conversation_id { get; set; }
@@ -1803,7 +1803,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class EasterEggNotification
+    internal class EasterEggNotification
     {
         [ProtoMember(Position = 1)]
         public ParticipantId sender_id { get; set; }
@@ -1818,7 +1818,7 @@ major exception that "Client" prefixes have been removed.
 
     // Notifies the status of other clients and mood.
     [ProtoContract]
-    public class SelfPresenceNotification
+    internal class SelfPresenceNotification
     {
         [ProtoMember(Position = 1)]
         public ClientPresenceState client_presence_state { get; set; }
@@ -1838,7 +1838,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class DeleteActionNotification
+    internal class DeleteActionNotification
     {
         [ProtoMember(Position = 1)]
         public ConversationId conversation_id { get; set; }
@@ -1849,7 +1849,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class PresenceNotification
+    internal class PresenceNotification
     {
         [ProtoMember(Position = 1)]
         public List<PresenceResult> presence { get; set; }
@@ -1857,7 +1857,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class BlockNotification
+    internal class BlockNotification
     {
         [ProtoMember(Position = 1)]
         public List<BlockStateChange> block_state_change { get; set; }
@@ -1865,7 +1865,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class SetNotificationSettingNotification
+    internal class SetNotificationSettingNotification
     {
         [ProtoMember(Position = 2)]
         public DesktopSoundSetting desktop_sound_setting { get; set; }
@@ -1876,7 +1876,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class RichPresenceEnabledStateNotification
+    internal class RichPresenceEnabledStateNotification
     {
         [ProtoMember(Position = 1)]
         public List<RichPresenceEnabledState> rich_presence_enabled_state { get; set; }
@@ -1884,7 +1884,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class ConversationSpec
+    internal class ConversationSpec
     {
         [ProtoMember(Position = 1)]
         public ConversationId conversation_id { get; set; }
@@ -1898,7 +1898,7 @@ major exception that "Client" prefixes have been removed.
     // ----------------------------------------------------------------------------
 
     [ProtoContract]
-    public class AddUserRequest
+    internal class AddUserRequest
     {
         [ProtoMember(Position = 1)]
         public RequestHeader request_header { get; set; }
@@ -1912,7 +1912,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class AddUserResponse
+    internal class AddUserResponse
     {
         [ProtoMember(Position = 1)]
         public ResponseHeader response_header { get; set; }
@@ -1923,7 +1923,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class CreateConversationRequest
+    internal class CreateConversationRequest
     {
         [ProtoMember(Position = 1)]
         public RequestHeader request_header { get; set; }
@@ -1943,7 +1943,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class CreateConversationResponse
+    internal class CreateConversationResponse
     {
         [ProtoMember(Position = 1)]
         public ResponseHeader response_header { get; set; }
@@ -1957,7 +1957,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class DeleteConversationRequest
+    internal class DeleteConversationRequest
     {
         [ProtoMember(Position = 1)]
         public RequestHeader request_header { get; set; }
@@ -1971,7 +1971,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class DeleteConversationResponse
+    internal class DeleteConversationResponse
     {
         [ProtoMember(Position = 1)]
         public ResponseHeader response_header { get; set; }
@@ -1982,7 +1982,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class EasterEggRequest
+    internal class EasterEggRequest
     {
         [ProtoMember(Position = 1)]
         public RequestHeader request_header { get; set; }
@@ -1996,7 +1996,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class EasterEggResponse
+    internal class EasterEggResponse
     {
         [ProtoMember(Position = 1)]
         public ResponseHeader response_header { get; set; }
@@ -2007,7 +2007,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class GetConversationRequest
+    internal class GetConversationRequest
     {
         [ProtoMember(Position = 1)]
         public RequestHeader request_header { get; set; }
@@ -2031,7 +2031,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class GetConversationResponse
+    internal class GetConversationResponse
     {
         [ProtoMember(Position = 1)]
         public ResponseHeader response_header { get; set; }
@@ -2044,7 +2044,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class GetEntityByIdRequest
+    internal class GetEntityByIdRequest
     {
         [ProtoMember(Position = 1)]
         public RequestHeader request_header { get; set; }
@@ -2063,7 +2063,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class GetEntityByIdResponse
+    internal class GetEntityByIdResponse
     {
         [ProtoMember(Position = 1)]
         public ResponseHeader response_header { get; set; }
@@ -2076,7 +2076,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class GetSuggestedEntitiesRequest
+    internal class GetSuggestedEntitiesRequest
     {
         [ProtoMember(Position = 1)]
         public RequestHeader request_header { get; set; }
@@ -2112,7 +2112,7 @@ major exception that "Client" prefixes have been removed.
     }
     // cgserp
     [ProtoContract]
-    public class GetSuggestedEntitiesResponse
+    internal class GetSuggestedEntitiesResponse
     {
         [ProtoMember(Position = 1)]
         public ResponseHeader response_header { get; set; }
@@ -2141,7 +2141,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class GetSelfInfoRequest
+    internal class GetSelfInfoRequest
     {
         [ProtoMember(Position = 1)]
         public RequestHeader request_header { get; set; }
@@ -2151,7 +2151,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class GetSelfInfoResponse
+    internal class GetSelfInfoResponse
     {
         [ProtoMember(Position = 1)]
         public ResponseHeader response_header { get; set; }
@@ -2201,7 +2201,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class QueryPresenceRequest
+    internal class QueryPresenceRequest
     {
         [ProtoMember(Position = 1)]
         public RequestHeader request_header { get; set; }
@@ -2215,7 +2215,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class QueryPresenceResponse
+    internal class QueryPresenceResponse
     {
         [ProtoMember(Position = 1)]
         public ResponseHeader response_header { get; set; }
@@ -2226,7 +2226,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class RemoveUserRequest
+    internal class RemoveUserRequest
     {
         [ProtoMember(Position = 1)]
         public RequestHeader request_header { get; set; }
@@ -2237,7 +2237,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class RemoveUserResponse
+    internal class RemoveUserResponse
     {
         [ProtoMember(Position = 1)]
         public ResponseHeader response_header { get; set; }
@@ -2248,7 +2248,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class RenameConversationRequest
+    internal class RenameConversationRequest
     {
         [ProtoMember(Position = 1)]
         public RequestHeader request_header { get; set; }
@@ -2264,7 +2264,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class RenameConversationResponse
+    internal class RenameConversationResponse
     {
         [ProtoMember(Position = 1)]
         public ResponseHeader response_header { get; set; }
@@ -2277,7 +2277,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class SearchEntitiesRequest
+    internal class SearchEntitiesRequest
     {
         [ProtoMember(Position = 1)]
         public RequestHeader request_header { get; set; }
@@ -2291,7 +2291,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class SearchEntitiesResponse
+    internal class SearchEntitiesResponse
     {
         [ProtoMember(Position = 1)]
         public ResponseHeader response_header { get; set; }
@@ -2302,7 +2302,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class SendChatMessageRequest
+    internal class SendChatMessageRequest
     {
         [ProtoMember(Position = 1)]
         public RequestHeader request_header { get; set; }
@@ -2333,7 +2333,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class SendChatMessageResponse
+    internal class SendChatMessageResponse
     {
         [ProtoMember(Position = 1)]
         public ResponseHeader response_header { get; set; }
@@ -2347,7 +2347,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class SetActiveClientRequest
+    internal class SetActiveClientRequest
     {
         [ProtoMember(Position = 1)]
         public RequestHeader request_header { get; set; }
@@ -2371,7 +2371,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class SetActiveClientResponse
+    internal class SetActiveClientResponse
     {
         [ProtoMember(Position = 1)]
         public ResponseHeader response_header { get; set; }
@@ -2379,7 +2379,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class SetConversationLevelRequest
+    internal class SetConversationLevelRequest
     {
         [ProtoMember(Position = 1)]
         public RequestHeader request_header { get; set; }
@@ -2389,7 +2389,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class SetConversationLevelResponse
+    internal class SetConversationLevelResponse
     {
         [ProtoMember(Position = 1)]
         public ResponseHeader response_header { get; set; }
@@ -2399,7 +2399,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class SetConversationNotificationLevelRequest
+    internal class SetConversationNotificationLevelRequest
     {
         [ProtoMember(Position = 1)]
         public RequestHeader request_header { get; set; }
@@ -2413,7 +2413,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class SetConversationNotificationLevelResponse
+    internal class SetConversationNotificationLevelResponse
     {
         [ProtoMember(Position = 1)]
         public ResponseHeader response_header { get; set; }
@@ -2424,7 +2424,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class SetFocusRequest
+    internal class SetFocusRequest
     {
         [ProtoMember(Position = 1)]
         public RequestHeader request_header { get; set; }
@@ -2441,7 +2441,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class SetFocusResponse
+    internal class SetFocusResponse
     {
         [ProtoMember(Position = 1)]
         public ResponseHeader response_header { get; set; }
@@ -2453,7 +2453,7 @@ major exception that "Client" prefixes have been removed.
 
     // Allows setting one or more of the included presence-related settings.
     [ProtoContract]
-    public class SetPresenceRequest
+    internal class SetPresenceRequest
     {
         [ProtoMember(Position = 1)]
         public RequestHeader request_header { get; set; }
@@ -2473,7 +2473,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class SetPresenceResponse
+    internal class SetPresenceResponse
     {
         [ProtoMember(Position = 1)]
         public ResponseHeader response_header { get; set; }
@@ -2481,7 +2481,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class SetTypingRequest
+    internal class SetTypingRequest
     {
         [ProtoMember(Position = 1)]
         public RequestHeader request_header { get; set; }
@@ -2495,7 +2495,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class SetTypingResponse
+    internal class SetTypingResponse
     {
         [ProtoMember(Position = 1)]
         public ResponseHeader response_header { get; set; }
@@ -2506,7 +2506,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class SyncAllNewEventsRequest
+    internal class SyncAllNewEventsRequest
     {
         [ProtoMember(Position = 1)]
         public RequestHeader request_header { get; set; }
@@ -2523,7 +2523,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class SyncAllNewEventsResponse
+    internal class SyncAllNewEventsResponse
     {
         [ProtoMember(Position = 1)]
         public ResponseHeader response_header { get; set; }
@@ -2539,7 +2539,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class SyncRecentConversationsRequest
+    internal class SyncRecentConversationsRequest
     {
         [ProtoMember(Position = 1)]
         public RequestHeader request_header { get; set; }
@@ -2551,12 +2551,13 @@ major exception that "Client" prefixes have been removed.
         public long max_events_per_conversation { get; set; }
 
         [ProtoMember(Position = 5)]
-        public List<SyncFilter> sync_filter { get; set; }
+//        public List<SyncFilter> sync_filter { get; set; }
+        public SyncFilter sync_filter { get; set; }
 
     }
 
     [ProtoContract]
-    public class SyncRecentConversationsResponse
+    internal class SyncRecentConversationsResponse
     {
         [ProtoMember(Position = 1)]
         public ResponseHeader response_header { get; set; }
@@ -2570,7 +2571,7 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class UpdateWatermarkRequest
+    internal class UpdateWatermarkRequest
     {
         [ProtoMember(Position = 1)]
         public RequestHeader request_header { get; set; }
@@ -2584,10 +2585,29 @@ major exception that "Client" prefixes have been removed.
     }
 
     [ProtoContract]
-    public class UpdateWatermarkResponse
+    internal class UpdateWatermarkResponse
     {
         [ProtoMember(Position = 1)]
         public ResponseHeader response_header { get; set; }
 
+    }
+
+    [ProtoContract]
+    internal class ModifyOTRStatusRequest
+    {
+        [ProtoMember(Position = 1)]
+        public RequestHeader request_header { get; set; }
+
+        [ProtoMember(Position = 2)]
+        public object unknown1 { get; set; }
+
+        [ProtoMember(Position = 3)]
+        public OffTheRecordStatus otr_status { get; set; }
+
+        [ProtoMember(Position = 4)]
+        public object unknown2 { get; set; }
+
+        [ProtoMember(Position = 5)]
+        public EventRequestHeader event_request_header { get; set; }
     }
 }

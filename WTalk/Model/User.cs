@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Wtalk.MvvM;
+using WTalk.Mvvm;
 using WTalk.Core.ProtoJson.Schema;
 
 namespace WTalk.Model
@@ -10,7 +10,7 @@ namespace WTalk.Model
     public class User : ObservableObject
     {
         Entity _entity;
-        public User(Entity entity)
+        internal User(Entity entity)
         {
             _entity = entity;
         }
@@ -25,7 +25,7 @@ namespace WTalk.Model
         public bool Online { get { return _entity.presence != null ? _entity.presence.available : false; } }
         public string Email { get { return _entity.properties.canonical_email; } }
 
-        public void SetPresence(Presence presence)
+        internal void SetPresence(Presence presence)
         {
             _entity.presence = presence;
             OnPropertyChanged("Online");

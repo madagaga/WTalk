@@ -31,12 +31,12 @@ namespace WTalk
 
         public bool IsAuthenticated { get; private set; }
 
-        IFile file;
+        IFile _file;
         public AuthenticationManager()
         {
             _client = new HttpClient(new HttpClientHandler() { AllowAutoRedirect = true, CookieContainer = Client.CookieContainer, UseCookies = true });
 
-            file = FileSystem.Current.LocalStorage.CreateFileAsync("token.txt", CreationCollisionOption.OpenIfExists).Result;
+            _file = FileSystem.Current.LocalStorage.CreateFileAsync("token.txt", CreationCollisionOption.OpenIfExists).Result;
             LoadToken();
         }
 
@@ -48,14 +48,14 @@ namespace WTalk
         void LoadToken()
         {
 
-            string content = file.ReadAllTextAsync().Result;
+            string content = _file.ReadAllTextAsync().Result;
             if(!string.IsNullOrEmpty(content))
                 _token = JsonConvert.DeserializeObject<AccessToken>(content);
         }
 
         void SaveToken(string token)
         {
-            file.WriteAllTextAsync(token).Wait();                
+            _file.WriteAllTextAsync(token).Wait();                
         }
 
         public string GetCodeUrl()
@@ -88,6 +88,15 @@ namespace WTalk
             _token = JsonConvert.DeserializeObject<AccessToken>(content);
             SaveToken(content);
             Connect();
+        }
+
+        public void Disconnect()
+        {
+            try
+            {
+                _file.DeleteAsync().Wait();
+            }
+            catch{}
         }
 
         public void Connect()

@@ -4,7 +4,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 
-namespace Wtalk.MvvM
+namespace WTalk.Mvvm
 {
     public class ObservableObject : INotifyPropertyChanged
     {

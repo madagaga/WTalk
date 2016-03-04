@@ -39,18 +39,18 @@ namespace WTalk.Core.Utils
             return message;
         }
 
-        public static HttpResponseMessage PostJson(this HttpClient client, string apiKey, string endPoint, JArray body)
+        public static HttpResponseMessage PostJson(this HttpClient client, string endPoint, JArray body)
         {
-            return client.execute(apiKey, endPoint, body, true);
+            return client.execute(endPoint, body, true);
         }
 
-        public static HttpResponseMessage PostProtoJson<T>(this HttpClient client, string apiKey, string endPoint, T protoJsonObject) where T:class
+        public static HttpResponseMessage PostProtoJson<T>(this HttpClient client, string endPoint, T protoJsonObject) where T:class
         {
             JArray body = ProtoJsonSerializer.Serialize(protoJsonObject);
-            return client.execute(apiKey, endPoint, body, false);
+            return client.execute(endPoint, body, false);
         }
 
-        static HttpResponseMessage execute(this HttpClient client, string apiKey, string endPoint, JArray body, bool useJson)
+        static HttpResponseMessage execute(this HttpClient client, string endPoint, JArray body, bool useJson)
         {
              HttpResponseMessage message = null;
             try
@@ -58,13 +58,13 @@ namespace WTalk.Core.Utils
                
                 _logger.Debug("Sending Request : {0}", endPoint);
                 _logger.Debug("Sending data : {0}", body.ToString().Replace("\r\n", ""));
-                string uri = string.Format("{0}{1}?key={2}&alt={3}", HangoutUri.CHAT_SERVER_URL, endPoint, Uri.EscapeUriString(apiKey), useJson ? "json" : "protojson");
+                string uri = string.Format("{0}{1}?alt={2}", HangoutUri.CHAT_SERVER_URL, endPoint, useJson ? "json" : "protojson");
                 message = client.PostAsync(uri, new StringContent(body.ToString(), Encoding.UTF8, "application/json+protobuf")).Result;
-                message.EnsureSuccessStatusCode();
+                message.EnsureSuccessStatusCode();                
                 _logger.Debug("Received data : {0}", message.Content.ReadAsStringAsync().Result.Replace("\n", ""));
                 
             }
-            catch(Exception e)
+            catch
             {
 
             }
