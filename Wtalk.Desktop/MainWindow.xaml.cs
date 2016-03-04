@@ -24,8 +24,7 @@ namespace Wtalk.Desktop
         public MainWindow()
         {
             InitializeComponent();
-            this.DataContext = new MainViewModel();
-            this.Closing += MainWindow_Closing;
+            this.DataContext = new MainViewModel();            
             this.Activated += MainWindow_Activated;
             
         }
@@ -34,21 +33,6 @@ namespace Wtalk.Desktop
         {
             if (this.WindowState == System.Windows.WindowState.Normal)
                 ((MainViewModel)this.DataContext).SetPresenceCommand.Execute(null);
-        }
-
-        void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
-        {
-            if (MessageBox.Show("Quit ? ", "WTalk", MessageBoxButton.YesNo) == MessageBoxResult.No)
-            {
-                this.WindowState = System.Windows.WindowState.Minimized;
-                e.Cancel = true;
-            }
-        }
-
-        protected override void OnClosed(EventArgs e)
-        {
-            base.OnClosed(e);
-            Application.Current.Shutdown();
-        }
+        }        
     }
 }

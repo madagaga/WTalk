@@ -3,27 +3,34 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d"
-        xmlns:viewModel="clr-namespace:Wtalk.Desktop.ViewModel"
-        d:DataContext="{d:DesignInstance Type=viewModel:FakeMainViewModel, IsDesignTimeCreatable=True}"
+        xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
+        xmlns:designData="clr-namespace:Wtalk.Desktop.DesignData"
+        mc:Ignorable="d"                        
+        d:DataContext="{d:DesignInstance Type=designData:DesignMainViewModel, IsDesignTimeCreatable=True}"
         Title="{Binding CurrentUser.DisplayName, StringFormat='Wtalk - {0}'}" Height="420" Width="300"  x:Name="mainWindow"
        Style="{DynamicResource window_style}">
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="Resources\WTalkStyle.xaml" />
-                <ResourceDictionary>                    
-                    <!--<local:DynamicBindingConverter x:Key="dynamicBindingConverter" />-->
+                <ResourceDictionary>
+                    <!--<local:TabSizeConverter x:Key="TabSizeConverter" />-->
+                    <CollectionViewSource x:Key="SortedActiveContacts" Source="{Binding ActiveContacts.Values}">
+                        <CollectionViewSource.SortDescriptions>
+                            <scm:SortDescription PropertyName="Online" Direction="Descending"/>
+                            <scm:SortDescription PropertyName="LastMessageDate" Direction="Descending"/>
+                        </CollectionViewSource.SortDescriptions>
+                    </CollectionViewSource>
                 </ResourceDictionary>
             </ResourceDictionary.MergedDictionaries>
             <BitmapImage x:Key="DefaultImage" UriSource="Resources/default-user-icon-profile.png" />
         </ResourceDictionary>
-    </Window.Resources>    
+    </Window.Resources>
     <Grid>
         <Grid Height="50" VerticalAlignment="Top" DataContext="{Binding CurrentUser}">
-                <Grid.Background>
-                    <ImageBrush ImageSource="Resources/talk.png" Stretch="Uniform" AlignmentX="Left"/>
-                </Grid.Background>
+            <Grid.Background>
+                <ImageBrush ImageSource="Resources/talk.png" Stretch="Uniform" AlignmentX="Left"/>
+            </Grid.Background>
             <ComboBox  Margin="55,0,5,0" Height="30" SelectedIndex="{Binding DataContext.CurrentPresenceIndex,ElementName=mainWindow}">
                 <ComboBoxItem IsSelected="True">
                     <Grid>
@@ -43,54 +50,58 @@
                         </TextBlock>
                     </Grid>
                 </ComboBoxItem>
+                <ComboBoxItem>
+                    <Grid>
+                        <Border Margin="0,8" Height="10" Width="10" CornerRadius="10" VerticalAlignment="Top" HorizontalAlignment="Left" IsEnabled="False" Style="{StaticResource status_indicator}"></Border>
+                        <TextBlock Padding="4" Margin="10,0" VerticalAlignment="Top">                        
+                        LogOff
+                        </TextBlock>
+                    </Grid>
+                </ComboBoxItem>
+                <ComboBoxItem>
+                    <Grid>
+                        <Border Margin="0,8" Height="10" Width="10" CornerRadius="10" VerticalAlignment="Top" HorizontalAlignment="Left" IsEnabled="False" Style="{StaticResource status_indicator}"></Border>
+                        <TextBlock Padding="4" Margin="10,0" VerticalAlignment="Top">                        
+                        Close
+                        </TextBlock>
+                    </Grid>
+                </ComboBoxItem>
             </ComboBox>
-               
+
         </Grid>
-        <Border VerticalAlignment="Top" Height="20" Margin="10,51,10,0" BorderThickness="1" BorderBrush="#FFC1C1C1" CornerRadius="2" SnapsToDevicePixels="True">
-            <TextBox BorderThickness="0" Text="{Binding FilterText}" />
-        </Border>
         
-        <ScrollViewer Margin="0,75,0,20">
+        <ScrollViewer Margin="0,50,0,0">
             <StackPanel>
-                    <ItemsControl ItemsSource="{Binding Contacts}">
+                <ItemsControl ItemsSource="{Binding Source={StaticResource SortedActiveContacts}}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                                <Button BorderThickness="0,1" Background="Transparent" Padding="0" Command="{Binding Path=DataContext.OpenConversationCommand, ElementName=mainWindow}" CommandParameter="{Binding Path=.}" Style="{StaticResource contact}">
-                                    <Button.Template>
-                                        <ControlTemplate>
-                                        <Border Height="45" BorderThickness="1">
-                                            <Border.Style>
-                                                <Style>
-                                                    <Setter Property="Border.Background" Value="Transparent" />
-                                                    <Style.Triggers>
-                                                        <Trigger Property="Border.IsMouseOver" Value="True">                                                            
-                                                            <Setter Property="Border.Background" Value="#f8f8f8" />
-                                                            <Setter Property="Border.BorderBrush" Value="#ededed" />
-                                                        </Trigger>
-                                                    </Style.Triggers>
-                                                </Style>
-                                            </Border.Style>
+                            <Button BorderThickness="0,1" Background="Transparent" Padding="0" Command="{Binding DataContext.OpenConversationCommand, ElementName=mainWindow}" CommandParameter="{Binding Path=Conversation.Id}" Style="{StaticResource contact}">
+                                <Button.Template>
+                                    <ControlTemplate>
+                                        <Border Height="45" BorderThickness="1"  Style="{StaticResource list_border}">                                                    
                                             <Grid>
-                                                <Border Height="10" Width="10" CornerRadius="10" Margin="5,0,0,0" HorizontalAlignment="Left" IsEnabled="{Binding Online, FallbackValue=False}" Style="{StaticResource status_indicator}"></Border>
-                                                <TextBlock Margin="20,0,40,0" Padding="5" VerticalAlignment="Top" Text="{Binding DisplayName}"></TextBlock>
-                                                <TextBlock Margin="20,0,40,0" Padding="5" VerticalAlignment="Bottom" Style="{StaticResource status_text}" Text="{Binding Email}"></TextBlock>
+                                                <Border Height="10" Width="10" CornerRadius="10" Margin="5,0,0,0" HorizontalAlignment="Left" IsEnabled="{Binding Path=Contact.Online, FallbackValue=False}" Style="{StaticResource status_indicator}"/>
+                                                <TextBlock Margin="20,0,40,0" Padding="5" VerticalAlignment="Top" Text="{Binding Path=Contact.DisplayName}" />
+                                                <TextBlock Margin="20,0,40,0" Padding="5" VerticalAlignment="Bottom" Style="{StaticResource status_text}" Text="{Binding LastMessage}"/>
                                                 <Border CornerRadius="40" BorderBrush="Gainsboro" BorderThickness="1,1,1,1"  Height="35" Width="35" HorizontalAlignment="Right" Margin="3,3,7,3">
                                                     <Border.Background>
-                                                        <ImageBrush ImageSource="{Binding PhotoUrl,FallbackValue={StaticResource DefaultImage}, TargetNullValue={StaticResource DefaultImage}}"></ImageBrush>
+                                                        <ImageBrush ImageSource="{Binding Path=Contact.PhotoUrl, FallbackValue={StaticResource DefaultImage}, TargetNullValue={StaticResource DefaultImage}}"/>
                                                     </Border.Background>
                                                 </Border>
                                                 <Rectangle Height="1" VerticalAlignment="Bottom" Margin="15,0"  Fill="#ededed" />
                                             </Grid>
                                         </Border>
                                     </ControlTemplate>
-                                    </Button.Template>
-                                </Button>
-                            </DataTemplate>
+                                </Button.Template>
+                            </Button>
+                        </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
             </StackPanel>
         </ScrollViewer>
-        <Grid Background="#fbfdfc" IsEnabled="{Binding AuthenticationRequiered}">
+
+
+        <Grid Background="#fbfdfc" IsEnabled="{Binding AuthenticationRequired}">
             <Grid.Style>
                 <Style>
                     <Setter Property="Grid.Visibility" Value="Hidden" />
@@ -111,5 +122,5 @@
             </Border>
 
         </Grid>
-    </Grid>    
+    </Grid>
 </Window>

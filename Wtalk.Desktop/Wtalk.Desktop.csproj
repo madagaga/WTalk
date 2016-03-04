@@ -80,6 +80,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Net" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Net.Http.WebRequest" />
@@ -106,12 +107,13 @@
     <Compile Include="ConversationWindow.xaml.cs">
       <DependentUpon>ConversationWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Converter\TextAlignmentConverter.cs" />
+    <Compile Include="CustomDataTemplate\MessageDataTemplateSelector.cs" />
+    <Compile Include="DesignData\DesignConversationViewModel.cs" />
+    <Compile Include="DesignData\DesignMainViewModel.cs" />
     <Compile Include="Extension\FlashingWindow.cs" />
+    <Compile Include="Model\ActiveContactModel.cs" />
     <Compile Include="Resources\WTalkStyle.xaml.cs" />
     <Compile Include="ViewModel\ConversationViewModel.cs" />
-    <Compile Include="ViewModel\FakeMainViewModel.cs" />
-    <Compile Include="ViewModel\FakeConversationViewModel.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />
     <Compile Include="WindowManager\ConversationWindowManager.cs" />
     <Page Include="AuthWindows.xaml">
@@ -134,6 +136,10 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="Resources\MessageDataTemplate.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Resources\WTalkStyle.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -200,6 +206,7 @@
       <Install>false</Install>
     </BootstrapperPackage>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

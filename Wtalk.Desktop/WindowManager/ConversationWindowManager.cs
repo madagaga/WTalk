@@ -44,6 +44,8 @@ namespace Wtalk.Desktop.WindowManager
         void message_textbox_GotFocus(object sender, System.Windows.RoutedEventArgs e)
         {
             ViewModel.SetFocusCommand.Execute(null);
+            Window.scrollBar.ScrollToBottom();
+            Window.StopFlashingWindow();
         }
 
         void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
