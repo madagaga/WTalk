@@ -3,20 +3,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Wtalk.MvvM;
+using WTalk.Mvvm;
 using WTalk;
 using WTalk.Model;
-
 using System.Collections.ObjectModel;
 using Wtalk.Desktop.WindowManager;
-using WTalk.Core.ProtoJson.Schema;
+using Wtalk.Desktop.Model;
 
 namespace Wtalk.Desktop.ViewModel
 {
     public class MainViewModel : ObservableObject
     {
-        public ObservableCollection<User> Contacts { get; private set; }
-        Dictionary<string, User> _contactDictionary;
+        public ObservableDictionary<string, ActiveContactModel> ActiveContacts { get; private set; }
+        
         public User CurrentUser { get; set; }
 
         int _currentPresenceIndex = 0;
@@ -24,16 +23,26 @@ namespace Wtalk.Desktop.ViewModel
         public int CurrentPresenceIndex
         {
             get { return _currentPresenceIndex; }
-            set {       
-                if(value == 2)
+            set {
+                if (value == 2)
+                {
+                    _authenticationManager.Disconnect();
+                    System.Diagnostics.Process.Start(System.Windows.Application.ResourceAssembly.Location);
                     System.Windows.Application.Current.Shutdown();
+                    return;
+                }
+                if(value == 3)
+                {
+                    System.Windows.Application.Current.Shutdown();
+                    return;
+                }
                 _currentPresenceIndex = value;
                 _lastStateUpdate = DateTime.Now.AddSeconds(-750);
                 SetPresence();
             }
         }
 
-        public bool AuthenticationRequiered
+        public bool AuthenticationRequired
         {
             get { return !_authenticationManager.IsAuthenticated; }
         }
@@ -42,17 +51,20 @@ namespace Wtalk.Desktop.ViewModel
 
         Dictionary<string, ConversationWindowManager> _conversationCache;
 
-        public RelayCommand OpenConversationCommand { get; private set; }
-        public RelayCommand SetAuthenticationCodeCommand { get; private set; }
+        public RelayCommand<string> OpenConversationCommand { get; private set; }
+        public RelayCommand<string> LoadConversationCommand { get; private set; }
+
+        public RelayCommand<string> SetAuthenticationCodeCommand { get; private set; }
         public RelayCommand GetCodeCommand { get; private set; }
         public RelayCommand SetPresenceCommand { get; private set; }
 
         public MainViewModel()
         {
-            OpenConversationCommand = new RelayCommand((p) => LoadConversation(p, true));
-            SetAuthenticationCodeCommand = new RelayCommand((p) => SetAuthenticationCode(p.ToString()));
-            GetCodeCommand = new RelayCommand((p)=> GetCode());
-            SetPresenceCommand = new RelayCommand((p) => SetPresence());
+            OpenConversationCommand = new RelayCommand<string>((p) => OpenConversation(p, true));
+            LoadConversationCommand = new RelayCommand<string>((p) => LoadConversation(p, true));
+            SetAuthenticationCodeCommand = new RelayCommand<string>((p) => SetAuthenticationCode(p));
+            GetCodeCommand = new RelayCommand(() => GetCode());
+            SetPresenceCommand = new RelayCommand(() => SetPresence());
 
 
             _authenticationManager = new AuthenticationManager();
@@ -65,8 +77,7 @@ namespace Wtalk.Desktop.ViewModel
             _client.NewConversationCreated += _client_NewConversationCreated;
             _client.UserInformationReceived += _client_UserInformationLoaded;
             _client.ContactInformationReceived += _client_ContactInformationReceived;
-            _client.ConnectionEstablished += _client_OnConnectionEstablished;
-            _client.PresenceInformationReceived += _client_PresenceInformationReceived;         
+            _client.ConnectionEstablished += _client_OnConnectionEstablished;            
             
             if(_authenticationManager.IsAuthenticated)
                 _client.Connect();
@@ -74,76 +85,53 @@ namespace Wtalk.Desktop.ViewModel
             
         }
 
-        void _client_NewConversationCreated(object sender, ConversationState e)
-        {
-            string participantId = e.conversation.current_participant.FirstOrDefault(c => c.chat_id != CurrentUser.Id).chat_id;
-            _conversationCache.Add(participantId,new ConversationWindowManager(new ConversationViewModel(new WTalk.Model.Conversation(e), _client)));
-            if(!_contactDictionary.ContainsKey(participantId))
-            {
-                _client.GetEntityById(participantId);
-                LoadConversation(participantId, false);
-            }
+        void _client_NewConversationCreated(object sender, Conversation e)
+        {            
+            _conversationCache.Add(e.Id,new ConversationWindowManager(new ConversationViewModel(e, _client)));            
+            LoadConversation(e.Id, false);
+            
         }
 
-        void _client_ContactInformationReceived(object sender, Entity e)
+        void _client_ContactInformationReceived(object sender, User e)
         {
-            if (!_contactDictionary.ContainsKey(e.id.chat_id))
-            {
-                _contactDictionary.Add(e.id.chat_id, new User(e));
-                App.Current.Dispatcher.Invoke(() =>
-                {
-                    Contacts.Add(_contactDictionary[e.id.chat_id]);
-                    OnPropertyChanged("Contacts");
-                });
-            }
+            if (ActiveContacts.ContainsKey(e.Id))
+                ActiveContacts[e.Id].Contact = e;
+            else
+                ActiveContacts.Add(e.Id, new ActiveContactModel() { Contact = e });
         }
-
-        void _client_PresenceInformationReceived(object sender, PresenceResult e)
+             
+        void _client_UserInformationLoaded(object sender, User e)
         {
-            if (_contactDictionary != null && _contactDictionary.ContainsKey(e.user_id.chat_id))
-            {
-                _contactDictionary[e.user_id.chat_id].SetPresence(e.presence);
-                Contacts = new ObservableCollection<User>(Contacts.OrderBy(c => !c.Online).ThenBy(c => c.DisplayName));
-                OnPropertyChanged("Contacts");
-            }
-            else if (CurrentUser.Id == e.user_id.chat_id)
-                CurrentUser.SetPresence(e.presence);
-        }
-
-        void _client_UserInformationLoaded(object sender, Entity e)
-        {
-            CurrentUser = new User(_client.CurrentUser);
+            CurrentUser = _client.CurrentUser;
             OnPropertyChanged("CurrentUser");
         }
 
-        void _client_ConversationHistoryLoaded(object sender, List<ConversationState> e)
+        void _client_ConversationHistoryLoaded(object sender, List<Conversation> e)
         {
             // associate contact list and last active conversation
-            // only 1 to 1 conversation supported
-            _conversationCache = new Dictionary<string, ConversationWindowManager>();
-            List<WTalk.Model.Conversation> filteredConversations = e.Where(c => c.conversation.type == ConversationType.CONVERSATION_TYPE_ONE_TO_ONE)
-                .Select(c => new WTalk.Model.Conversation(c)).ToList();
-
-            string participantId = null;
-            filteredConversations.ForEach((convCache) =>
+            // only 1 to 1 conversation supported   
+            if (ActiveContacts == null)
+                ActiveContacts = new ObservableDictionary<string, ActiveContactModel>();
+            string participant_id;
+            foreach(Conversation conversation in e)
             {
-                participantId = convCache.Participants.Keys.FirstOrDefault(c => c != CurrentUser.Id);
-                if (!string.IsNullOrEmpty(participantId))
-                    _conversationCache.Add(participantId, new ConversationWindowManager(new ConversationViewModel(convCache, _client)));
-            });
+                participant_id = conversation.Participants.Keys.FirstOrDefault(c => c != CurrentUser.Id);
+                if (ActiveContacts.ContainsKey(participant_id))
+                    ActiveContacts[participant_id].Conversation = conversation;
+                else 
+                    ActiveContacts.Add(participant_id, new ActiveContactModel() { Conversation = conversation });
+            }
+            _conversationCache = e.ToDictionary(c=>c.Id, c=>new ConversationWindowManager(new ConversationViewModel(c, _client)));
         }
 
-        void _client_ContactListLoaded(object sender, List<Entity> e)
+        void _client_ContactListLoaded(object sender, List<User> e)
         {
-            _contactDictionary = e.ToDictionary(c => c.id.chat_id, c => new User(c));
-            Contacts = new ObservableCollection<User>(_contactDictionary.Values);            
+            ActiveContacts = new ObservableDictionary<string, ActiveContactModel>(e.ToDictionary(c => c.Id, c => new ActiveContactModel() { Contact = c }));
         }
 
 
         void _client_OnConnectionEstablished(object sender, EventArgs e)
-        {
-            _client.SetActiveClient();
-           
+        {  
             if (CurrentUser != null)
                 _client.SetPresence();
             else
@@ -151,23 +139,21 @@ namespace Wtalk.Desktop.ViewModel
 
             if(_conversationCache == null || _conversationCache.Count == 0)
                 _client.SyncRecentConversations();
-
-            if (Contacts == null || Contacts.Count == 0)
-            {
-                _contactDictionary = new Dictionary<string, User>();
-                Contacts = new ObservableCollection<User>();
-                _client.GetEntityById(_conversationCache.Keys.Distinct().ToArray());
-            }
-            else
-                _client.QueryPresences();
         }
 
-        void LoadConversation(object selectedUser, bool bringToFront)
+        void OpenConversation(string conversationId, bool bringToFront)
         {
-            User participant = selectedUser as User;
+            if (_conversationCache.ContainsKey(conversationId))
+                _conversationCache[conversationId].Show(bringToFront);             
 
-            if (_conversationCache.ContainsKey(participant.Id))
-                _conversationCache[participant.Id].Show(bringToFront);             
+        }
+
+        void LoadConversation(string userId, bool bringToFront)
+        {
+            //User participant = selectedUser as User;
+
+            //if (_conversationCache.ContainsKey(conversationId))
+            //    _conversationCache[conversationId].Show(bringToFront);
 
         }
 
@@ -187,14 +173,13 @@ namespace Wtalk.Desktop.ViewModel
             _authenticationManager.AuthenticateWithCode(code);
             if (_authenticationManager.IsAuthenticated)
                 _client.Connect();
-            OnPropertyChanged("AuthenticationRequiered");
+            OnPropertyChanged("AuthenticationRequired");
         }
 
         void SetPresence()
         {            
             if (this.CurrentUser != null && (DateTime.Now - _lastStateUpdate).TotalSeconds > 720)
-            {
-                _client.SetActiveClient();
+            {                
                 _client.SetPresence(_currentPresenceIndex == 0 ? 40 : 1);
                 _lastStateUpdate = DateTime.Now;
             }

@@ -4,76 +4,70 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Wtalk.MvvM;
+using WTalk.Mvvm;
 using WTalk;
-using WTalk.Core.ProtoJson.Schema;
 using WTalk.Model;
 
 namespace Wtalk.Desktop.ViewModel
 {
     public class ConversationViewModel : ObservableObject
-    {
-        public Participant Participant { get; set; }
-        WTalk.Model.Conversation _conversationCache;
-        Message _lastMessage;
-        public ObservableCollection<Message> Messages { get; private set; }
+    {        
+        WTalk.Model.Conversation _innerConversation;  
+        public event EventHandler AttentionRequired;
+        public string Participants { get { return _innerConversation.ParticipantsName; } }
+        public bool HistoryEnabled { get { return _innerConversation.HistoryEnabled; } }
+        public ObservableCollection<Message> Messages { get { return _innerConversation.MessagesHistory; } }
 
-        public event EventHandler AttentionRequired; 
+        Client _client;        
 
-        Client _client;
-
-        public RelayCommand SendMessageCommand { get; private set; }
+        public RelayCommand<object> SendMessageCommand { get; private set; }
         public RelayCommand SetFocusCommand { get; private set; }
 
-        public ConversationViewModel(WTalk.Model.Conversation conversationCache, Client client)
-        {
-            this.Participant = conversationCache.Participants.Values.FirstOrDefault(c=>c.Id != client.CurrentUser.id.chat_id);
-            this.Messages = new ObservableCollection<Message>(conversationCache.MessagesHistory);
-            _lastMessage = this.Messages.LastOrDefault();
-            this._conversationCache = conversationCache;            
+        public RelayCommand DeleteConversationCommand { get; private set; }
+        public RelayCommand SetOTRCommand { get; private set; }
+
+        public ConversationViewModel(WTalk.Model.Conversation conversation, Client client)
+        {            
+            this._innerConversation = conversation;
+            this._innerConversation.NewMessageReceived += _innerConversation_NewMessageReceived;
             this._client = client;
-            this._client.NewConversationEventReceived += _client_NewConversationEventReceived;
-
-
-            SendMessageCommand = new RelayCommand((p) => SendMessage(p.ToString()));
-            SetFocusCommand = new RelayCommand((p) => SetFocus(_conversationCache.Id));            
+            
+            SendMessageCommand = new RelayCommand<object>((p) => SendMessage(p.ToString()));
+            SetFocusCommand = new RelayCommand(() => SetFocus());
+            DeleteConversationCommand = new RelayCommand(() => DeleteConversation());
+            SetOTRCommand = new RelayCommand(() => SetOTR());
         }
 
-        void _client_NewConversationEventReceived(object sender, Event e)
+        private void SetOTR()
         {
-            if (e.conversation_id.id == this._conversationCache.Id)
+            _client.ModifyOTRStatus(_innerConversation.Id, !_innerConversation.HistoryEnabled);
+        }
+
+        private void DeleteConversation()
+        {
+            
+        }
+
+        void _innerConversation_NewMessageReceived(object sender, Message e)
+        {            
+            App.Current.Dispatcher.Invoke(() =>
             {
-                if (_lastMessage.SenderId == e.sender_id.chat_id)
-                    _lastMessage.AppendContent(e.chat_message);
-                else
-                {
-                    _lastMessage = new Message(_conversationCache.Participants[e.sender_id.chat_id], e);
-                    App.Current.Dispatcher.Invoke(() =>
-                    {
-                        Messages.Add(_lastMessage);
-                    });
-                }
-
-                App.Current.Dispatcher.Invoke(() =>
-                {
-                    if (AttentionRequired != null)
-                        AttentionRequired(this, null);
-                });
-
-                
-            }
+                if (AttentionRequired != null)
+                    AttentionRequired(this, null);
+            });
         }
 
-        private void SetFocus(string conversationId)
+
+        private void SetFocus()
         {
-            this._conversationCache.UpdateReadState();
-            _client.SetFocus(conversationId);            
+            this._innerConversation.UpdateReadState();
+            _client.SetFocus(_innerConversation.Id);            
         }
 
       
         private void SendMessage(string p)
         {
-            _client.SendChatMessage(_conversationCache.Id, p);
+            _client.SendChatMessage(_innerConversation.Id, p);
         }
 
         
