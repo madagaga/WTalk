@@ -11,14 +11,18 @@ using WTalk.Model;
 namespace Wtalk.Desktop.ViewModel
 {
     public class ConversationViewModel : ObservableObject
-    {        
-        WTalk.Model.Conversation _innerConversation;  
-        public event EventHandler AttentionRequired;
-        public string Participants { get { return _innerConversation.ParticipantsName; } }
-        public bool HistoryEnabled { get { return _innerConversation.HistoryEnabled; } }
-        public ObservableCollection<Message> Messages { get { return _innerConversation.MessagesHistory; } }
-
+    {           
         Client _client;        
+        public event EventHandler AttentionRequired;        
+
+        //user
+        public User Contact { get; private set; }
+        public string Participants { get; private set; }
+
+        // conversations        
+        public WTalk.Model.Conversation Conversation { get; private set; }
+        public DateTime LastMessageDate { get { return Conversation.MessagesHistory.Last().MessageDate; } }
+        
 
         public RelayCommand<object> SendMessageCommand { get; private set; }
         public RelayCommand SetFocusCommand { get; private set; }
@@ -26,21 +30,32 @@ namespace Wtalk.Desktop.ViewModel
         public RelayCommand DeleteConversationCommand { get; private set; }
         public RelayCommand SetOTRCommand { get; private set; }
 
-        public ConversationViewModel(WTalk.Model.Conversation conversation, Client client)
-        {            
-            this._innerConversation = conversation;
-            this._innerConversation.NewMessageReceived += _innerConversation_NewMessageReceived;
-            this._client = client;
-            
-            SendMessageCommand = new RelayCommand<object>((p) => SendMessage(p.ToString()));
+
+        public ConversationViewModel()
+        {
+            SendMessageCommand = new RelayCommand<object>((messageContent) => SendMessage(messageContent.ToString()));
             SetFocusCommand = new RelayCommand(() => SetFocus());
             DeleteConversationCommand = new RelayCommand(() => DeleteConversation());
             SetOTRCommand = new RelayCommand(() => SetOTR());
         }
 
+        public ConversationViewModel(Client client):this()
+        {
+            _client = client;
+        }
+
+
+        public ConversationViewModel(WTalk.Model.Conversation conversation, Client client):this(client)
+        {
+            this.Conversation = conversation;
+            this.Conversation.NewMessageReceived += Conversation_NewMessageReceived;
+            this.Contact = client.GetContactFromCache(conversation.Participants.Where(c => c.Key != client.CurrentUser.Id).FirstOrDefault().Key);
+            Participants = this.Contact.DisplayName;
+        }
+
         private void SetOTR()
         {
-            _client.ModifyOTRStatus(_innerConversation.Id, !_innerConversation.HistoryEnabled);
+            _client.ModifyOTRStatus(Conversation.Id, !Conversation.HistoryEnabled);
         }
 
         private void DeleteConversation()
@@ -48,8 +63,9 @@ namespace Wtalk.Desktop.ViewModel
             
         }
 
-        void _innerConversation_NewMessageReceived(object sender, Message e)
-        {            
+        void Conversation_NewMessageReceived(object sender, Message e)
+        {
+            OnPropertyChanged("Messages");
             App.Current.Dispatcher.Invoke(() =>
             {
                 if (AttentionRequired != null)
@@ -60,14 +76,14 @@ namespace Wtalk.Desktop.ViewModel
 
         private void SetFocus()
         {
-            this._innerConversation.UpdateReadState();
-            _client.SetFocus(_innerConversation.Id);            
+            this.Conversation.UpdateReadState();
+            _client.SetFocus(Conversation.Id);            
         }
 
       
-        private void SendMessage(string p)
+        private void SendMessage(string content)
         {
-            _client.SendChatMessage(_innerConversation.Id, p);
+            _client.SendChatMessage(Conversation.Id, content);
         }
 
         

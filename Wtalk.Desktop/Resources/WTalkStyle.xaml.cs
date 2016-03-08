@@ -19,8 +19,14 @@ namespace Wtalk.Desktop.Resources
         private void Button_Click(object sender, System.Windows.RoutedEventArgs e)
         {
             System.Windows.Window window = ((System.Windows.Controls.Button)sender).TemplatedParent as System.Windows.Window;
+
             if (window is MainWindow)
-                window.WindowState = System.Windows.WindowState.Minimized;
+            {
+                if (((Wtalk.Desktop.ViewModel.MainViewModel)window.DataContext).AuthenticationRequired)
+                    App.Current.Shutdown();
+                else
+                    window.WindowState = System.Windows.WindowState.Minimized;
+            }
             else
                 window.Hide();
         }

@@ -1,5 +1,5 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="Wtalk.Desktop.Resources.WTalkStyle" xmlns:converter="clr-namespace:Wtalk.Desktop.Converter">
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="Wtalk.Desktop.Resources.WTalkStyle">
 
     <Style x:Key="window_style" TargetType="Window">
         <Setter Property="AllowsTransparency" Value="True" />
@@ -150,30 +150,6 @@
                 </DataTrigger>
             </Style.Triggers>
         </Style>
-
-    <converter:TabSizeConverter x:Key="tabSizeConverter" />
-    <Style TargetType="{x:Type TabItem}">
-        <Setter Property="Width" Value="{Binding  Path=ActualWidth,    
-                     RelativeSource={RelativeSource    
-                    Mode=FindAncestor,    
-                    AncestorType={x:Type TabControl} },Converter={StaticResource tabSizeConverter}}" />
-        <Setter Property="HeaderTemplate">
-            <Setter.Value>
-                <DataTemplate>
-                    <ContentPresenter Content="{TemplateBinding Content}">                        
-                    </ContentPresenter>
-                </DataTemplate>
-            </Setter.Value>
-        </Setter>
-        <Setter Property="Background" Value="Transparent" />   
-        <Setter Property="BorderBrush" Value="Transparent" />
-        <Style.Triggers>
-            <Trigger Property="IsSelected" Value="True">                                
-                <Setter Property="BorderBrush" Value="Transparent" />
-                <Setter Property="Background" Value="Transparent" />
-            </Trigger>
-        </Style.Triggers>
-    </Style>
     
     <Style TargetType="ToggleButton" x:Key="toggle_button">
         <Setter Property="Template">

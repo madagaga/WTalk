@@ -8,13 +8,12 @@ using WTalk;
 using WTalk.Model;
 using System.Collections.ObjectModel;
 using Wtalk.Desktop.WindowManager;
-using Wtalk.Desktop.Model;
 
 namespace Wtalk.Desktop.ViewModel
 {
     public class MainViewModel : ObservableObject
     {
-        public ObservableDictionary<string, ActiveContactModel> ActiveContacts { get; private set; }
+        public ObservableDictionary<string, ConversationViewModel> ActiveContacts { get; private set; }
         
         public User CurrentUser { get; set; }
 
@@ -94,10 +93,7 @@ namespace Wtalk.Desktop.ViewModel
 
         void _client_ContactInformationReceived(object sender, User e)
         {
-            if (ActiveContacts.ContainsKey(e.Id))
-                ActiveContacts[e.Id].Contact = e;
-            else
-                ActiveContacts.Add(e.Id, new ActiveContactModel() { Contact = e });
+            OnPropertyChanged("ActiveContacts");           
         }
              
         void _client_UserInformationLoaded(object sender, User e)
@@ -111,22 +107,15 @@ namespace Wtalk.Desktop.ViewModel
             // associate contact list and last active conversation
             // only 1 to 1 conversation supported   
             if (ActiveContacts == null)
-                ActiveContacts = new ObservableDictionary<string, ActiveContactModel>();
-            string participant_id;
+                ActiveContacts = new ObservableDictionary<string, ConversationViewModel>();            
             foreach(Conversation conversation in e)
-            {
-                participant_id = conversation.Participants.Keys.FirstOrDefault(c => c != CurrentUser.Id);
-                if (ActiveContacts.ContainsKey(participant_id))
-                    ActiveContacts[participant_id].Conversation = conversation;
-                else 
-                    ActiveContacts.Add(participant_id, new ActiveContactModel() { Conversation = conversation });
-            }
-            _conversationCache = e.ToDictionary(c=>c.Id, c=>new ConversationWindowManager(new ConversationViewModel(c, _client)));
+                ActiveContacts.Add(conversation.Id, new ConversationViewModel(conversation,_client));
+            _conversationCache = ActiveContacts.ToDictionary(c => c.Key, c => new ConversationWindowManager(c.Value));
         }
 
         void _client_ContactListLoaded(object sender, List<User> e)
         {
-            ActiveContacts = new ObservableDictionary<string, ActiveContactModel>(e.ToDictionary(c => c.Id, c => new ActiveContactModel() { Contact = c }));
+            
         }
 
 

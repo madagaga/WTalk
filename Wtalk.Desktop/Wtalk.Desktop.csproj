@@ -111,7 +111,6 @@
     <Compile Include="DesignData\DesignConversationViewModel.cs" />
     <Compile Include="DesignData\DesignMainViewModel.cs" />
     <Compile Include="Extension\FlashingWindow.cs" />
-    <Compile Include="Model\ActiveContactModel.cs" />
     <Compile Include="Resources\WTalkStyle.xaml.cs" />
     <Compile Include="ViewModel\ConversationViewModel.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />

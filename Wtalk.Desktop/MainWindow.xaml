@@ -17,7 +17,7 @@
                     <!--<local:TabSizeConverter x:Key="TabSizeConverter" />-->
                     <CollectionViewSource x:Key="SortedActiveContacts" Source="{Binding ActiveContacts.Values}">
                         <CollectionViewSource.SortDescriptions>
-                            <scm:SortDescription PropertyName="Online" Direction="Descending"/>
+                            <scm:SortDescription PropertyName="Contact.Online" Direction="Descending"/>
                             <scm:SortDescription PropertyName="LastMessageDate" Direction="Descending"/>
                         </CollectionViewSource.SortDescriptions>
                     </CollectionViewSource>
@@ -82,12 +82,12 @@
                                             <Grid>
                                                 <Border Height="10" Width="10" CornerRadius="10" Margin="5,0,0,0" HorizontalAlignment="Left" IsEnabled="{Binding Path=Contact.Online, FallbackValue=False}" Style="{StaticResource status_indicator}"/>
                                                 <TextBlock Margin="20,0,40,0" Padding="5" VerticalAlignment="Top" Text="{Binding Path=Contact.DisplayName}" />
-                                                <TextBlock Margin="20,0,40,0" Padding="5" VerticalAlignment="Bottom" Style="{StaticResource status_text}" Text="{Binding LastMessage}"/>
+                                                <TextBlock Margin="20,0,40,0" Padding="5" VerticalAlignment="Bottom" Style="{StaticResource status_text}" Text="{Binding Path=Conversation.LastMessage}"/>
                                                 <Border CornerRadius="40" BorderBrush="Gainsboro" BorderThickness="1,1,1,1"  Height="35" Width="35" HorizontalAlignment="Right" Margin="3,3,7,3">
                                                     <Border.Background>
                                                         <ImageBrush ImageSource="{Binding Path=Contact.PhotoUrl, FallbackValue={StaticResource DefaultImage}, TargetNullValue={StaticResource DefaultImage}}"/>
                                                     </Border.Background>
-                                                </Border>
+                                                </Border>                                                
                                                 <Rectangle Height="1" VerticalAlignment="Bottom" Margin="15,0"  Fill="#ededed" />
                                             </Grid>
                                         </Border>

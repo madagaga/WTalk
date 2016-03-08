@@ -11,16 +11,14 @@ namespace Wtalk.Desktop.DesignData
 {
     internal class DesignConversationViewModel : ObservableObject
     {
+        public dynamic Conversation { get; set; }
         
-        public string Participants { get { return "Test"; } }
-        public string CurrentUserId { get { return "1"; } }
-        public List<dynamic> Messages { get; private set; }
-        public bool HistoryEnabled { get { return true; } }
         public DesignConversationViewModel()
         {
-                        
-            Messages = new List<dynamic>();
-            Messages.Add(
+            Conversation = new { };
+            Conversation.ParticipantsName = "test";
+            Conversation.MessagesHistory = new List<dynamic>();
+            Conversation.MessagesHistory.Add(
                 new
                 {
                     SenderId = "2",
@@ -29,7 +27,7 @@ namespace Wtalk.Desktop.DesignData
                 }
                 );
 
-            Messages.Add(
+            Conversation.MessagesHistory.Add(
                 new
                 {
                     SenderId = "1",
