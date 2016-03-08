@@ -5,68 +5,55 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using WTalk.Model;
-using WTalk.Core.ProtoJson.Schema;
 
 namespace Wtalk.Desktop.ViewModel
 {
     internal class FakeConversationViewModel
     {
         public Participant Participant { get; set; }
-        WTalk.Model.Conversation _conversationCache;
+        Conversation _conversationCache;
         public ObservableCollection<Message> Messages { get ; private set;}
 
         public FakeConversationViewModel()
         {
-            Participant = new Participant(new ConversationParticipantData()
+            Participant = new Participant(new WTalk.ProtoJson.ConversationParticipantData()
                 {
                     fallback_name = "Contact",
-                    id = new ParticipantId() {  chat_id = "3"}
+                    id = new WTalk.ProtoJson.ParticipantId() {  chat_id = "3"}
                 });
 
-            Participant p = new Participant(new ConversationParticipantData()
+            Participant p = new Participant(new WTalk.ProtoJson.ConversationParticipantData()
             {
                 fallback_name = "Contact 1",
-                id = new ParticipantId() {  chat_id = "2"}
+                id = new WTalk.ProtoJson.ParticipantId() {  chat_id = "2"}
             });
 
             Messages = new ObservableCollection<Message>();
             Messages.Add(
-                new Message(Participant, new Event()
+                new Message(Participant, new WTalk.ProtoJson.ChatMessage()
                 {
-                    chat_message = new ChatMessage()
+                    message_content = new WTalk.ProtoJson.MessageContent()
                     {
-                        message_content = new MessageContent()
-                        {
-                            segment = new List<Segment>() { new Segment() { text = "segment 1" } }
-                        }
-                    },
-                    timestamp = 1456479966813000
+                        segment = new List<WTalk.ProtoJson.Segment>() { new WTalk.ProtoJson.Segment() { text = "segment 1" } }
+                    }
                 }));
 
             Messages.Add(
-                new Message(p, new Event()
+                new Message(p, new WTalk.ProtoJson.ChatMessage()
                 {
-                    chat_message = new ChatMessage()
+                    message_content = new WTalk.ProtoJson.MessageContent()
                     {
-                        message_content = new MessageContent()
-                        {
-                            segment = new List<Segment>() { new Segment() { text = "segment 2" } }
-                        }
-                    },
-                    timestamp = 1456479966813000
+                        segment = new List<WTalk.ProtoJson.Segment>() { new WTalk.ProtoJson.Segment() { text = "segment 2" } }
+                    }
                 }));
             Messages.Add(
-               new Message(p, new Event()
-                {
-                    chat_message = new ChatMessage()
-                    {
-                        message_content = new MessageContent()
-                        {
-                            segment = new List<Segment>() { new Segment() { text = "segment 3 segment 3 segment 3 segment 3 segment 3 segment 3 segment 3 segment 3 segment 3 segment 3 segment 3 segment 3 segment 3 segment 3 segment 3" } }
-                        }
-                    },
-                    timestamp = 1456479966813000
-                }));
+               new Message(p, new WTalk.ProtoJson.ChatMessage()
+               {
+                   message_content = new WTalk.ProtoJson.MessageContent()
+                   {
+                       segment = new List<WTalk.ProtoJson.Segment>() { new WTalk.ProtoJson.Segment() { text = "segment 3 segment 3 segment 3 segment 3 segment 3 segment 3 segment 3 segment 3 segment 3 segment 3 segment 3 segment 3 segment 3 segment 3 segment 3" } }
+                   }
+               }));
                  
         }
     }

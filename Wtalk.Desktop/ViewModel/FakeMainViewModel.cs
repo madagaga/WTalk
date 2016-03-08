@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using System.Windows.Data;
 using Wtalk.MvvM;
 using WTalk.Model;
-using WTalk.Core.ProtoJson.Schema;
 
 namespace Wtalk.Desktop.ViewModel
 {
@@ -17,10 +16,10 @@ namespace Wtalk.Desktop.ViewModel
         public bool AuthenticationRequiered { get { return false; } }
         public FakeMainViewModel()
         {
-            Entity entity = new Entity()
+            WTalk.ProtoJson.Entity entity = new WTalk.ProtoJson.Entity()
             {
-                properties = new EntityProperties() { display_name = "Test", canonical_email="test@test.fr"},
-                presence = new Presence() {  available = false}
+                properties = new WTalk.ProtoJson.EntityProperties() { display_name = "Test", canonical_email="test@test.fr"},
+                presence = new WTalk.ProtoJson.Presence() {  available = false}
             };
             CurrentUser = new User(entity);
             List<User> _contacts = new List<User>();
