@@ -19,23 +19,32 @@ namespace WTalk.Core.Utils
 
         public static HttpResponseMessage Execute(this HttpClient client, string url, Dictionary<string, string> queryString = null, Dictionary<string, string> postData = null)
         {
-            StringBuilder query = new StringBuilder(url);
-
-            if (queryString != null)
-            {
-                if (url.IndexOf("?") < 0)
-                    query.Append("?");
-                query.Append(string.Join("&",queryString.Select(c=>string.Format("{0}={1}", c.Key, Uri.EscapeUriString(c.Value))).ToArray()));                                
-            }
-            
             HttpResponseMessage message = null;
-            if (postData != null)
-                message = client.PostAsync(query.ToString(), new FormUrlEncodedContent(postData)).Result;
-            else
-                message = client.GetAsync(query.ToString()).Result;
+            try
+            {
+                StringBuilder query = new StringBuilder(url);
 
-            _logger.Debug("Received data : {0}", message.Content.ReadAsStringAsync().Result.Replace("\n", ""));
+                if (queryString != null)
+                {
+                    if (url.IndexOf("?") < 0)
+                        query.Append("?");
+                    query.Append(string.Join("&", queryString.Select(c => string.Format("{0}={1}", c.Key, Uri.EscapeUriString(c.Value))).ToArray()));
+                }
 
+               
+                if (postData != null)
+                    message = client.PostAsync(query.ToString(), new FormUrlEncodedContent(postData)).Result;
+                else
+                    message = client.GetAsync(query.ToString()).Result;
+
+                _logger.Debug("Received data : {0}", message.Content.ReadAsStringAsync().Result.Replace("\n", ""));
+
+                
+            }
+            catch
+            {
+
+            }
             return message;
         }
 

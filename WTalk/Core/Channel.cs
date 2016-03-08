@@ -111,8 +111,11 @@ namespace WTalk
            
             _logger.Info("Opening new long-polling request");
             HttpResponseMessage message = _client.Execute(HangoutUri.CHANNEL_URL + "channel/bind", headerData);
-            message.EnsureSuccessStatusCode();
-            dataReceived(message.Content.ReadAsStringAsync().Result);
+            if (message != null)
+            {
+                message.EnsureSuccessStatusCode();
+                dataReceived(message.Content.ReadAsStringAsync().Result);
+            }
             
 #region if streaming 
             //StringBuilder query = new StringBuilder(HangoutUri.CHANNEL_URL + "channel/bind?");

@@ -33,11 +33,11 @@ namespace WTalk
         DateTime _last_response_date = DateTime.UtcNow;
         double _timestamp = 0;
 
-        #region public properties
+        
         public User CurrentUser { get; private set; }
         Dictionary<string, User> _contacts = new Dictionary<string, User>();
         Dictionary<string, WTalk.Model.Conversation> _active_conversations = new Dictionary<string, Model.Conversation>();
-        #endregion
+        
 
 
         #region events
@@ -145,9 +145,6 @@ namespace WTalk
                         if (cgserp.response_header.status == ResponseStatus.RESPONSE_STATUS_OK)
                         {
                             _contacts = cgserp.contacts_you_hangout_with.contact.ToDictionary(c => c.entity.id.chat_id, c => new User(c.entity));
-                            if (ContactListLoaded != null)
-                                ContactListLoaded(this, _contacts.Values.ToList());
-                            
                         }
                         break;
                     case "cgsirp":
@@ -157,10 +154,7 @@ namespace WTalk
                         {
                             if (!string.IsNullOrEmpty(_email))
                                 cgsirp.self_entity.properties.canonical_email = _email;
-                            this.CurrentUser = new User(cgsirp.self_entity);
-                                
-                            if (UserInformationReceived != null)
-                                UserInformationReceived(this, this.CurrentUser);
+                            this.CurrentUser = new User(cgsirp.self_entity);                                
                         }
                         break;
                     case "csrcrp":
@@ -169,25 +163,27 @@ namespace WTalk
                         if (csrcrp.response_header.status == ResponseStatus.RESPONSE_STATUS_OK)
                         {
                             _active_conversations = csrcrp.conversation_state.ToDictionary(c => c.conversation_id.id, c => new WTalk.Model.Conversation(c));
-
-                            if (_contacts == null || _contacts.Count == 0)
-                            {
-                                string[] chat_ids = csrcrp.conversation_state.SelectMany(c => c.conversation.current_participant.Where(p=>p.chat_id != CurrentUser.Id).Select(p => p.chat_id)).Distinct().ToArray();
-                                GetEntityById(chat_ids);
-                            }
-
-                            if (ConversationHistoryLoaded != null)
-                                ConversationHistoryLoaded(this, _active_conversations.Values.ToList());
-
-                           
-
-                         
                         }
                         break;
 
                 }
             }
 
+            // call all events 
+            if (UserInformationReceived != null)
+                UserInformationReceived(this, this.CurrentUser);
+
+            if (ContactListLoaded != null)
+                ContactListLoaded(this, _contacts.Values.ToList());
+
+            if (_contacts == null || _contacts.Count == 0)
+            {
+                string[] chat_ids = _active_conversations.Values.SelectMany(c => c._conversation.current_participant.Where(p => p.chat_id != CurrentUser.Id).Select(p => p.chat_id)).Distinct().ToArray();
+                GetEntityById(chat_ids);
+            }
+
+            if (ConversationHistoryLoaded != null)
+                ConversationHistoryLoaded(this, _active_conversations.Values.ToList());
 
             //this._timestamp = double.Parse(dataDictionary["ds:21"][0][1][4].ToString());
 
@@ -284,6 +280,17 @@ namespace WTalk
             }    
         }
 
+        #region LocalCache
+
+        public User GetContactFromCache(string id)
+        {
+            if (_contacts.ContainsKey(id))
+                return _contacts[id];
+            else
+                return null;
+        }
+
+        #endregion
 
         #region API
 

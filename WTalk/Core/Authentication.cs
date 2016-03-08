@@ -35,9 +35,12 @@ namespace WTalk
         public AuthenticationManager()
         {
             _client = new HttpClient(new HttpClientHandler() { AllowAutoRedirect = true, CookieContainer = Client.CookieContainer, UseCookies = true });
-
-            _file = FileSystem.Current.LocalStorage.CreateFileAsync("token.txt", CreationCollisionOption.OpenIfExists).Result;
-            LoadToken();
+            try
+            {
+                _file = FileSystem.Current.LocalStorage.CreateFileAsync("token.txt", CreationCollisionOption.OpenIfExists).Result;
+                LoadToken();
+            }
+            catch { }
         }
 
         public AuthenticationManager (string accessToken)
