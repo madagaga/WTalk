@@ -15,9 +15,9 @@ namespace Wtalk.Desktop.CustomDataTemplate
     
         public override DataTemplate SelectTemplate(object item, DependencyObject container)
         {
-              var messageVm = item as Message;
+              var messageVm = item as dynamic;
             if (messageVm == null)
-                return null;
+                return this.In;
             return messageVm.IncomingMessage ? this.In : this.Out;
             
         }

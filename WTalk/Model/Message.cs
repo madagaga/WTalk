@@ -30,7 +30,7 @@ namespace WTalk.Model
         //public Enums.MessageType Type { get; internal set; }
         public string Content { get { return string.Join<string>("\r\n", _content); } }
         public DateTime MessageDate { get; internal set; }
-
+        internal string LastSegment { get { return _content.LastOrDefault(); } }
         List<string> _content = new List<string>();
 
         internal void AppendContent(WTalk.Core.ProtoJson.Schema.ChatMessage chatMessage)

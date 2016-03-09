@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using WTalk.Core.ProtoJson;
 using WTalk.Core.ProtoJson.Schema;
 using WTalk.Core.Utils;
@@ -12,13 +14,14 @@ namespace WTalk.Model
     public class Conversation : ObservableObject
     {
         internal WTalk.Core.ProtoJson.Schema.Conversation _conversation;
-        Message _lastMessage;        
+        Message _lastMessage;
+        SynchronizationContext _synchronizationContext;
 
         public string Id { get { return _conversation.conversation_id.id; } }
-        public Dictionary<string,Participant> Participants { get; internal set; }        
-        public string LastMessage { get; private set; }
+        public Dictionary<string,Participant> Participants { get; internal set; }
+        public string LastMessage { get { return _lastMessage.LastSegment; } }
         //public Enums.ConversationType Type { get; internal set; }
-        public List<Message> MessagesHistory { get; internal set; }
+        public ObservableCollection<Message> MessagesHistory { get; internal set; }
         public bool HistoryEnabled { get { return _conversation.otr_status == OffTheRecordStatus.OFF_THE_RECORD_STATUS_ON_THE_RECORD; } }
 
         public DateTime ReadState { get; internal set; }        
@@ -31,12 +34,14 @@ namespace WTalk.Model
 
         internal Conversation(ConversationState conversationState)
         {
+            _synchronizationContext = SynchronizationContext.Current;
+
             _conversation = conversationState.conversation;
             if (_conversation.read_state.Count > 0)
                 ReadState = DateTime.Now.FromMillisecondsSince1970(_conversation.read_state.Last().latest_read_timestamp / 1000);
 
-            Participants = _conversation.participant_data.ToDictionary(c=>c.id.chat_id, c => new Participant(c));            
-            MessagesHistory = new List<Message>();
+            Participants = _conversation.participant_data.ToDictionary(c=>c.id.chat_id, c => new Participant(c));
+            MessagesHistory = new ObservableCollection<Message>();
             
             foreach(var cse in conversationState.events.Where(c=>c.chat_message != null))
             {
@@ -47,7 +52,7 @@ namespace WTalk.Model
                     _lastMessage = new Message(cse);
                     MessagesHistory.Add(_lastMessage);
                 }
-                LastMessage = cse.chat_message.message_content.segment.Last().text;
+                
             }           
         }
 
@@ -60,10 +65,13 @@ namespace WTalk.Model
             else
             {
                 _lastMessage = new Message(e);
-                MessagesHistory.Add(_lastMessage);
+                _synchronizationContext.Post((obj) =>
+                {
+                    MessagesHistory.Add(obj as Message);
+                }, _lastMessage);
+                
             }
-            
-            LastMessage = e.chat_message.message_content.segment.Last().text;            
+                        
             OnPropertyChanged("MessagesHistory");
             OnPropertyChanged("LastMessage");
 

@@ -22,7 +22,7 @@ namespace Wtalk.Desktop.ViewModel
         // conversations        
         public WTalk.Model.Conversation Conversation { get; private set; }
         public DateTime LastMessageDate { get { return Conversation.MessagesHistory.Last().MessageDate; } }
-        
+        public bool HasUnreadMessage { get { return Conversation.ReadState < DateTime.Now; } }
 
         public RelayCommand<object> SendMessageCommand { get; private set; }
         public RelayCommand SetFocusCommand { get; private set; }
@@ -41,7 +41,7 @@ namespace Wtalk.Desktop.ViewModel
 
         public ConversationViewModel(Client client):this()
         {
-            _client = client;
+            _client = client;            
         }
 
 
@@ -50,7 +50,10 @@ namespace Wtalk.Desktop.ViewModel
             this.Conversation = conversation;
             this.Conversation.NewMessageReceived += Conversation_NewMessageReceived;
             this.Contact = client.GetContactFromCache(conversation.Participants.Where(c => c.Key != client.CurrentUser.Id).FirstOrDefault().Key);
-            Participants = this.Contact.DisplayName;
+            if (this.Contact != null)
+                Participants = this.Contact.DisplayName;
+            else
+                Participants = "Unknown User";
         }
 
         private void SetOTR()
@@ -68,6 +71,7 @@ namespace Wtalk.Desktop.ViewModel
             OnPropertyChanged("Messages");
             App.Current.Dispatcher.Invoke(() =>
             {
+                
                 if (AttentionRequired != null)
                     AttentionRequired(this, null);
             });

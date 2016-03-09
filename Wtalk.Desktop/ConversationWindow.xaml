@@ -14,7 +14,7 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="Resources\WTalkStyle.xaml" />
                 <ResourceDictionary Source="Resources\MessageDataTemplate.xaml" />
-            </ResourceDictionary.MergedDictionaries>            
+            </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Window.Resources>
     <Grid>
@@ -34,7 +34,7 @@
         <Rectangle Grid.Row="0" Fill="#FFABADB3" Height="1" VerticalAlignment="Bottom"/>
         <ScrollViewer x:Name="scrollBar" Padding="2,5,2,0" Grid.Row="1">
             <StackPanel>
-                <ItemsControl ItemsSource="{Binding Conversation.MessagesHistory}">
+                <ItemsControl ItemsSource="{Binding Path= Conversation.MessagesHistory}">
                     <ItemsControl.ItemTemplateSelector>
                         <dt:MessageDataTemplateSelector In="{StaticResource IncommingMessage}" Out="{StaticResource OutgoingMessage}"  />
                     </ItemsControl.ItemTemplateSelector>                    

@@ -331,7 +331,8 @@ namespace WTalk
             HttpResponseMessage message = _client.PostProtoJson("presence/querypresence", request);
             QueryPresenceResponse response = message.Content.ReadAsProtoJson<QueryPresenceResponse>();
             foreach (var presence in response.presence_result)
-                _contacts[presence.user_id.chat_id].SetPresence(presence.presence);
+                if (_contacts.ContainsKey(presence.user_id.chat_id))
+                    _contacts[presence.user_id.chat_id].SetPresence(presence.presence);
 
         }
 
