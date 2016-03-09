@@ -9,14 +9,7 @@
         xmlns:designData="clr-namespace:Wtalk.Desktop.DesignData"
         d:DataContext="{d:DesignInstance Type=designData:DesignConversationViewModel, IsDesignTimeCreatable=True}"
         Title="{Binding Path=Participants, Mode=OneWay, StringFormat='Wtalk - {0}'}" Height="350" Width="300" Style="{DynamicResource window_style}" x:Name="conversation_window">
-    <Window.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="Resources\WTalkStyle.xaml" />
-                <ResourceDictionary Source="Resources\MessageDataTemplate.xaml" />
-            </ResourceDictionary.MergedDictionaries>
-        </ResourceDictionary>
-    </Window.Resources>
+    
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="25"></RowDefinition>

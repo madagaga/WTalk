@@ -44,7 +44,7 @@ namespace WTalk
             _appver = appver;
         }
 
-        public void Listen()
+        public async Task Listen()
         {
             int retries = MAX_RETRIES;            
 
@@ -55,15 +55,16 @@ namespace WTalk
                     int backoff_seconds = 2 * (MAX_RETRIES - retries);
                     _logger.Info("Backing off for {0} seconds", backoff_seconds);
 
-                    System.Threading.Tasks.Task.Delay(backoff_seconds * 1000).Wait();                    
+                    await Task.Delay(backoff_seconds * 1000);
                 }
 
                 if (string.IsNullOrEmpty(_sid))
-                    retrieve_sid();
+                    await retrieve_sid();
 
                 try
                 {
-                    LongPollRequest();
+                    _logger.Info("Opening new long-polling request ({0})", _aid); 
+                    await LongPollRequest();
                     retries = MAX_RETRIES;
                 }
                 catch (Exception e)
@@ -90,7 +91,7 @@ namespace WTalk
         ///Raises hangups.NetworkError or UnknownSIDError.
         /// </summary>
         /// <returns></returns>
-        private void LongPollRequest()
+        async Task LongPollRequest()
         {
            
 
@@ -109,12 +110,12 @@ namespace WTalk
             // zx ?
             headerData.Add("t", "1");  // trial
            
-            _logger.Info("Opening new long-polling request");
-            HttpResponseMessage message = _client.Execute(HangoutUri.CHANNEL_URL + "channel/bind", headerData);
+            
+            HttpResponseMessage message = await _client.Execute(HangoutUri.CHANNEL_URL + "channel/bind", headerData);
             if (message != null)
             {
                 message.EnsureSuccessStatusCode();
-                dataReceived(message.Content.ReadAsStringAsync().Result);
+                dataReceived(await message.Content.ReadAsStringAsync());
             }
             
 #region if streaming 
@@ -158,6 +159,8 @@ namespace WTalk
         private void dataReceived(string data)
         {
 
+            _logger.Debug("Received data : {0}", data.Replace("\n", ""));
+
             Connected = true;
 
             // parse chunk data
@@ -183,7 +186,7 @@ namespace WTalk
         /// Acknowledgement request, sent when client id changes and used to register to services
         /// </summary>
         /// <param name="lastSubscribe"></param>
-        internal void SendAck(long lastSubscribe)
+        internal async void SendAck(long lastSubscribe)
         {
             TimeSpan epoch = DateTime.UtcNow.TimeIntervalSince1970();
 
@@ -200,51 +203,51 @@ namespace WTalk
             subscribeData.Add("req0_p", "{\"3\": {\"1\": {\"1\": \"babel\"}}}");
 
             System.Threading.Tasks.Task.Delay(1000).Wait();           
-            string response = sendMapsRequest(subscribeData);
+            string response = await sendMapsRequest(subscribeData);
                         
         }
 
-        // not used but this is initialization process
-        void initialize()
-        {
-            Dictionary<string, string> headerData = new Dictionary<string, string>();
-            headerData.Add("ctype", "hangouts");  // client type
-            headerData.Add("appver", "wtalk");  // client type
-            headerData.Add("VER", "8");  // channel protocol version            
-            headerData.Add("t", "1");  // trial
+        //// not used but this is initialization process
+        //void initialize()
+        //{
+        //    Dictionary<string, string> headerData = new Dictionary<string, string>();
+        //    headerData.Add("ctype", "hangouts");  // client type
+        //    headerData.Add("appver", "wtalk");  // client type
+        //    headerData.Add("VER", "8");  // channel protocol version            
+        //    headerData.Add("t", "1");  // trial
 
-            // first get gsessionid 
-            string message;
-            JArray array;
+        //    // first get gsessionid 
+        //    string message;
+        //    JArray array;
             
-            HttpResponseMessage response = _client.Execute(HangoutUri.CHANNEL_URL + "gsid", null, null);
-            response.EnsureSuccessStatusCode();
-            message = response.Content.ReadAsStringAsync().Result;
-            array = Parser.ParseData(message);
-            _gsession_id = array[1].ToString();
+        //    HttpResponseMessage response = _client.Execute(HangoutUri.CHANNEL_URL + "gsid", null, null);
+        //    response.EnsureSuccessStatusCode();
+        //    message = response.Content.ReadAsStringAsync().Result;
+        //    array = Parser.ParseData(message);
+        //    _gsession_id = array[1].ToString();
 
-            // set mode init
-            headerData.Add("gsessionid", _gsession_id);
-            headerData.Add("MODE", "init");
-            response = _client.Execute(HangoutUri.CHANNEL_URL + "channel/cbp", headerData, null);
-            response.EnsureSuccessStatusCode();
-            message = response.Content.ReadAsStringAsync().Result;
+        //    // set mode init
+        //    headerData.Add("gsessionid", _gsession_id);
+        //    headerData.Add("MODE", "init");
+        //    response = _client.Execute(HangoutUri.CHANNEL_URL + "channel/cbp", headerData, null);
+        //    response.EnsureSuccessStatusCode();
+        //    message = response.Content.ReadAsStringAsync().Result;
 
-            headerData.Remove("MODE");
-            headerData.Add("TYPE", "xmlhttp");
-            response = _client.Execute(HangoutUri.CHANNEL_URL + "channel/cbp", headerData, null);
-            response.EnsureSuccessStatusCode();
-            message = response.Content.ReadAsStringAsync().Result;
+        //    headerData.Remove("MODE");
+        //    headerData.Add("TYPE", "xmlhttp");
+        //    response = _client.Execute(HangoutUri.CHANNEL_URL + "channel/cbp", headerData, null);
+        //    response.EnsureSuccessStatusCode();
+        //    message = response.Content.ReadAsStringAsync().Result;
 
-            _initialized = true;
-        }
+        //    _initialized = true;
+        //}
         
-        void retrieve_sid()
+        async Task retrieve_sid()
         {
 
 
             _logger.Info("Sending sid request");
-            string response = sendMapsRequest(new Dictionary<string, string>());            
+            string response = await sendMapsRequest(new Dictionary<string, string>());            
             JArray array = Parser.ParseData(response);
             _sid = array[0][1][1].ToString();
             if(array.Count>1)
@@ -255,7 +258,7 @@ namespace WTalk
         /// Sends a request to the server containing maps (dicts).
         /// </summary>
         /// <returns></returns>
-        string sendMapsRequest(Dictionary<string, string> map_list = null)
+        async Task<string> sendMapsRequest(Dictionary<string, string> map_list = null)
         {
             Dictionary<string, string> headerData = new Dictionary<string, string>();
             //            parameters.add(CHANNEL_URL, "channel/bind?");
@@ -273,10 +276,10 @@ namespace WTalk
             headerData.Add("t", "1");  // trial
                       
 
-            HttpResponseMessage response = _client.Execute(HangoutUri.CHANNEL_URL + "channel/bind", headerData, map_list);
+            HttpResponseMessage response = await _client.Execute(HangoutUri.CHANNEL_URL + "channel/bind", headerData, map_list);
             if (!response.IsSuccessStatusCode)
                 throw new Exception(response.ReasonPhrase);            
-            return response.Content.ReadAsStringAsync().Result;
+            return await response.Content.ReadAsStringAsync();
         }
 
     }

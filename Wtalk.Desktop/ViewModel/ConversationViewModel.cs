@@ -67,8 +67,7 @@ namespace Wtalk.Desktop.ViewModel
         }
 
         void Conversation_NewMessageReceived(object sender, Message e)
-        {
-            OnPropertyChanged("Messages");
+        {            
             App.Current.Dispatcher.Invoke(() =>
             {
                 

@@ -13,7 +13,7 @@ namespace Wtalk.Desktop.ViewModel
 {
     public class MainViewModel : ObservableObject
     {
-        public ObservableDictionary<string, ConversationViewModel> ActiveContacts { get; private set; }
+        public Dictionary<string, ConversationViewModel> ActiveContacts { get; private set; }
         
         public User CurrentUser { get; set; }
 
@@ -76,12 +76,18 @@ namespace Wtalk.Desktop.ViewModel
             _client.NewConversationCreated += _client_NewConversationCreated;
             _client.UserInformationReceived += _client_UserInformationLoaded;
             _client.ContactInformationReceived += _client_ContactInformationReceived;
-            _client.ConnectionEstablished += _client_OnConnectionEstablished;            
+            _client.ConnectionEstablished += _client_OnConnectionEstablished;
+            _client.UserInformationReceived += _client_UserInformationReceived;
             
             if(_authenticationManager.IsAuthenticated)
                 _client.Connect();
 
             
+        }
+
+        void _client_UserInformationReceived(object sender, User e)
+        {
+            OnPropertyChanged("ActiveContacts");  
         }
 
         void _client_NewConversationCreated(object sender, Conversation e)
@@ -107,10 +113,11 @@ namespace Wtalk.Desktop.ViewModel
             // associate contact list and last active conversation
             // only 1 to 1 conversation supported   
             if (ActiveContacts == null)
-                ActiveContacts = new ObservableDictionary<string, ConversationViewModel>();            
+                ActiveContacts = new Dictionary<string, ConversationViewModel>();            
             foreach(Conversation conversation in e)
                 ActiveContacts.Add(conversation.Id, new ConversationViewModel(conversation,_client));
             _conversationCache = ActiveContacts.ToDictionary(c => c.Key, c => new ConversationWindowManager(c.Value));
+            OnPropertyChanged("ActiveContacts"); 
         }
 
         void _client_ContactListLoaded(object sender, List<User> e)

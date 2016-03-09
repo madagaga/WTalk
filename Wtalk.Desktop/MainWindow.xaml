@@ -12,18 +12,16 @@
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="Resources\WTalkStyle.xaml" />
                 <ResourceDictionary>
                     <!--<local:TabSizeConverter x:Key="TabSizeConverter" />-->
                     <CollectionViewSource x:Key="SortedActiveContacts" Source="{Binding ActiveContacts.Values}">
                         <CollectionViewSource.SortDescriptions>
-                            <scm:SortDescription PropertyName="Contact.Online" Direction="Descending"/>
-                            <scm:SortDescription PropertyName="LastMessageDate" Direction="Descending"/>
+                            <scm:SortDescription PropertyName="Contact.Online" Direction="Descending" />
+                            <scm:SortDescription PropertyName="LastMessageDate" Direction="Descending" />
                         </CollectionViewSource.SortDescriptions>
                     </CollectionViewSource>
                 </ResourceDictionary>
-            </ResourceDictionary.MergedDictionaries>
-            <BitmapImage x:Key="DefaultImage" UriSource="Resources/default-user-icon-profile.png" />
+            </ResourceDictionary.MergedDictionaries>            
         </ResourceDictionary>
     </Window.Resources>
     <Grid>

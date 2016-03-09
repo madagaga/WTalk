@@ -17,9 +17,8 @@ namespace WTalk.Core.Utils
 
         static NLog.Logger _logger = NLog.LogManager.GetLogger("HttpClient");        
 
-        public static HttpResponseMessage Execute(this HttpClient client, string url, Dictionary<string, string> queryString = null, Dictionary<string, string> postData = null)
-        {
-            HttpResponseMessage message = null;
+        public static async Task<HttpResponseMessage> Execute(this HttpClient client, string url, Dictionary<string, string> queryString = null, Dictionary<string, string> postData = null)
+        {            
             try
             {
                 StringBuilder query = new StringBuilder(url);
@@ -33,19 +32,15 @@ namespace WTalk.Core.Utils
 
                
                 if (postData != null)
-                    message = client.PostAsync(query.ToString(), new FormUrlEncodedContent(postData)).Result;
+                    return await client.PostAsync(query.ToString(), new FormUrlEncodedContent(postData));
                 else
-                    message = client.GetAsync(query.ToString()).Result;
-
-                _logger.Debug("Received data : {0}", message.Content.ReadAsStringAsync().Result.Replace("\n", ""));
-
-                
+                    return await client.GetAsync(query.ToString());
             }
             catch
             {
 
             }
-            return message;
+            return null;
         }
 
         public static HttpResponseMessage PostJson(this HttpClient client, string endPoint, JArray body)

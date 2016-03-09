@@ -9,6 +9,7 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using WTalk.Core.Utils;
 
 namespace WTalk
 {
@@ -34,6 +35,7 @@ namespace WTalk
         IFile _file;
         public AuthenticationManager()
         {
+            FileCache.Initialize("cache");
             _client = new HttpClient(new HttpClientHandler() { AllowAutoRedirect = true, CookieContainer = Client.CookieContainer, UseCookies = true });
             try
             {
@@ -98,6 +100,7 @@ namespace WTalk
             try
             {
                 _file.DeleteAsync().Wait();
+                FileCache.Current.Reset();
             }
             catch{}
         }

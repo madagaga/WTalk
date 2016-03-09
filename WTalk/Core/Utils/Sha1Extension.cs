@@ -9,7 +9,17 @@ namespace WTalk.Core.Utils
 
     public static class SHA1Extension
     {
-        public static byte[] ComputeSHA1Hash(this string input)
+        public static string ComputeSHA1Hash(this string input)
+        {
+            byte[] result = input.ComputeSHA1HashByte();
+            // step 2, convert byte array to hex string
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < result.Length; i++)
+                sb.Append(result[i].ToString("X2"));
+            return sb.ToString();
+        }
+
+        public static byte[] ComputeSHA1HashByte(this string input)
         {
             SHA1Internal sha1 = new SHA1Internal();
             byte[] buffer = System.Text.Encoding.UTF8.GetBytes(input);

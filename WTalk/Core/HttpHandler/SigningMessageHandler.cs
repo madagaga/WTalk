@@ -37,7 +37,7 @@ namespace WTalk.Core.HttpHandler
                 string secondsSinceEpoch = t.TotalMilliseconds.ToString("0", System.Globalization.CultureInfo.InvariantCulture);
 
                 string sapisidHash = string.Format("{0} {1} {2}", secondsSinceEpoch, sapsid.Value, HangoutUri.ORIGIN_URL);
-                sapisidHash = sapisidHash.ComputeSHA1Hash().ToHex();
+                sapisidHash = sapisidHash.ComputeSHA1Hash();
                 request.Headers.Add("Authorization", string.Format("SAPISIDHASH {0}_{1}", secondsSinceEpoch, sapisidHash));
 
             }

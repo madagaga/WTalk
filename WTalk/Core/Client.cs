@@ -49,7 +49,8 @@ namespace WTalk
         public event EventHandler<User> UserInformationReceived;
         public event EventHandler<User> ContactInformationReceived;
 
-//        public event EventHandler<PresenceResult> PresenceInformationReceived;
+        public event EventHandler<User> UserPresenceChanged;
+
         #endregion
 
         
@@ -77,33 +78,29 @@ namespace WTalk
         }
         
         public void Connect()
-        {
-            initializeChat();
-
-            _channel.setAppVer(_header_version);
-
-            Task.Run(() =>
-            {
+        {   
+            initializeChat().ContinueWith(t=>  {
+                _channel.setAppVer(_header_version);
                 _channel.Listen();
             });
             
 
         }
 
-        void initializeChat()
+        async Task initializeChat()
         {
 
             // We first need to fetch the 'pvt' token, which is required for the
             // initialization request (otherwise it will return 400).
-            HttpResponseMessage message = _client.Execute(HangoutUri.PVT_TOKEN_URL, _initParams);
-            string data = message.Content.ReadAsStringAsync().Result;
+            HttpResponseMessage message = await _client.Execute(HangoutUri.PVT_TOKEN_URL, _initParams);
+            string data = await message.Content.ReadAsStringAsync();
             Newtonsoft.Json.Linq.JArray array = Parser.ParseData(data);
 
             _initParams["pvt"] = array[1].ToString();
 
             // Now make the actual initialization request:
-            message = _client.Execute(HangoutUri.CHAT_INIT_URL, _initParams);
-            data = message.Content.ReadAsStringAsync().Result;
+            message = await _client.Execute(HangoutUri.CHAT_INIT_URL, _initParams);
+            data = await message.Content.ReadAsStringAsync();
 
             // Parse the response by using a regex to find all the JS objects, and
             // parsing them. Not everything will be parsable, but we don't care if
@@ -264,7 +261,7 @@ namespace WTalk
                         if (state_update.presence_notification != null)
                             foreach (var presence in state_update.presence_notification.presence)
                                 if (_contacts.ContainsKey(presence.user_id.chat_id))
-                                    _contacts[presence.user_id.chat_id].SetPresence(presence.presence);
+                                    setPresence(_contacts[presence.user_id.chat_id], presence.presence);
                                 
                         
                         if(state_update.self_presence_notification != null)
@@ -279,6 +276,17 @@ namespace WTalk
                 }
             }    
         }
+
+       
+
+        #region internal helpers
+        private void setPresence(User user, Presence presence)
+        {
+            user.SetPresence(presence);
+            if (UserPresenceChanged != null)
+                UserPresenceChanged(this, user);
+        }
+        #endregion
 
         #region LocalCache
 
@@ -332,7 +340,7 @@ namespace WTalk
             QueryPresenceResponse response = message.Content.ReadAsProtoJson<QueryPresenceResponse>();
             foreach (var presence in response.presence_result)
                 if (_contacts.ContainsKey(presence.user_id.chat_id))
-                    _contacts[presence.user_id.chat_id].SetPresence(presence.presence);
+                    setPresence(_contacts[presence.user_id.chat_id], presence.presence);
 
         }
 
@@ -349,8 +357,7 @@ namespace WTalk
             QueryPresenceResponse response = message.Content.ReadAsProtoJson<QueryPresenceResponse>();
 
             foreach (var presence in response.presence_result)
-                CurrentUser.SetPresence(presence.presence);
-
+                setPresence(CurrentUser, presence.presence);
         }
 
         
@@ -378,9 +385,7 @@ namespace WTalk
             };
 
             
-            HttpResponseMessage message = _client.PostProtoJson("presence/setpresence", request);
-            
-            //GetSelfInfo();
+            HttpResponseMessage message = _client.PostProtoJson("presence/setpresence", request);            
         }
 
         public void SetFocus(string conversationId)

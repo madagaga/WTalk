@@ -51,9 +51,9 @@
     <Compile Include="Core\ProtoJson\Schema.cs" />
     <Compile Include="Core\Reflection\CompiledPropertyAccessor.cs" />
     <Compile Include="Core\Reflection\ProtoJsonPropertyAccessor.cs" />
-    <Compile Include="Core\Utils\ByteExtension.cs" />
     <Compile Include="Core\Utils\DateTimeExtension.cs" />
     <Compile Include="Core\Utils\HttpClientExtention.cs" />
+    <Compile Include="Core\Utils\FileCache.cs" />
     <Compile Include="Core\Utils\Parser.cs" />
     <Compile Include="Core\Utils\Sha1Extension.cs" />
     <Compile Include="FakeNlog\Logger.cs" />

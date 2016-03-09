@@ -26,6 +26,7 @@ namespace WTalk.Model
         string selfUserId;
         public string Id { get; internal set; }
         public string SenderId { get; internal set; }
+        public string SenderPhotoUrl { get { return FileCache.Current.Get(SenderId); } }
         public bool IncomingMessage { get { return SenderId != selfUserId; } }
         //public Enums.MessageType Type { get; internal set; }
         public string Content { get { return string.Join<string>("\r\n", _content); } }

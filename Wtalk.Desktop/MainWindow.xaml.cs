@@ -26,6 +26,12 @@ namespace Wtalk.Desktop
             InitializeComponent();
             this.DataContext = new MainViewModel();            
             this.Activated += MainWindow_Activated;
+            AppDomain.CurrentDomain.FirstChanceException += CurrentDomain_FirstChanceException;
+            
+        }
+
+        void CurrentDomain_FirstChanceException(object sender, System.Runtime.ExceptionServices.FirstChanceExceptionEventArgs e)
+        {
             
         }
 
