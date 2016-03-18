@@ -7,13 +7,20 @@ using WTalk.Mvvm;
 using WTalk;
 using WTalk.Model;
 using System.Collections.ObjectModel;
-using Wtalk.Desktop.WindowManager;
 
 namespace Wtalk.Desktop.ViewModel
 {
     public class MainViewModel : ObservableObject
     {
         public Dictionary<string, ConversationViewModel> ActiveContacts { get; private set; }
+
+        ConversationViewModel _selectedConversation;
+
+        public ConversationViewModel SelectedConversation
+        {
+            get { return _selectedConversation; }
+            set { _selectedConversation = value; OnPropertyChanged("SelectedConversation"); }
+        }
         
         public User CurrentUser { get; set; }
 
@@ -48,7 +55,6 @@ namespace Wtalk.Desktop.ViewModel
         Client _client;
         AuthenticationManager _authenticationManager;
 
-        Dictionary<string, ConversationWindowManager> _conversationCache;
 
         public RelayCommand<string> OpenConversationCommand { get; private set; }
         public RelayCommand<string> LoadConversationCommand { get; private set; }
@@ -91,9 +97,12 @@ namespace Wtalk.Desktop.ViewModel
         }
 
         void _client_NewConversationCreated(object sender, Conversation e)
-        {            
-            _conversationCache.Add(e.Id,new ConversationWindowManager(new ConversationViewModel(e, _client)));            
-            LoadConversation(e.Id, false);
+        {           
+            
+            App.Current.Dispatcher.Invoke(() =>
+            {
+                OpenConversation(e.Id, false);
+            });
             
         }
 
@@ -115,8 +124,7 @@ namespace Wtalk.Desktop.ViewModel
             if (ActiveContacts == null)
                 ActiveContacts = new Dictionary<string, ConversationViewModel>();            
             foreach(Conversation conversation in e)
-                ActiveContacts.Add(conversation.Id, new ConversationViewModel(conversation,_client));
-            _conversationCache = ActiveContacts.ToDictionary(c => c.Key, c => new ConversationWindowManager(c.Value));
+                ActiveContacts.Add(conversation.Id, new ConversationViewModel(conversation,_client));            
             OnPropertyChanged("ActiveContacts"); 
         }
 
@@ -133,14 +141,14 @@ namespace Wtalk.Desktop.ViewModel
             else
                 _client.GetSelfInfo();
 
-            if(_conversationCache == null || _conversationCache.Count == 0)
-                _client.SyncRecentConversations();
+            //if(_conversationCache == null || _conversationCache.Count == 0)
+               // _client.SyncRecentConversations();
         }
 
         void OpenConversation(string conversationId, bool bringToFront)
         {
-            if (_conversationCache.ContainsKey(conversationId))
-                _conversationCache[conversationId].Show(bringToFront);             
+            //if (_conversationCache.ContainsKey(conversationId))
+            //    _conversationCache[conversationId].Show(bringToFront);             
 
         }
 

@@ -104,9 +104,6 @@
     <Compile Include="AuthWindows.xaml.cs">
       <DependentUpon>AuthWindows.xaml</DependentUpon>
     </Compile>
-    <Compile Include="ConversationWindow.xaml.cs">
-      <DependentUpon>ConversationWindow.xaml</DependentUpon>
-    </Compile>
     <Compile Include="CustomDataTemplate\MessageDataTemplateSelector.cs" />
     <Compile Include="DesignData\DesignConversationViewModel.cs" />
     <Compile Include="DesignData\DesignMainViewModel.cs" />
@@ -114,12 +111,7 @@
     <Compile Include="Resources\WTalkStyle.xaml.cs" />
     <Compile Include="ViewModel\ConversationViewModel.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />
-    <Compile Include="WindowManager\ConversationWindowManager.cs" />
     <Page Include="AuthWindows.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="ConversationWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

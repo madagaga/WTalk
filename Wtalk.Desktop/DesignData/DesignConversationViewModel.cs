@@ -12,7 +12,7 @@ namespace Wtalk.Desktop.DesignData
     internal class DesignConversationViewModel : ObservableObject
     {
         public dynamic Conversation { get; set; }
-        public string Participants { get { return "TEST"; } }
+        public string ConversationName { get { return "TEST"; } }
         public DesignConversationViewModel()
         {
             Conversation = new { MessagesHistory = new List<dynamic>() };            

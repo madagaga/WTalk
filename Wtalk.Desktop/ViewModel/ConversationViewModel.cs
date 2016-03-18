@@ -17,14 +17,23 @@ namespace Wtalk.Desktop.ViewModel
 
         //user
         public User Contact { get; private set; }
-        public string Participants { get; private set; }
+        string _name;
+
+        public string ConversationName
+        {
+            get { return _name; }
+            set { _name = value; }
+        }
+
+        public string MessageContent { get; set; }
 
         // conversations        
         public WTalk.Model.Conversation Conversation { get; private set; }
         public DateTime LastMessageDate { get { return Conversation.MessagesHistory.Last().MessageDate; } }
+        
         public bool HasUnreadMessage { get { return Conversation.ReadState < DateTime.Now; } }
 
-        public RelayCommand<object> SendMessageCommand { get; private set; }
+        public RelayCommand SendMessageCommand { get; private set; }
         public RelayCommand SetFocusCommand { get; private set; }
 
         public RelayCommand DeleteConversationCommand { get; private set; }
@@ -33,7 +42,7 @@ namespace Wtalk.Desktop.ViewModel
 
         public ConversationViewModel()
         {
-            SendMessageCommand = new RelayCommand<object>((messageContent) => SendMessage(messageContent.ToString()));
+            SendMessageCommand = new RelayCommand(() => SendMessage());
             SetFocusCommand = new RelayCommand(() => SetFocus());
             DeleteConversationCommand = new RelayCommand(() => DeleteConversation());
             SetOTRCommand = new RelayCommand(() => SetOTR());
@@ -51,9 +60,9 @@ namespace Wtalk.Desktop.ViewModel
             this.Conversation.NewMessageReceived += Conversation_NewMessageReceived;
             this.Contact = client.GetContactFromCache(conversation.Participants.Where(c => c.Key != client.CurrentUser.Id).FirstOrDefault().Key);
             if (this.Contact != null)
-                Participants = this.Contact.DisplayName;
+                _name = this.Contact.DisplayName;
             else
-                Participants = "Unknown User";
+                _name = "Unknown User";
         }
 
         private void SetOTR()
@@ -84,9 +93,11 @@ namespace Wtalk.Desktop.ViewModel
         }
 
       
-        private void SendMessage(string content)
+        private void SendMessage()
         {
-            _client.SendChatMessage(Conversation.Id, content);
+            _client.SendChatMessage(Conversation.Id, MessageContent);
+            MessageContent = null;
+            OnPropertyChanged(MessageContent);
         }
 
         

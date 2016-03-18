@@ -14,6 +14,9 @@ namespace Wtalk.Desktop.DesignData
         
         public dynamic CurrentUser { get; private set; }
         public bool AuthenticationRequired { get { return false; } }
+        public dynamic SelectedConversation { get; set; }
+
+
         public DesignMainViewModel()
         {
             CurrentUser = new
@@ -31,6 +34,8 @@ namespace Wtalk.Desktop.DesignData
                 },
                 LastMessage = "Test message"
             });
+
+            SelectedConversation = new DesignConversationViewModel();
         }
     }
 }
