@@ -47,17 +47,13 @@ namespace WTalk.Core.Utils
             int current_index = data.IndexOf(start_string), end_index = -1;
             Newtonsoft.Json.Linq.JObject parsedObject;
             Dictionary<string, Newtonsoft.Json.Linq.JArray> dataDictionary = new Dictionary<string, Newtonsoft.Json.Linq.JArray>();
-
-
+            
             while (current_index > 0)
             {
                 end_index = data.IndexOf(end_string, current_index);
                 extractedData = data.Substring(current_index + start_string.Length, end_index - current_index - start_string.Length);
                 if (extractedData.IndexOf("data:function") > -1)
-                {
                     extractedData = extractedData.Replace("data:function(){return", "data:").Replace("}}", "}");
-
-                }
                 parsedObject = Newtonsoft.Json.Linq.JObject.Parse(extractedData);
                 dataDictionary.Add(parsedObject["key"].ToString(), parsedObject["data"] as Newtonsoft.Json.Linq.JArray);
                 current_index = data.IndexOf(start_string, end_index);

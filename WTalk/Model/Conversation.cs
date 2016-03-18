@@ -18,6 +18,7 @@ namespace WTalk.Model
         SynchronizationContext _synchronizationContext;
 
         public string Id { get { return _conversation.conversation_id.id; } }
+        public string Name { get { return _conversation.name; } }
         public Dictionary<string,Participant> Participants { get; internal set; }
         public string LastMessage { get { return _lastMessage.LastSegment; } }
         //public Enums.ConversationType Type { get; internal set; }
@@ -45,7 +46,7 @@ namespace WTalk.Model
             
             foreach(var cse in conversationState.events.Where(c=>c.chat_message != null))
             {
-                if (_lastMessage != null && _lastMessage.SenderId == cse.sender_id.chat_id)
+                if (_lastMessage != null && _lastMessage.SenderId == cse.sender_id.gaia_id)
                     _lastMessage.AppendContent(cse.chat_message);
                 else 
                 {

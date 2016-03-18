@@ -17,16 +17,15 @@ namespace WTalk.Model
         internal Message(WTalk.Core.ProtoJson.Schema.Event chatEvent)
         {
             Id = chatEvent.event_id;
-            SenderId = chatEvent.sender_id.chat_id;
-            selfUserId = chatEvent.self_event_state.user_id.chat_id;
+            SenderId = chatEvent.sender_id.gaia_id;
+            selfUserId = chatEvent.self_event_state.user_id.gaia_id;
             AppendContent(chatEvent.chat_message);
             MessageDate = DateTime.Now.FromMillisecondsSince1970(chatEvent.timestamp / 1000);            
         }
 
         string selfUserId;
         public string Id { get; internal set; }
-        public string SenderId { get; internal set; }
-        public string SenderPhotoUrl { get { return FileCache.Current.Get(SenderId); } }
+        public string SenderId { get; internal set; }        
         public bool IncomingMessage { get { return SenderId != selfUserId; } }
         //public Enums.MessageType Type { get; internal set; }
         public string Content { get { return string.Join<string>("\r\n", _content); } }

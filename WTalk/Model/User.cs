@@ -18,7 +18,7 @@ namespace WTalk.Model
 
         public User() { }
 
-        public string Id { get { return _entity.id.chat_id; } }
+        public string Id { get { return _entity.id.gaia_id; } }
         public string DisplayName { get { return _entity.properties.display_name; } }
         public string FirstName { get { return _entity.properties.first_name; } }
         public string PhotoUrl

@@ -94,7 +94,7 @@ namespace WTalk
             // initialization request (otherwise it will return 400).
             HttpResponseMessage message = await _client.Execute(HangoutUri.PVT_TOKEN_URL, _initParams);
             string data = await message.Content.ReadAsStringAsync();
-            Newtonsoft.Json.Linq.JArray array = Parser.ParseData(data);
+            Newtonsoft.Json.Linq.JArray array = JArray.Parse(data);
 
             _initParams["pvt"] = array[1].ToString();
 
@@ -141,7 +141,7 @@ namespace WTalk
                         GetSuggestedEntitiesResponse cgserp = ProtoJsonSerializer.Deserialize<GetSuggestedEntitiesResponse>(jarray[0] as JArray);
                         if (cgserp.response_header.status == ResponseStatus.RESPONSE_STATUS_OK)
                         {
-                            _contacts = cgserp.contacts_you_hangout_with.contact.ToDictionary(c => c.entity.id.chat_id, c => new User(c.entity));
+                            _contacts = cgserp.contacts_you_hangout_with.contact.ToDictionary(c => c.entity.id.gaia_id, c => new User(c.entity));
                         }
                         break;
                     case "cgsirp":
@@ -165,7 +165,7 @@ namespace WTalk
 
                 }
             }
-
+                        
             // call all events 
             if (UserInformationReceived != null)
                 UserInformationReceived(this, this.CurrentUser);
@@ -175,8 +175,8 @@ namespace WTalk
 
             if (_contacts == null || _contacts.Count == 0)
             {
-                string[] chat_ids = _active_conversations.Values.SelectMany(c => c._conversation.current_participant.Where(p => p.chat_id != CurrentUser.Id).Select(p => p.chat_id)).Distinct().ToArray();
-                GetEntityById(chat_ids);
+                string[] participants_id = _active_conversations.Values.SelectMany(c => c._conversation.current_participant.Where(p => p.gaia_id != CurrentUser.Id).Select(p => p.gaia_id)).Distinct().ToArray();
+                GetEntityById(participants_id);
             }
 
             if (ConversationHistoryLoaded != null)
@@ -234,6 +234,10 @@ namespace WTalk
                             switch(state_update.event_notification.current_event.event_type)
                             {
                                 case EventType.EVENT_TYPE_REGULAR_CHAT_MESSAGE:
+                                case EventType.EVENT_TYPE_UNKNOWN:
+                                     if (state_update.event_notification.current_event.conversation_id == null)
+                                        break;
+
                                     if (_active_conversations.ContainsKey(state_update.event_notification.current_event.conversation_id.id))
                                     {
                                         _active_conversations[state_update.event_notification.current_event.conversation_id.id].NewEventReceived(this, state_update.event_notification.current_event);
@@ -260,8 +264,8 @@ namespace WTalk
 
                         if (state_update.presence_notification != null)
                             foreach (var presence in state_update.presence_notification.presence)
-                                if (_contacts.ContainsKey(presence.user_id.chat_id))
-                                    setPresence(_contacts[presence.user_id.chat_id], presence.presence);
+                                if (_contacts.ContainsKey(presence.user_id.gaia_id))
+                                    setPresence(_contacts[presence.user_id.gaia_id], presence.presence);
                                 
                         
                         if(state_update.self_presence_notification != null)
@@ -292,6 +296,8 @@ namespace WTalk
 
         public User GetContactFromCache(string id)
         {
+            if (!_contacts.ContainsKey(id))
+                GetEntityById(id);
             if (_contacts.ContainsKey(id))
                 return _contacts[id];
             else
@@ -332,15 +338,15 @@ namespace WTalk
             QueryPresenceRequest request = new QueryPresenceRequest()
             {
                 request_header = RequestHeaderBody,
-                participant_id = this._contacts.Keys.Select(c => new ParticipantId() { chat_id = c }).ToList(),
+                participant_id = this._contacts.Keys.Select(c => new ParticipantId() { chat_id = c, gaia_id = c }).ToList(),
                 field_mask = Enum.GetValues(typeof(FieldMask)).Cast<FieldMask>().ToList()
             };
 
             HttpResponseMessage message = _client.PostProtoJson("presence/querypresence", request);
             QueryPresenceResponse response = message.Content.ReadAsProtoJson<QueryPresenceResponse>();
             foreach (var presence in response.presence_result)
-                if (_contacts.ContainsKey(presence.user_id.chat_id))
-                    setPresence(_contacts[presence.user_id.chat_id], presence.presence);
+                if (_contacts.ContainsKey(presence.user_id.gaia_id))
+                    setPresence(_contacts[presence.user_id.gaia_id], presence.presence);
 
         }
 
@@ -349,7 +355,7 @@ namespace WTalk
             QueryPresenceRequest request = new QueryPresenceRequest()
             {
                 request_header = RequestHeaderBody,
-                participant_id = new List<ParticipantId>() { new ParticipantId() { chat_id = CurrentUser.Id } },
+                participant_id = new List<ParticipantId>() { new ParticipantId() {chat_id= CurrentUser.Id,  gaia_id = CurrentUser.Id } },
                 field_mask = Enum.GetValues(typeof(FieldMask)).Cast<FieldMask>().ToList()
             };
 
@@ -434,12 +440,12 @@ namespace WTalk
         }
 
 
-        public void GetEntityById(params string[] chat_ids)
+        public void GetEntityById(params string[] ids)
         {
             GetEntityByIdRequest request = new GetEntityByIdRequest()
             {
                 request_header = RequestHeaderBody,
-                batch_lookup_spec = chat_ids.Select(c => new EntityLookupSpec() { gaia_id = c }).ToList(),
+                batch_lookup_spec = ids.Select(c => new EntityLookupSpec() { gaia_id = c }).ToList(),
                 field_mask = new List<FieldMask>() { FieldMask.FIELD_MASK_AVAILABLE, FieldMask.FIELD_MASK_DEVICE, FieldMask.FIELD_MASK_REACHABLE }
             };
 
@@ -450,7 +456,7 @@ namespace WTalk
                 GetEntityByIdResponse response = message.Content.ReadAsProtoJson<GetEntityByIdResponse>();
                 if (_contacts.Count == 0)
                 {
-                    _contacts = response.entity.Where(c => c.id != null).ToDictionary(c => c.id.chat_id, c => new User(c));
+                    _contacts = response.entity.Where(c => c.id != null).ToDictionary(c => c.id.gaia_id, c => new User(c));
                     ContactListLoaded(this, _contacts.Values.ToList());
                 }
                 else
@@ -458,11 +464,11 @@ namespace WTalk
 
                     foreach (var contact in response.entity.Where(c => c.id != null))
                     {
-                        if (_contacts.ContainsKey(contact.id.chat_id))
-                            _contacts[contact.id.chat_id] = new User(contact);
+                        if (_contacts.ContainsKey(contact.id.gaia_id))
+                            _contacts[contact.id.gaia_id] = new User(contact);
                         else
-                            _contacts.Add(contact.id.chat_id, new User(contact));
-                        ContactInformationReceived(this, _contacts[contact.id.chat_id]);
+                            _contacts.Add(contact.id.gaia_id, new User(contact));
+                        ContactInformationReceived(this, _contacts[contact.id.gaia_id]);
                     }
                 }
                 QueryPresences();

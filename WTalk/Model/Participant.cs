@@ -17,6 +17,6 @@ namespace WTalk.Model
 
 
         public string DisplayName { get { return _conversationParticipantData.fallback_name; } }
-        public string Id { get { return _conversationParticipantData.id.chat_id; } }
+        public string Id { get { return _conversationParticipantData.id.gaia_id; } }
     }
 }

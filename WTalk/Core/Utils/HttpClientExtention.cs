@@ -75,11 +75,15 @@ namespace WTalk.Core.Utils
             return message;
         }
 
-        public static T ReadAsProtoJson<T>(this HttpContent content) where T:new() 
+        public static T ReadAsProtoJson<T>(this HttpContent content) where T : new()
         {
-            JArray arrayBody = JArray.Parse(content.ReadAsStringAsync().Result);
-            arrayBody.RemoveAt(0);
-            return ProtoJsonSerializer.Deserialize<T>(arrayBody);
+            using (System.IO.Stream stream = content.ReadAsStreamAsync().Result)
+            {
+                var reader = new Newtonsoft.Json.JsonTextReader(new System.IO.StreamReader(stream));
+                var arrayBody = JArray.Load(reader);
+                arrayBody.RemoveAt(0);
+                return ProtoJsonSerializer.Deserialize<T>(arrayBody);
+            }
         }
     }
 }
