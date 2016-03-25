@@ -13,9 +13,11 @@ namespace Wtalk.Desktop.DesignData
     {
         public dynamic Conversation { get; set; }
         public string ConversationName { get { return "TEST"; } }
+        public string LastMessage { get { return "Last message"; } }
+        public bool HasUnreadMessages { get; set; }
         public DesignConversationViewModel()
         {
-            Conversation = new { MessagesHistory = new List<dynamic>() };            
+            Conversation = new { MessagesHistory = new List<dynamic>(), HistoryEnabled  = true};            
             
             Conversation.MessagesHistory.Add(
                 new

@@ -12,8 +12,7 @@ namespace Wtalk.Desktop.ViewModel
 {
     public class ConversationViewModel : ObservableObject
     {           
-        Client _client;        
-        public event EventHandler AttentionRequired;        
+        Client _client;                
 
         //user
         public User Contact { get; private set; }
@@ -30,8 +29,8 @@ namespace Wtalk.Desktop.ViewModel
         // conversations        
         public WTalk.Model.Conversation Conversation { get; private set; }
         public DateTime LastMessageDate { get { return Conversation.MessagesHistory.Last().MessageDate; } }
-        
-        public bool HasUnreadMessage { get { return Conversation.ReadState < DateTime.Now; } }
+
+        public bool HasUnreadMessages { get { return Conversation.SelfReadState < LastMessageDate; } }
 
         public RelayCommand SendMessageCommand { get; private set; }
         public RelayCommand SetFocusCommand { get; private set; }
@@ -76,20 +75,15 @@ namespace Wtalk.Desktop.ViewModel
         }
 
         void Conversation_NewMessageReceived(object sender, Message e)
-        {            
-            App.Current.Dispatcher.Invoke(() =>
-            {
-                
-                if (AttentionRequired != null)
-                    AttentionRequired(this, null);
-            });
+        {
+            OnPropertyChanged("HasUnreadMessage");
         }
-
-
+        
         private void SetFocus()
         {
             this.Conversation.UpdateReadState();
-            _client.SetFocus(Conversation.Id);            
+            _client.SetFocus(Conversation.Id);
+            OnPropertyChanged("HasUnreadMessage");
         }
 
       

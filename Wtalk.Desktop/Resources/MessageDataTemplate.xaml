@@ -13,17 +13,17 @@
             </Grid.ColumnDefinitions>
             <Border Grid.Column="0" CornerRadius="40" BorderBrush="Gainsboro" BorderThickness="1,1,1,1"  Height="35" Width="35" HorizontalAlignment="Left" VerticalAlignment="Top" >
                 <Border.Background>
-                    <ImageBrush ImageSource="{Binding Path=Contact.PhotoUrl, FallbackValue={StaticResource DefaultImage}, TargetNullValue={StaticResource DefaultImage}}"/>
+                    <ImageBrush ImageSource="{Binding SenderPhotoUrl, FallbackValue={StaticResource DefaultImage}, TargetNullValue={StaticResource DefaultImage}, Mode=OneWay}"/>
                 </Border.Background>
             </Border>
             <Border Grid.Column="1" Grid.Row="0" CornerRadius="5" BorderThickness="1"  Background="White" BorderBrush="Gainsboro" Padding="5"  HorizontalAlignment="Left">
                 <Border.Effect>
                     <DropShadowEffect Color="Gainsboro" ShadowDepth="2" Direction="1"/>
                 </Border.Effect>
-                <TextBox  Text="{Binding Content, Mode=OneWay}" TextWrapping="Wrap" BorderThickness="0" IsReadOnly="True"/>
+                <TextBox IsUndoEnabled="False" Text="{Binding Content, Mode=OneWay}" TextWrapping="Wrap" BorderThickness="0" IsReadOnly="True"/>
             </Border>
             <!--<Polygon Grid.Column="1" Grid.Row="1" Points="0,0 -1,10, 10,0" Stroke="#006dae" Fill="#006dae" HorizontalAlignment="Left" Margin="5,-1,0,0"/>-->
-            <TextBlock FontSize="10"  Grid.Column="1" Grid.Row="1" Text="{Binding MessageDate, StringFormat={}{0:dd/MM HH:mm}}" Foreground="Gray" HorizontalAlignment="Left" />
+            <TextBlock FontSize="10"  Grid.Column="1" Grid.Row="1" Text="{Binding MessageDate, StringFormat={}{0:dd/MM HH:mm}, Mode=OneWay}" Foreground="Gray" HorizontalAlignment="Left" />
         </Grid>
     </DataTemplate>
 
@@ -39,17 +39,17 @@
             </Grid.ColumnDefinitions>
             <Border Grid.Column="1" CornerRadius="40" BorderBrush="Gainsboro" BorderThickness="1,1,1,1"  Height="35" Width="35" HorizontalAlignment="Right" VerticalAlignment="Top" >
                 <Border.Background>
-                    <ImageBrush ImageSource="{Binding Path=Contact.PhotoUrl, FallbackValue={StaticResource DefaultImage}, TargetNullValue={StaticResource DefaultImage}}"/>
+                    <ImageBrush ImageSource="{Binding SenderPhotoUrl, FallbackValue={StaticResource DefaultImage}, TargetNullValue={StaticResource DefaultImage}, Mode=OneWay}"/>
                 </Border.Background>
             </Border>
             <Border Grid.Column="0" Grid.Row="0" CornerRadius="5" BorderThickness="1"  Background="White" BorderBrush="Gainsboro" Padding="5"  HorizontalAlignment="Right">
                 <Border.Effect>
                     <DropShadowEffect Color="Gainsboro" ShadowDepth="2" Direction="-1"/>
                 </Border.Effect>
-                <TextBox  Text="{Binding Content, Mode=OneWay}" TextWrapping="Wrap" BorderThickness="0" IsReadOnly="True"/>
+                <TextBox  IsUndoEnabled="False" Text="{Binding Content, Mode=OneWay}" TextWrapping="Wrap" BorderThickness="0" IsReadOnly="True"/>
             </Border>
             <!--<Polygon Grid.Column="1" Grid.Row="1" Points="0,0 -1,10, 10,0" Stroke="#006dae" Fill="#006dae" HorizontalAlignment="Left" Margin="5,-1,0,0"/>-->
-            <TextBlock FontSize="10"  Grid.Column="0" Grid.Row="1" Text="{Binding MessageDate, StringFormat={}{0:dd/MM HH:mm}}" Foreground="Gray" HorizontalAlignment="Right" />
+            <TextBlock FontSize="10"  Grid.Column="0" Grid.Row="1" Text="{Binding MessageDate, StringFormat={}{0:dd/MM HH:mm}, Mode=OneWay}" Foreground="Gray" HorizontalAlignment="Right" />
         </Grid>
     </DataTemplate>
 </ResourceDictionary>

@@ -5,108 +5,160 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
         xmlns:designData="clr-namespace:Wtalk.Desktop.DesignData"
+        xmlns:dt="clr-namespace:Wtalk.Desktop.CustomDataTemplate"
+        xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
         mc:Ignorable="d"                        
         d:DataContext="{d:DesignInstance Type=designData:DesignMainViewModel, IsDesignTimeCreatable=True}"
-        Title="{Binding CurrentUser.DisplayName, StringFormat='Wtalk - {0}'}" Height="420" Width="300"  x:Name="mainWindow"
-       Style="{DynamicResource window_style}">
+        Title="{Binding CurrentUser.DisplayName, StringFormat='Wtalk - {0}'}" Height="420" Width="800"  x:Name="mainWindow"
+       Style="{DynamicResource window_style}" UseLayoutRounding="True">
     <Window.Resources>
         <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary>
-                    <!--<local:TabSizeConverter x:Key="TabSizeConverter" />-->
-                    <CollectionViewSource x:Key="SortedActiveContacts" Source="{Binding ActiveContacts.Values}">
+            <CollectionViewSource x:Key="SortedActiveContacts" Source="{Binding ActiveContacts}" >
                         <CollectionViewSource.SortDescriptions>
                             <scm:SortDescription PropertyName="Contact.Online" Direction="Descending" />
                             <scm:SortDescription PropertyName="LastMessageDate" Direction="Descending" />
                         </CollectionViewSource.SortDescriptions>
-                    </CollectionViewSource>
-                </ResourceDictionary>
-            </ResourceDictionary.MergedDictionaries>            
+                    </CollectionViewSource>                
         </ResourceDictionary>
     </Window.Resources>
     <Grid>
-        <Grid Height="50" VerticalAlignment="Top" DataContext="{Binding CurrentUser}">
-            <Grid.Background>
-                <ImageBrush ImageSource="Resources/talk.png" Stretch="Uniform" AlignmentX="Left"/>
-            </Grid.Background>
-            <ComboBox  Margin="55,0,5,0" Height="30" SelectedIndex="{Binding DataContext.CurrentPresenceIndex,ElementName=mainWindow}">
-                <ComboBoxItem IsSelected="True">
-                    <Grid>
-                        <Border Margin="0,8" Height="10" Width="10" CornerRadius="10" VerticalAlignment="Top" HorizontalAlignment="Left" IsEnabled="True" Style="{StaticResource status_indicator}"></Border>
-                        <TextBlock Padding="4" Margin="10,0" VerticalAlignment="Top">
-                        <Run Text="{Binding DisplayName, Mode=OneWay}"/>
-                        <Run Text="Online" Foreground="Gray" FontSize="10"/>
-                        </TextBlock>
-                    </Grid>
-                </ComboBoxItem>
-                <ComboBoxItem>
-                    <Grid>
-                        <Border Margin="0,8" Height="10" Width="10" CornerRadius="10" VerticalAlignment="Top" HorizontalAlignment="Left" IsEnabled="False" Style="{StaticResource status_indicator}"></Border>
-                        <TextBlock Padding="4" Margin="10,0" VerticalAlignment="Top">
-                        <Run Text="{Binding DisplayName, Mode=OneWay}"/>
-                        <Run Text="Invisible" Foreground="Gray" FontSize="10"/>
-                        </TextBlock>
-                    </Grid>
-                </ComboBoxItem>
-                <ComboBoxItem>
-                    <Grid>
-                        <Border Margin="0,8" Height="10" Width="10" CornerRadius="10" VerticalAlignment="Top" HorizontalAlignment="Left" IsEnabled="False" Style="{StaticResource status_indicator}"></Border>
-                        <TextBlock Padding="4" Margin="10,0" VerticalAlignment="Top">                        
-                        LogOff
-                        </TextBlock>
-                    </Grid>
-                </ComboBoxItem>
-                <ComboBoxItem>
-                    <Grid>
-                        <Border Margin="0,8" Height="10" Width="10" CornerRadius="10" VerticalAlignment="Top" HorizontalAlignment="Left" IsEnabled="False" Style="{StaticResource status_indicator}"></Border>
-                        <TextBlock Padding="4" Margin="10,0" VerticalAlignment="Top">                        
-                        Close
-                        </TextBlock>
-                    </Grid>
-                </ComboBoxItem>
-            </ComboBox>
-
-        </Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="250" />            
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
         
-        <ScrollViewer Margin="0,50,0,0">
-            <StackPanel>
-                <ItemsControl ItemsSource="{Binding Source={StaticResource SortedActiveContacts}}">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <Button BorderThickness="0,1" Background="Transparent" Padding="0" Command="{Binding DataContext.OpenConversationCommand, ElementName=mainWindow}" CommandParameter="{Binding Path=Conversation.Id}" Style="{StaticResource contact}">
-                                <Button.Template>
-                                    <ControlTemplate>
-                                        <Border Height="45" BorderThickness="1"  Style="{StaticResource list_border}">                                                    
-                                            <Grid>
-                                                <Border Height="10" Width="10" CornerRadius="10" Margin="5,0,0,0" HorizontalAlignment="Left" IsEnabled="{Binding Path=Contact.Online, FallbackValue=False}" Style="{StaticResource status_indicator}"/>
-                                                <TextBlock Margin="20,0,40,0" Padding="5" VerticalAlignment="Top" Text="{Binding Path=Contact.DisplayName}" />
-                                                <TextBlock Margin="20,0,40,0" Padding="5" VerticalAlignment="Bottom" Style="{StaticResource status_text}" Text="{Binding Path=Conversation.LastMessage}"/>
-                                                <Border CornerRadius="40" BorderBrush="Gainsboro" BorderThickness="1,1,1,1"  Height="35" Width="35" HorizontalAlignment="Right" Margin="3,3,7,3">
-                                                    <Border.Background>
-                                                        <ImageBrush ImageSource="{Binding Path=Contact.PhotoUrl, FallbackValue={StaticResource DefaultImage}, TargetNullValue={StaticResource DefaultImage}}"/>
-                                                    </Border.Background>
-                                                </Border>                                                
-                                                <Rectangle Height="1" VerticalAlignment="Bottom" Margin="15,0"  Fill="#ededed" />
-                                            </Grid>
+        <!-- list part-->
+        <Border>
+            <!--<Border.Effect>
+                <DropShadowEffect Color="#FFC7C7C7"/>
+            </Border.Effect>-->
+            <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="50"></RowDefinition>
+                <RowDefinition Height="*"></RowDefinition>
+            </Grid.RowDefinitions>
+            <!-- header -->
+            <Grid Background="#019f55">
+                <Grid>                    
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="30"></ColumnDefinition>
+                        <ColumnDefinition Width="*"></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="1" Margin="50,0,0,0" VerticalAlignment="Center" Text="{Binding Path=CurrentUser.DisplayName}" Foreground="White" />                    
+                    <Border Grid.Column="1" CornerRadius="40" BorderBrush="Gainsboro" BorderThickness="1,1,1,1"  Height="35" Width="35" HorizontalAlignment="Left" >
+                        <Border.Background>
+                            <ImageBrush ImageSource="{Binding Path=CurrentUser.PhotoUrl, FallbackValue={StaticResource DefaultImage}, TargetNullValue={StaticResource DefaultImage}}"/>
+                        </Border.Background>
+                    </Border>                    
+                </Grid>
+            </Grid>
+                <Grid Grid.Row="1">
+                    <ListView BorderThickness="0,0,1,0"  
+                              ItemsSource="{Binding Source={StaticResource SortedActiveContacts}}"  
+                              SelectedItem="{Binding SelectedConversation, UpdateSourceTrigger=PropertyChanged}"
+                              ScrollViewer.HorizontalScrollBarVisibility="Hidden">
+                        <ListView.ItemTemplate>
+                            <DataTemplate>                                
+                                    <Grid Height="45" Width="auto">
+                                        <Border CornerRadius="40" BorderBrush="Gainsboro" BorderThickness="1,1,1,1"  Height="35" Width="35" HorizontalAlignment="Left">
+                                            <Border.Background>
+                                                <ImageBrush ImageSource="{Binding Path=Contact.PhotoUrl, FallbackValue={StaticResource DefaultImage}, TargetNullValue={StaticResource DefaultImage}}"/>
+                                            </Border.Background>
                                         </Border>
-                                    </ControlTemplate>
-                                </Button.Template>
-                            </Button>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </StackPanel>
-        </ScrollViewer>
+                                        <Border Height="10" Width="10" CornerRadius="10" Margin="35,20,0,0"  HorizontalAlignment="Left" IsEnabled="{Binding Path=Contact.Online, FallbackValue=False}" Style="{StaticResource status_indicator}"/>
+                                        <TextBlock Margin="45,0,0,0" Padding="5" VerticalAlignment="Top" Text="{Binding Path=Contact.DisplayName}" Style="{StaticResource message_event}"/>
+                                        <TextBlock MaxWidth="190" Margin="45,0,0,0" Padding="5"  HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Style="{StaticResource message_event}" Foreground="Gray" Text="{Binding Path=Conversation.LastMessage}"/>                                        
+                                        <Rectangle Height="1" VerticalAlignment="Bottom" Margin="15,0"  Fill="#ededed" />
+                                    </Grid>                                
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                        <ListView.ItemContainerStyle>
+                            <Style TargetType="ListViewItem">
+                                <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                                <Setter Property="BorderThickness" Value="0" />
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="Gainsboro" />
+                                        <Setter Property="Cursor" Value="Hand" />
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ListView.ItemContainerStyle>
+                    </ListView>
+                </Grid>
+        </Grid>
+        </Border>
+        
+        <!-- Conversation part -->
+        <Grid Grid.Column="1" DataContext="{Binding SelectedConversation}">
+            <Grid.Style>
+                <Style>
+                    <Setter Property="Grid.Visibility" Value="Visible" />
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}" Value="{x:Null}">                        
+                            <Setter Property="Grid.Visibility" Value="Hidden" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Grid.Style>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="50"></RowDefinition>
+                <RowDefinition Height="*"></RowDefinition>
+                <RowDefinition Height="25"></RowDefinition>
+            </Grid.RowDefinitions>
+            <!-- header -->
+            <Grid Background="#019f55">
+                <TextBlock Grid.Column="1" Margin="10,0,0,0" VerticalAlignment="Center" Text="{Binding Path=ConversationName}" Foreground="White" />
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Width="130">
+                    <!--<Path Height="20" Width="20" Stretch="Fill" Fill="white" Data="F1 M 53.8333,41.1667C 53.8333,49.9112 46.7445,57 38,57C 29.2555,57 22.1667,49.9112 22.1667,41.1667C 22.1667,32.9565 28.4156,26.2059 36.4167,25.4115L 36.4167,23.75L 31.6667,23.75L 31.6667,19L 44.3333,19L 44.3333,23.75L 39.5833,23.75L 39.5833,25.4115C 42.7678,25.7277 45.6747,26.9874 48.0205,28.907L 49.1629,27.7646L 46.9237,25.5254L 50.2825,22.1667L 57,28.8842L 53.6412,32.2429L 51.4021,30.0038L 50.2597,31.1462C 52.4933,33.8756 53.8333,37.3647 53.8333,41.1667 Z M 26.2296,39.5834L 30.0833,39.5834L 30.0833,42.75L 26.2296,42.75C 26.9347,48.0419 31.1248,52.232 36.4166,52.9371L 36.4166,49.0833L 39.5833,49.0833L 39.5833,52.937C 44.8752,52.232 49.0653,48.0419 49.7703,42.75L 45.9166,42.75L 45.9166,39.5834L 49.7703,39.5834C 49.0652,34.2915 44.8751,30.1014 39.5833,29.3964L 39.5833,33.25L 36.4166,33.25L 36.4166,29.3963C 31.1248,30.1014 26.9347,34.2915 26.2296,39.5834 Z M 38,38C 39.7489,38 41.1666,39.4178 41.1666,41.1667C 41.1666,42.9156 39.7489,44.3334 38,44.3334L 31.6666,49.0834L 34.8333,41.1667C 34.8333,39.4178 36.2511,38 38,38 Z "/>-->
+                    <Label VerticalAlignment="Center" Foreground="White">Save History</Label>
+                    <ToggleButton Style="{StaticResource AnimatedSwitch}" Height="20" IsChecked="{Binding Path=Conversation.HistoryEnabled,Mode=OneWay, FallbackValue=True}" Command="{Binding SetOTRCommand}" Margin="10,0"/>
+                </StackPanel>
+            </Grid>
+            <ScrollViewer x:Name="scrollBar" Padding="2,5,2,0" Grid.Row="1" Background="#e5e5e5">
+                <StackPanel>
+                    <ItemsControl ItemsSource="{Binding Path= Conversation.MessagesHistory, Mode=OneWay}">
+                        <ItemsControl.ItemTemplateSelector>
+                            <dt:MessageDataTemplateSelector In="{StaticResource IncommingMessage}" Out="{StaticResource OutgoingMessage}"  />
+                        </ItemsControl.ItemTemplateSelector>
+                    </ItemsControl>
+                </StackPanel>
+            </ScrollViewer>
+            <TextBox Grid.Row="2" Padding="0,4" VerticalAlignment="Bottom" TextWrapping="Wrap" BorderThickness="0,1,0,0" Text="{Binding MessageContent , UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" Margin="0,0,20,0">
+                <TextBox.InputBindings>
+                    <KeyBinding Command="{Binding SendMessageCommand}" Key="Enter"></KeyBinding>
+                    <KeyBinding Command="{Binding SetFocusCommand}" Key=""/>
+                </TextBox.InputBindings>                
+            </TextBox>
+        </Grid>
 
-
-        <Grid Background="#fbfdfc" IsEnabled="{Binding AuthenticationRequired}">
+        <!-- loading -->
+        <Grid Background="#fbfdfc" Grid.ColumnSpan="2">
             <Grid.Style>
                 <Style>
                     <Setter Property="Grid.Visibility" Value="Hidden" />
                     <Style.Triggers>
-                        <Trigger Property="Grid.IsEnabled" Value="True">
+                        <DataTrigger Binding="{Binding Path=DataContext.Connected, ElementName=mainWindow}" Value="False">
                             <Setter Property="Grid.Visibility" Value="Visible" />
-                        </Trigger>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Grid.Style>
+            <Image Source="Resources/talk.png" Stretch="Uniform" Height="50" Width="50" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+            <TextBlock VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,100,0,0" >Loading</TextBlock>
+            <ProgressBar Height="10" VerticalAlignment="Center" HorizontalAlignment="Center" Width="250" Margin="0,150,0,0" IsIndeterminate="True"/>
+
+        </Grid>
+
+        <!-- auth part-->
+        <Grid Background="#fbfdfc" Grid.ColumnSpan="2">
+            <Grid.Style>
+                <Style>
+                    <Setter Property="Grid.Visibility" Value="Hidden" />
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding Path=DataContext.AuthenticationRequired, ElementName=mainWindow}" Value="True">
+                            <Setter Property="Grid.Visibility" Value="Visible" />
+                        </DataTrigger>
                     </Style.Triggers>
                 </Style>
             </Grid.Style>

@@ -12,10 +12,9 @@ namespace Wtalk.Desktop.ViewModel
 {
     public class MainViewModel : ObservableObject
     {
-        public Dictionary<string, ConversationViewModel> ActiveContacts { get; private set; }
+        public ObservableCollection<ConversationViewModel> ActiveContacts { get; private set; }
 
         ConversationViewModel _selectedConversation;
-
         public ConversationViewModel SelectedConversation
         {
             get { return _selectedConversation; }
@@ -23,6 +22,8 @@ namespace Wtalk.Desktop.ViewModel
         }
         
         public User CurrentUser { get; set; }
+        public bool Connected { get; private set; }
+
 
         int _currentPresenceIndex = 0;
         DateTime _lastStateUpdate = DateTime.Now;
@@ -55,22 +56,18 @@ namespace Wtalk.Desktop.ViewModel
         Client _client;
         AuthenticationManager _authenticationManager;
 
-
-        public RelayCommand<string> OpenConversationCommand { get; private set; }
-        public RelayCommand<string> LoadConversationCommand { get; private set; }
-
         public RelayCommand<string> SetAuthenticationCodeCommand { get; private set; }
         public RelayCommand GetCodeCommand { get; private set; }
         public RelayCommand SetPresenceCommand { get; private set; }
 
+
+        private static object _lock = new object();
         public MainViewModel()
-        {
-            OpenConversationCommand = new RelayCommand<string>((p) => OpenConversation(p, true));
-            LoadConversationCommand = new RelayCommand<string>((p) => LoadConversation(p, true));
+        {            
+
             SetAuthenticationCodeCommand = new RelayCommand<string>((p) => SetAuthenticationCode(p));
             GetCodeCommand = new RelayCommand(() => GetCode());
             SetPresenceCommand = new RelayCommand(() => SetPresence());
-
 
             _authenticationManager = new AuthenticationManager();
             _authenticationManager.Connect();
@@ -87,28 +84,27 @@ namespace Wtalk.Desktop.ViewModel
             
             if(_authenticationManager.IsAuthenticated)
                 _client.Connect();
-
-            
+            ActiveContacts = new ObservableCollection<ConversationViewModel>();
+            App.Current.Dispatcher.Invoke(() =>
+            {
+                System.Windows.Data.BindingOperations.EnableCollectionSynchronization(ActiveContacts, _lock);
+            });
         }
 
         void _client_UserInformationReceived(object sender, User e)
         {
-            OnPropertyChanged("ActiveContacts");  
+            OnPropertyChanged("CurrentUser");
+            
         }
 
         void _client_NewConversationCreated(object sender, Conversation e)
-        {           
-            
-            App.Current.Dispatcher.Invoke(() =>
-            {
-                OpenConversation(e.Id, false);
-            });
-            
+        {
+            ActiveContacts.Add(new ConversationViewModel(e, _client)); 
         }
 
         void _client_ContactInformationReceived(object sender, User e)
         {
-            OnPropertyChanged("ActiveContacts");           
+            
         }
              
         void _client_UserInformationLoaded(object sender, User e)
@@ -122,10 +118,12 @@ namespace Wtalk.Desktop.ViewModel
             // associate contact list and last active conversation
             // only 1 to 1 conversation supported   
             if (ActiveContacts == null)
-                ActiveContacts = new Dictionary<string, ConversationViewModel>();            
-            foreach(Conversation conversation in e)
-                ActiveContacts.Add(conversation.Id, new ConversationViewModel(conversation,_client));            
-            OnPropertyChanged("ActiveContacts"); 
+                ActiveContacts = new ObservableCollection<ConversationViewModel>();
+
+            foreach (Conversation conversation in e)
+                ActiveContacts.Add(new ConversationViewModel(conversation, _client));
+
+            OnPropertyChanged("ActiveContacts");
         }
 
         void _client_ContactListLoaded(object sender, List<User> e)
@@ -141,25 +139,15 @@ namespace Wtalk.Desktop.ViewModel
             else
                 _client.GetSelfInfo();
 
+            Connected = true;
+            OnPropertyChanged("Connected");
+
             //if(_conversationCache == null || _conversationCache.Count == 0)
                // _client.SyncRecentConversations();
+
+            //_client.GetSuggestedEntities();
         }
 
-        void OpenConversation(string conversationId, bool bringToFront)
-        {
-            //if (_conversationCache.ContainsKey(conversationId))
-            //    _conversationCache[conversationId].Show(bringToFront);             
-
-        }
-
-        void LoadConversation(string userId, bool bringToFront)
-        {
-            //User participant = selectedUser as User;
-
-            //if (_conversationCache.ContainsKey(conversationId))
-            //    _conversationCache[conversationId].Show(bringToFront);
-
-        }
 
         void GetCode()
         {
