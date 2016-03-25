@@ -34,5 +34,8 @@ Other Features :
 Known issues :
 - Sometimes messages are lost ... even if google response is OK.
 
+## Screen
+![alt tag](https://github.com/madagaga/WTalk/raw/master/Wtalk.Desktop/Main.PNG)
+
 ## Initial project
 Port of https://github.com/tdryer/hangups to c#.
