@@ -25,29 +25,35 @@ namespace WTalk.Model
         public ObservableCollection<Message> MessagesHistory { get; internal set; }
         public bool HistoryEnabled { get { return _conversation.otr_status == OffTheRecordStatus.OFF_THE_RECORD_STATUS_ON_THE_RECORD; } }
 
-        public DateTime ReadState { get; internal set; }        
+        public DateTime ReadState { get; private set; }
+        public DateTime SelfReadState { get; private set; }
+
+
+
+
         public void UpdateReadState()
         {
-            this.ReadState = DateTime.UtcNow;
+            this.SelfReadState = DateTime.UtcNow;
         }
 
         public event EventHandler<Message> NewMessageReceived;
 
         internal Conversation(ConversationState conversationState)
         {
-            _synchronizationContext = SynchronizationContext.Current;
+            _synchronizationContext = Client.CurrentSynchronizationContext;
 
             _conversation = conversationState.conversation;
             if (_conversation.read_state.Count > 0)
                 ReadState = DateTime.Now.FromMillisecondsSince1970(_conversation.read_state.Last().latest_read_timestamp / 1000);
-
+            if (_conversation.self_conversation_state.self_read_state != null)
+                SelfReadState = DateTime.Now.FromMillisecondsSince1970(_conversation.self_conversation_state.self_read_state.latest_read_timestamp / 1000);
             Participants = _conversation.participant_data.ToDictionary(c=>c.id.chat_id, c => new Participant(c));
             MessagesHistory = new ObservableCollection<Message>();
             
             foreach(var cse in conversationState.events.Where(c=>c.chat_message != null))
             {
                 if (_lastMessage != null && _lastMessage.SenderId == cse.sender_id.gaia_id)
-                    _lastMessage.AppendContent(cse.chat_message);
+                    _lastMessage.AppendContent(cse);
                 else 
                 {
                     _lastMessage = new Message(cse);
@@ -59,10 +65,10 @@ namespace WTalk.Model
 
         internal void NewEventReceived(Client client, Event e)
         {
-
+            
 
             if (_lastMessage.SenderId == e.sender_id.chat_id)
-                _lastMessage.AppendContent(e.chat_message);
+                _lastMessage.AppendContent(e);
             else
             {
                 _lastMessage = new Message(e);
@@ -74,7 +80,7 @@ namespace WTalk.Model
             }
                         
             OnPropertyChanged("MessagesHistory");
-            OnPropertyChanged("LastMessage");
+            OnPropertyChanged("LastMessage");            
 
             if (NewMessageReceived != null)
                 NewMessageReceived(this, _lastMessage);

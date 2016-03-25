@@ -12,6 +12,7 @@ using WTalk.Core.HttpHandler;
 using WTalk.Core.Utils;
 using WTalk.Core.ProtoJson.Schema;
 using WTalk.Core.ProtoJson;
+using System.Threading;
 
 namespace WTalk
 {
@@ -19,7 +20,20 @@ namespace WTalk
     { 
         Dictionary<string, string> _initParams = new Dictionary<string, string>();        
         Channel _channel;
-        internal static CookieContainer CookieContainer = new CookieContainer();
+        
+        static CookieContainer _cookieContainer;        
+        public static CookieContainer CookieContainer
+        {
+            get
+            {
+                if (_cookieContainer == null)
+                    _cookieContainer = new CookieContainer();
+                return _cookieContainer;
+            }
+        }
+
+
+        public static SynchronizationContext CurrentSynchronizationContext { get; private set; }
         HttpClient _client;
         string _api_key;
         string _email;
@@ -75,6 +89,10 @@ namespace WTalk
             _client = new HttpClient(new SigningMessageHandler());            
             _client.Timeout = new TimeSpan(0, 0, 30);
             
+            // initializing shared static             
+            CurrentSynchronizationContext = SynchronizationContext.Current;
+
+
         }
         
         public void Connect()
@@ -121,20 +139,20 @@ namespace WTalk
                 switch (key)
                 {
                     case "cin:cac":
-                        this._api_key = jarray[0][2].ToString();
+                        _api_key = jarray[0][2].ToString();
                         break;
                     case "cic:vd":
-                        this._email = jarray[0][2].ToString(); // cic:vd
+                        _email = jarray[0][2].ToString(); // cic:vd
                         break;
                     case "cin:acc":
                         if (jarray[0].Count() > 6)
                         {
-                            this._header_date = jarray[0][4].ToString(); //cin:acc
-                            this._header_version = jarray[0][6].ToString();
+                            _header_date = jarray[0][4].ToString(); //cin:acc
+                            _header_version = jarray[0][6].ToString();
                         }
                         break;
                     case "cin:bcsc":
-                        this._header_id = jarray[0][7].ToString(); // cin:bcsc
+                        _header_id = jarray[0][7].ToString(); // cin:bcsc
                         break;
                     case "cgserp":
                         jarray[0][0].Remove();
@@ -151,7 +169,7 @@ namespace WTalk
                         {
                             if (!string.IsNullOrEmpty(_email))
                                 cgsirp.self_entity.properties.canonical_email = _email;
-                            this.CurrentUser = new User(cgsirp.self_entity);                                
+                            CurrentUser = new User(cgsirp.self_entity);                                
                         }
                         break;
                     case "csrcrp":
@@ -168,7 +186,7 @@ namespace WTalk
                         
             // call all events 
             if (UserInformationReceived != null)
-                UserInformationReceived(this, this.CurrentUser);
+                UserInformationReceived(this, CurrentUser);
 
             if (ContactListLoaded != null)
                 ContactListLoaded(this, _contacts.Values.ToList());
@@ -178,10 +196,12 @@ namespace WTalk
                 string[] participants_id = _active_conversations.Values.SelectMany(c => c._conversation.current_participant.Where(p => p.gaia_id != CurrentUser.Id).Select(p => p.gaia_id)).Distinct().ToArray();
                 GetEntityById(participants_id);
             }
-
+            
             if (ConversationHistoryLoaded != null)
                 ConversationHistoryLoaded(this, _active_conversations.Values.ToList());
 
+            data = null;
+            dataDictionary = null;
             //this._timestamp = double.Parse(dataDictionary["ds:21"][0][1][4].ToString());
 
         }
@@ -276,7 +296,7 @@ namespace WTalk
                             );
                     }
 
-                    this._timestamp = long.Parse(wrapper["1"]["4"].ToString());
+                    _timestamp = long.Parse(wrapper["1"]["4"].ToString());
                 }
             }    
         }
@@ -338,7 +358,7 @@ namespace WTalk
             QueryPresenceRequest request = new QueryPresenceRequest()
             {
                 request_header = RequestHeaderBody,
-                participant_id = this._contacts.Keys.Select(c => new ParticipantId() { chat_id = c, gaia_id = c }).ToList(),
+                participant_id = _contacts.Keys.Select(c => new ParticipantId() { chat_id = c, gaia_id = c }).ToList(),
                 field_mask = Enum.GetValues(typeof(FieldMask)).Cast<FieldMask>().ToList()
             };
 
@@ -375,8 +395,7 @@ namespace WTalk
                 request_header = RequestHeaderBody,
                 full_jid = string.Format("{0}/{1}", CurrentUser.Email, _client_id),
                 is_active = true,
-                timeout_secs = 120,
-                unknown = true
+                timeout_secs = 120
             };
                         
             HttpResponseMessage message = _client.PostProtoJson( "clients/setactiveclient", request);            
@@ -445,8 +464,8 @@ namespace WTalk
             GetEntityByIdRequest request = new GetEntityByIdRequest()
             {
                 request_header = RequestHeaderBody,
-                batch_lookup_spec = ids.Select(c => new EntityLookupSpec() { gaia_id = c }).ToList(),
-                field_mask = new List<FieldMask>() { FieldMask.FIELD_MASK_AVAILABLE, FieldMask.FIELD_MASK_DEVICE, FieldMask.FIELD_MASK_REACHABLE }
+                batch_lookup_spec = ids.Select(c => new EntityLookupSpec() { gaia_id = c }).ToList()
+                //field_mask = new List<FieldMask>() { FieldMask.FIELD_MASK_AVAILABLE, FieldMask.FIELD_MASK_DEVICE, FieldMask.FIELD_MASK_REACHABLE }
             };
 
             HttpResponseMessage message = _client.PostProtoJson("contacts/getentitybyid", request);
@@ -497,7 +516,7 @@ namespace WTalk
         {
             SyncRecentConversationsRequest request = new SyncRecentConversationsRequest()
             {
-                request_header = RequestHeaderBody    
+                request_header = RequestHeaderBody  
             };
 
             
@@ -534,6 +553,17 @@ namespace WTalk
             HttpResponseMessage message = _client.PostProtoJson("conversations/modifyotrstatus", request);
         }
 
+
+        public void GetSuggestedEntities()
+        {
+            GetSuggestedEntitiesRequest request = new GetSuggestedEntitiesRequest()
+            {
+                request_header = RequestHeaderBody         ,
+                       
+            };
+
+            HttpResponseMessage message = _client.PostProtoJson("contacts/getsuggestedentities",request);
+        }
 
 
         #endregion

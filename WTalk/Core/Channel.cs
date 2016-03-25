@@ -29,7 +29,7 @@ namespace WTalk
         string _appver = "chat_frontend_20151111.11_p0"; // default 
 
         int ofs_count = 0;        
-        bool _initialized = false;
+        //bool _initialized = false;
 
 
         public Channel()
@@ -105,53 +105,83 @@ namespace WTalk
             headerData.Add("RID", "rpc");  // request identifier
             headerData.Add("SID", _sid);  // session ID
             headerData.Add("CI", "1");  // 0 if streaming/chunked requests should be used
-            headerData.Add("AID", _aid);  // 0 if streaming/chunked requests should be used
+            headerData.Add("AID", _aid);  // 
             headerData.Add("TYPE", "xmlhttp");  // type of request
             // zx ?
             headerData.Add("t", "1");  // trial
-           
-            
+
+
             HttpResponseMessage message = await _client.Execute(HangoutUri.CHANNEL_URL + "channel/bind", headerData);
             if (message != null)
             {
                 message.EnsureSuccessStatusCode();
                 dataReceived(await message.Content.ReadAsStringAsync());
             }
-            
-#region if streaming 
+
+            #region if streaming 
             //StringBuilder query = new StringBuilder(HangoutUri.CHANNEL_URL + "channel/bind?");
 
 
             //query.Append(string.Join("&", headerData.Select(c => string.Format("{0}={1}", c.Key, Uri.EscapeUriString(c.Value))).ToArray()));
 
 
-            //using (System.IO.StreamReader reader = new System.IO.StreamReader(_client.GetStreamAsync(query.ToString()).Result, true))
+            //using (System.IO.StreamReader reader = new System.IO.StreamReader( await _client.GetStreamAsync(query.ToString()), true))
             //{
-            //    StringBuilder builder = new StringBuilder();
-            //    string data = reader.ReadLine();
-            //    int chunkSize = int.Parse(data);
+            //    int response_count =0, chunkSize= 0;
             //    char[] buffer;
-            //    int response_count = 0;
-
-            //    while (!reader.EndOfStream && response_count < 5)
+            //    string data;                 
+            //    try
             //    {
-                    
-            //        buffer = new char[chunkSize];
-            //        reader.Read(buffer, 0, chunkSize);                        
-            //        builder.Append(buffer);
-                    
 
-            //        dataReceived(builder.ToString());
-            //        response_count++;
-            //        //reader.BaseStream.Position = chunkSize;
-            //        builder.Clear();
-            //        data = reader.ReadLine();
-            //        if (data == null)
-            //            break;
-            //        chunkSize = int.Parse(data);
+            //        while (!reader.EndOfStream && response_count < 5)
+            //        {
+            //            data = reader.ReadLine();
+            //            if (data == null)
+            //                break;
+
+
+            //            chunkSize = int.Parse(data);
+            //            buffer = new char[chunkSize];
+            //            reader.Read(buffer, 0, chunkSize);
+
+            //            dataReceived(new string(buffer));
+            //            response_count++;                        
+            //        }
+            //    }
+            //    catch
+            //    {
+
             //    }
 
+
+
+
+
+            //StringBuilder builder = new StringBuilder();
+            //string data = reader.ReadLine();
+            //int chunkSize = int.Parse(data);
+            //char[] buffer;
+            //int response_count = 0;
+
+            //while (!reader.EndOfStream && response_count < 5)
+            //{
+
+            //    buffer = new char[chunkSize];
+            //    reader.Read(buffer, 0, chunkSize);
+            //    builder.Append(buffer);
+
+
+            //    dataReceived(builder.ToString());
+            //    response_count++;
+            //    //reader.BaseStream.Position = chunkSize;
+            //    builder.Clear();
+            //    data = reader.ReadLine();
+            //    if (data == null)
+            //        break;
+            //    chunkSize = int.Parse(data);
             //}
+
+        //}
 #endregion
 
         }
