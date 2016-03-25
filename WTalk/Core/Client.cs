@@ -498,7 +498,8 @@ namespace WTalk
         {
             GetSelfInfoRequest request = new GetSelfInfoRequest()
             {
-                request_header = RequestHeaderBody
+                request_header = RequestHeaderBody,
+                
             };
             
             HttpResponseMessage message = _client.PostProtoJson("contacts/getselfinfo", request);

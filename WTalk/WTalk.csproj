@@ -52,11 +52,6 @@
     <Compile Include="Core\ProtoJson\Schema.cs" />
     <Compile Include="Core\Reflection\CompiledPropertyAccessor.cs" />
     <Compile Include="Core\Reflection\ProtoJsonPropertyAccessor.cs" />
-    <Compile Include="Core\Schema\schema_generator.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>schema_generator.tt</DependentUpon>
-    </Compile>
     <Compile Include="Core\Utils\DateTimeExtension.cs" />
     <Compile Include="Core\Utils\HttpClientExtention.cs" />
     <Compile Include="Core\Utils\FileCache.cs" />
