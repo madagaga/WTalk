@@ -7,6 +7,7 @@ using WTalk.Mvvm;
 using WTalk;
 using WTalk.Model;
 using System.Collections.ObjectModel;
+using Wtalk.Desktop.Extension;
 
 namespace Wtalk.Desktop.ViewModel
 {
@@ -18,7 +19,13 @@ namespace Wtalk.Desktop.ViewModel
         public ConversationViewModel SelectedConversation
         {
             get { return _selectedConversation; }
-            set { _selectedConversation = value; OnPropertyChanged("SelectedConversation"); }
+            set
+            {
+                _selectedConversation = value;
+                _selectedConversation.SetFocusCommand.Execute(null);
+                OnPropertyChanged("SelectedConversation");
+                OnPropertyChanged("ActiveContacts");
+            }
         }
         
         public User CurrentUser { get; set; }
@@ -73,14 +80,13 @@ namespace Wtalk.Desktop.ViewModel
             _authenticationManager.Connect();
 
             _client = new Client();
-
-            _client.ContactListLoaded += _client_ContactListLoaded;
             _client.ConversationHistoryLoaded += _client_ConversationHistoryLoaded;
             _client.NewConversationCreated += _client_NewConversationCreated;
-            _client.UserInformationReceived += _client_UserInformationLoaded;
-            _client.ContactInformationReceived += _client_ContactInformationReceived;
+            _client.UserInformationReceived += _client_UserInformationLoaded;            
             _client.ConnectionEstablished += _client_OnConnectionEstablished;
+            _client.NewMessageReceived += _client_NewMessageReceived;
             _client.UserInformationReceived += _client_UserInformationReceived;
+            _client.UserPresenceChanged += _client_UserPresenceChanged;
             
             if(_authenticationManager.IsAuthenticated)
                 _client.Connect();
@@ -88,6 +94,25 @@ namespace Wtalk.Desktop.ViewModel
             App.Current.Dispatcher.Invoke(() =>
             {
                 System.Windows.Data.BindingOperations.EnableCollectionSynchronization(ActiveContacts, _lock);
+            });
+        }
+
+        void _client_UserPresenceChanged(object sender, User e)
+        {
+            App.Current.Dispatcher.Invoke(() =>
+           {
+               ((System.Windows.Data.CollectionViewSource)App.Current.MainWindow.Resources["SortedActiveContacts"]).View.Refresh();
+           });
+        }
+
+        void _client_NewMessageReceived(object sender, Conversation e)
+        {
+            App.Current.Dispatcher.Invoke(() =>
+            {
+            if (!App.Current.MainWindow.IsActive)
+                    App.Current.MainWindow.FlashWindow();
+                
+            ((System.Windows.Data.CollectionViewSource)App.Current.MainWindow.Resources["SortedActiveContacts"]).View.Refresh();
             });
         }
 
@@ -102,10 +127,7 @@ namespace Wtalk.Desktop.ViewModel
             ActiveContacts.Add(new ConversationViewModel(e, _client)); 
         }
 
-        void _client_ContactInformationReceived(object sender, User e)
-        {
-            
-        }
+       
              
         void _client_UserInformationLoaded(object sender, User e)
         {
@@ -126,10 +148,7 @@ namespace Wtalk.Desktop.ViewModel
             OnPropertyChanged("ActiveContacts");
         }
 
-        void _client_ContactListLoaded(object sender, List<User> e)
-        {
-            
-        }
+       
 
 
         void _client_OnConnectionEstablished(object sender, EventArgs e)
@@ -169,7 +188,7 @@ namespace Wtalk.Desktop.ViewModel
         }
 
         void SetPresence()
-        {            
+        {               
             if (this.CurrentUser != null && (DateTime.Now - _lastStateUpdate).TotalSeconds > 720)
             {                
                 _client.SetPresence(_currentPresenceIndex == 0 ? 40 : 1);

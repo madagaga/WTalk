@@ -13,6 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Wtalk.Desktop.ViewModel;
+using Wtalk.Desktop.Extension;
 
 namespace Wtalk.Desktop
 {
@@ -38,7 +39,11 @@ namespace Wtalk.Desktop
         void MainWindow_Activated(object sender, EventArgs e)
         {
             if (this.WindowState == System.Windows.WindowState.Normal)
+            {
                 ((MainViewModel)this.DataContext).SetPresenceCommand.Execute(null);
+                this.StopFlashingWindow();
+                this.scrollBar.ScrollToBottom();
+            }
         }        
     }
 }

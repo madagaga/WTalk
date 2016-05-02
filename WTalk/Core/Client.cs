@@ -59,7 +59,7 @@ namespace WTalk
         public event EventHandler<List<User>> ContactListLoaded;
         public event EventHandler ConnectionEstablished;
         public event EventHandler<WTalk.Model.Conversation> NewConversationCreated;
-        
+        public event EventHandler<WTalk.Model.Conversation> NewMessageReceived;
         public event EventHandler<User> UserInformationReceived;
         public event EventHandler<User> ContactInformationReceived;
 
@@ -260,7 +260,9 @@ namespace WTalk
 
                                     if (_active_conversations.ContainsKey(state_update.event_notification.current_event.conversation_id.id))
                                     {
-                                        _active_conversations[state_update.event_notification.current_event.conversation_id.id].NewEventReceived(this, state_update.event_notification.current_event);
+                                        _active_conversations[state_update.event_notification.current_event.conversation_id.id].HandleNewMessage( state_update.event_notification.current_event);
+                                        if (NewMessageReceived != null)
+                                            NewMessageReceived(this, _active_conversations[state_update.event_notification.current_event.conversation_id.id]);
                                     }
                                     else
                                     {
@@ -469,29 +471,31 @@ namespace WTalk
             };
 
             HttpResponseMessage message = _client.PostProtoJson("contacts/getentitybyid", request);
-            
-            if (ContactInformationReceived != null)
-            {
-                GetEntityByIdResponse response = message.Content.ReadAsProtoJson<GetEntityByIdResponse>();
-                if (_contacts.Count == 0)
-                {
-                    _contacts = response.entity.Where(c => c.id != null).ToDictionary(c => c.id.gaia_id, c => new User(c));
-                    ContactListLoaded(this, _contacts.Values.ToList());
-                }
-                else
-                {
 
-                    foreach (var contact in response.entity.Where(c => c.id != null))
-                    {
-                        if (_contacts.ContainsKey(contact.id.gaia_id))
-                            _contacts[contact.id.gaia_id] = new User(contact);
-                        else
-                            _contacts.Add(contact.id.gaia_id, new User(contact));
-                        ContactInformationReceived(this, _contacts[contact.id.gaia_id]);
-                    }
-                }
-                QueryPresences();
+
+            GetEntityByIdResponse response = message.Content.ReadAsProtoJson<GetEntityByIdResponse>();
+            if (_contacts.Count == 0)
+            {
+                _contacts = response.entity.Where(c => c.id != null).ToDictionary(c => c.id.gaia_id, c => new User(c));
+                if (ContactListLoaded != null)
+                    ContactListLoaded(this, _contacts.Values.ToList());
             }
+            else
+            {
+
+                foreach (var contact in response.entity.Where(c => c.id != null))
+                {
+                    if (_contacts.ContainsKey(contact.id.gaia_id))
+                        _contacts[contact.id.gaia_id] = new User(contact);
+                    else
+                        _contacts.Add(contact.id.gaia_id, new User(contact));
+
+                    if (ContactInformationReceived != null)
+                        ContactInformationReceived(this, _contacts[contact.id.gaia_id]);
+                }
+            }
+            QueryPresences();
+
         }
 
         public void GetSelfInfo()

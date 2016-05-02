@@ -20,7 +20,7 @@ namespace WTalk.Model
         public string Id { get { return _conversation.conversation_id.id; } }
         public string Name { get { return _conversation.name; } }
         public Dictionary<string,Participant> Participants { get; internal set; }
-        public string LastMessage { get { return _lastMessage.LastSegment; } }
+        public string LastMessage { get { return string.Format("{0}{1}", !_lastMessage.IncomingMessage ? "You : " : "", _lastMessage.LastSegment); } }
         //public Enums.ConversationType Type { get; internal set; }
         public ObservableCollection<Message> MessagesHistory { get; internal set; }
         public bool HistoryEnabled { get { return _conversation.otr_status == OffTheRecordStatus.OFF_THE_RECORD_STATUS_ON_THE_RECORD; } }
@@ -63,9 +63,8 @@ namespace WTalk.Model
             }           
         }
 
-        internal void NewEventReceived(Client client, Event e)
-        {
-            
+        internal void HandleNewMessage(Event e)
+        {   
 
             if (_lastMessage.SenderId == e.sender_id.chat_id)
                 _lastMessage.AppendContent(e);

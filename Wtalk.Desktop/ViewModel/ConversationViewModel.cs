@@ -28,7 +28,7 @@ namespace Wtalk.Desktop.ViewModel
 
         // conversations        
         public WTalk.Model.Conversation Conversation { get; private set; }
-        public DateTime LastMessageDate { get { return Conversation.MessagesHistory.Last().MessageDate; } }
+        public DateTime LastMessageDate { get { return Conversation.MessagesHistory.Last(c=>c.IncomingMessage).MessageDate; } }
 
         public bool HasUnreadMessages { get { return Conversation.SelfReadState < LastMessageDate; } }
 
@@ -38,7 +38,7 @@ namespace Wtalk.Desktop.ViewModel
         public RelayCommand DeleteConversationCommand { get; private set; }
         public RelayCommand SetOTRCommand { get; private set; }
 
-
+        
         public ConversationViewModel()
         {
             SendMessageCommand = new RelayCommand(() => SendMessage());
@@ -93,6 +93,7 @@ namespace Wtalk.Desktop.ViewModel
             MessageContent = null;
             OnPropertyChanged(MessageContent);
         }
+               
 
         
     }
