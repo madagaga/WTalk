@@ -50,7 +50,7 @@ namespace Wtalk.Desktop.DesignData
                     Conversation = new DesignConversationViewModel()
                 });
 
-            SelectedConversation = new DesignConversationViewModel();
+            //SelectedConversation = new DesignConversationViewModel();
         }
     }
 }

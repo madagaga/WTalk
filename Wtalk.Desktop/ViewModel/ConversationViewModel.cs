@@ -76,19 +76,20 @@ namespace Wtalk.Desktop.ViewModel
 
         void Conversation_NewMessageReceived(object sender, Message e)
         {
-            OnPropertyChanged("HasUnreadMessage");
+            OnPropertyChanged("HasUnreadMessages");
         }
         
         private void SetFocus()
         {
             this.Conversation.UpdateReadState();
             _client.SetFocus(Conversation.Id);
-            OnPropertyChanged("HasUnreadMessage");
+            OnPropertyChanged("HasUnreadMessages");
         }
 
       
         private void SendMessage()
         {
+            this.Conversation.UpdateReadState();
             _client.SendChatMessage(Conversation.Id, MessageContent);
             MessageContent = null;
             OnPropertyChanged(MessageContent);

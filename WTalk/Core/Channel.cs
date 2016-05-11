@@ -111,11 +111,13 @@ namespace WTalk
             headerData.Add("t", "1");  // trial
 
 
-            HttpResponseMessage message = await _client.Execute(HangoutUri.CHANNEL_URL + "channel/bind", headerData);
-            if (message != null)
+            using (HttpResponseMessage message = await _client.Execute(HangoutUri.CHANNEL_URL + "channel/bind", headerData))
             {
-                message.EnsureSuccessStatusCode();
-                dataReceived(await message.Content.ReadAsStringAsync());
+                if (message != null)
+                {
+                    message.EnsureSuccessStatusCode();
+                    dataReceived(await message.Content.ReadAsStringAsync());
+                }
             }
 
             #region if streaming 
@@ -304,12 +306,14 @@ namespace WTalk
                 headerData.Add("SID", _sid);  // session ID
                         
             headerData.Add("t", "1");  // trial
-                      
 
-            HttpResponseMessage response = await _client.Execute(HangoutUri.CHANNEL_URL + "channel/bind", headerData, map_list);
-            if (!response.IsSuccessStatusCode)
-                throw new Exception(response.ReasonPhrase);            
-            return await response.Content.ReadAsStringAsync();
+
+            using (HttpResponseMessage response = await _client.Execute(HangoutUri.CHANNEL_URL + "channel/bind", headerData, map_list))
+            {
+                if (!response.IsSuccessStatusCode)
+                    throw new Exception(response.ReasonPhrase);
+                return await response.Content.ReadAsStringAsync();
+            }
         }
 
     }

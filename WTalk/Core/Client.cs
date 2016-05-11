@@ -119,6 +119,8 @@ namespace WTalk
             // Now make the actual initialization request:
             message = await _client.Execute(HangoutUri.CHAT_INIT_URL, _initParams);
             data = await message.Content.ReadAsStringAsync();
+            message.Dispose();
+
 
             // Parse the response by using a regex to find all the JS objects, and
             // parsing them. Not everything will be parsable, but we don't care if
@@ -364,11 +366,13 @@ namespace WTalk
                 field_mask = Enum.GetValues(typeof(FieldMask)).Cast<FieldMask>().ToList()
             };
 
-            HttpResponseMessage message = _client.PostProtoJson("presence/querypresence", request);
-            QueryPresenceResponse response = message.Content.ReadAsProtoJson<QueryPresenceResponse>();
-            foreach (var presence in response.presence_result)
-                if (_contacts.ContainsKey(presence.user_id.gaia_id))
-                    setPresence(_contacts[presence.user_id.gaia_id], presence.presence);
+            using (HttpResponseMessage message = _client.PostProtoJson("presence/querypresence", request))
+            {
+                QueryPresenceResponse response = message.Content.ReadAsProtoJson<QueryPresenceResponse>();
+                foreach (var presence in response.presence_result)
+                    if (_contacts.ContainsKey(presence.user_id.gaia_id))
+                        setPresence(_contacts[presence.user_id.gaia_id], presence.presence);
+            }
 
         }
 
@@ -381,11 +385,13 @@ namespace WTalk
                 field_mask = Enum.GetValues(typeof(FieldMask)).Cast<FieldMask>().ToList()
             };
 
-            HttpResponseMessage message = _client.PostProtoJson( "presence/querypresence", request);
-            QueryPresenceResponse response = message.Content.ReadAsProtoJson<QueryPresenceResponse>();
+            using (HttpResponseMessage message = _client.PostProtoJson("presence/querypresence", request))
+            {
+                QueryPresenceResponse response = message.Content.ReadAsProtoJson<QueryPresenceResponse>();
 
-            foreach (var presence in response.presence_result)
-                setPresence(CurrentUser, presence.presence);
+                foreach (var presence in response.presence_result)
+                    setPresence(CurrentUser, presence.presence);
+            }
         }
 
         
@@ -400,7 +406,8 @@ namespace WTalk
                 timeout_secs = 120
             };
                         
-            HttpResponseMessage message = _client.PostProtoJson( "clients/setactiveclient", request);            
+            HttpResponseMessage message = _client.PostProtoJson( "clients/setactiveclient", request);
+            message.Dispose();
         }
 
         public void SetPresence(int state = 40)
@@ -412,7 +419,8 @@ namespace WTalk
             };
 
             
-            HttpResponseMessage message = _client.PostProtoJson("presence/setpresence", request);            
+            HttpResponseMessage message = _client.PostProtoJson("presence/setpresence", request);
+            message.Dispose();
         }
 
         public void SetFocus(string conversationId)
@@ -428,7 +436,8 @@ namespace WTalk
                 timeout_secs = 20
             };
                         
-            HttpResponseMessage message = _client.PostProtoJson("conversations/setfocus", request);            
+            HttpResponseMessage message = _client.PostProtoJson("conversations/setfocus", request);
+            message.Dispose();
         }
 
         public void SetUserTyping(string conversationId)
@@ -470,31 +479,33 @@ namespace WTalk
                 //field_mask = new List<FieldMask>() { FieldMask.FIELD_MASK_AVAILABLE, FieldMask.FIELD_MASK_DEVICE, FieldMask.FIELD_MASK_REACHABLE }
             };
 
-            HttpResponseMessage message = _client.PostProtoJson("contacts/getentitybyid", request);
-
-
-            GetEntityByIdResponse response = message.Content.ReadAsProtoJson<GetEntityByIdResponse>();
-            if (_contacts.Count == 0)
-            {
-                _contacts = response.entity.Where(c => c.id != null).ToDictionary(c => c.id.gaia_id, c => new User(c));
-                if (ContactListLoaded != null)
-                    ContactListLoaded(this, _contacts.Values.ToList());
-            }
-            else
+            using (HttpResponseMessage message = _client.PostProtoJson("contacts/getentitybyid", request))
             {
 
-                foreach (var contact in response.entity.Where(c => c.id != null))
+
+                GetEntityByIdResponse response = message.Content.ReadAsProtoJson<GetEntityByIdResponse>();
+                if (_contacts.Count == 0)
                 {
-                    if (_contacts.ContainsKey(contact.id.gaia_id))
-                        _contacts[contact.id.gaia_id] = new User(contact);
-                    else
-                        _contacts.Add(contact.id.gaia_id, new User(contact));
-
-                    if (ContactInformationReceived != null)
-                        ContactInformationReceived(this, _contacts[contact.id.gaia_id]);
+                    _contacts = response.entity.Where(c => c.id != null).ToDictionary(c => c.id.gaia_id, c => new User(c));
+                    if (ContactListLoaded != null)
+                        ContactListLoaded(this, _contacts.Values.ToList());
                 }
+                else
+                {
+
+                    foreach (var contact in response.entity.Where(c => c.id != null))
+                    {
+                        if (_contacts.ContainsKey(contact.id.gaia_id))
+                            _contacts[contact.id.gaia_id] = new User(contact);
+                        else
+                            _contacts.Add(contact.id.gaia_id, new User(contact));
+
+                        if (ContactInformationReceived != null)
+                            ContactInformationReceived(this, _contacts[contact.id.gaia_id]);
+                    }
+                }
+                QueryPresences();
             }
-            QueryPresences();
 
         }
 
@@ -505,15 +516,17 @@ namespace WTalk
                 request_header = RequestHeaderBody,
                 
             };
-            
-            HttpResponseMessage message = _client.PostProtoJson("contacts/getselfinfo", request);
-            
-            if (UserInformationReceived != null)
-            {
-                GetSelfInfoResponse response = message.Content.ReadAsProtoJson<GetSelfInfoResponse>();
 
-                CurrentUser = new User(response.self_entity);
-                UserInformationReceived(this,CurrentUser);
+            using (HttpResponseMessage message = _client.PostProtoJson("contacts/getselfinfo", request))
+            {
+
+                if (UserInformationReceived != null)
+                {
+                    GetSelfInfoResponse response = message.Content.ReadAsProtoJson<GetSelfInfoResponse>();
+
+                    CurrentUser = new User(response.self_entity);
+                    UserInformationReceived(this, CurrentUser);
+                }
             }
         }
 
@@ -524,14 +537,16 @@ namespace WTalk
                 request_header = RequestHeaderBody  
             };
 
-            
-            HttpResponseMessage message = _client.PostProtoJson("conversations/syncrecentconversations", request);
-            
-            if (ConversationHistoryLoaded != null)
-            {   
-                SyncRecentConversationsResponse response = message.Content.ReadAsProtoJson<SyncRecentConversationsResponse>();                
-                _active_conversations = response.conversation_state.ToDictionary(c => c.conversation_id.id, c=> new WTalk.Model.Conversation(c));
-                ConversationHistoryLoaded(this, _active_conversations.Values.ToList());
+
+            using (HttpResponseMessage message = _client.PostProtoJson("conversations/syncrecentconversations", request))
+            {
+
+                if (ConversationHistoryLoaded != null)
+                {
+                    SyncRecentConversationsResponse response = message.Content.ReadAsProtoJson<SyncRecentConversationsResponse>();
+                    _active_conversations = response.conversation_state.ToDictionary(c => c.conversation_id.id, c => new WTalk.Model.Conversation(c));
+                    ConversationHistoryLoaded(this, _active_conversations.Values.ToList());
+                }
             }
         }
 
@@ -556,6 +571,7 @@ namespace WTalk
             };
 
             HttpResponseMessage message = _client.PostProtoJson("conversations/modifyotrstatus", request);
+            message.Dispose();
         }
 
 
@@ -568,6 +584,7 @@ namespace WTalk
             };
 
             HttpResponseMessage message = _client.PostProtoJson("contacts/getsuggestedentities",request);
+            message.Dispose();
         }
 
 

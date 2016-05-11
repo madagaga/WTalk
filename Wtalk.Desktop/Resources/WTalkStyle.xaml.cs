@@ -10,8 +10,7 @@ namespace Wtalk.Desktop.Resources
     public partial class WTalkStyle
     {
         private void Window_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
-        {
-            //if (e.ChangedButton == MouseButton.Left)
+        {            
             System.Windows.Window window = ((System.Windows.Controls.Grid)sender).TemplatedParent as System.Windows.Window;
             window.DragMove();
         }

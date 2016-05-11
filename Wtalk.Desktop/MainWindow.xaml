@@ -41,11 +41,38 @@
             <Grid Background="#019f55">
                 <Grid>                    
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="30"></ColumnDefinition>
+                        <ColumnDefinition Width="50"></ColumnDefinition>
                         <ColumnDefinition Width="*"></ColumnDefinition>
                     </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Column="1" Margin="50,0,0,0" VerticalAlignment="Center" Text="{Binding Path=CurrentUser.DisplayName}" Foreground="White" />                    
-                    <Border Grid.Column="1" CornerRadius="40" BorderBrush="Gainsboro" BorderThickness="1,1,1,1"  Height="35" Width="35" HorizontalAlignment="Left" >
+                        <ComboBox Grid.Column="1" Margin="5,0,5,0" VerticalAlignment="Center" Height="30" SelectedIndex="{Binding CurrentPresenceIndex}" Background="Green">
+                            <ComboBoxItem IsSelected="True">
+                                <Grid>
+                                    <Border Margin="0,8" Height="10" Width="10" CornerRadius="10" VerticalAlignment="Top" HorizontalAlignment="Left" IsEnabled="True" Style="{StaticResource status_indicator}"></Border>
+                                    <TextBlock Padding="4" Margin="10,0" VerticalAlignment="Top">
+                        <Run Text="{Binding Path=CurrentUser.DisplayName, Mode=OneWay}"/>
+                        <Run Text="Online" Foreground="Gray" FontSize="10"/>
+                                    </TextBlock>
+                                </Grid>
+                            </ComboBoxItem>
+                            <ComboBoxItem>
+                                <Grid>
+                                    <Border Margin="0,8" Height="10" Width="10" CornerRadius="10" VerticalAlignment="Top" HorizontalAlignment="Left" IsEnabled="False" Style="{StaticResource status_indicator}"></Border>
+                                    <TextBlock Padding="4" Margin="10,0" VerticalAlignment="Top">
+                        <Run Text="{Binding Path=CurrentUser.DisplayName, Mode=OneWay}"/>
+                        <Run Text="Invisible" Foreground="Gray" FontSize="10"/>
+                                    </TextBlock>
+                                </Grid>
+                            </ComboBoxItem>
+                            <ComboBoxItem>
+                                <Grid>
+                                    <Border Margin="0,8" Height="10" Width="10" CornerRadius="10" VerticalAlignment="Top" HorizontalAlignment="Left" IsEnabled="False" Style="{StaticResource status_indicator}"></Border>
+                                    <TextBlock Padding="4" Margin="10,0" VerticalAlignment="Top" Foreground="Gray" FontSize="10">                        
+                                    Disconnect
+                                    </TextBlock>
+                                </Grid>
+                            </ComboBoxItem>
+                        </ComboBox>                        
+                    <Border Grid.Column="0" CornerRadius="40" BorderBrush="Gainsboro" BorderThickness="1,1,1,1"  Height="35" Width="35" HorizontalAlignment="Center" >
                         <Border.Background>
                             <ImageBrush ImageSource="{Binding Path=CurrentUser.PhotoUrl, FallbackValue={StaticResource DefaultImage}, TargetNullValue={StaticResource DefaultImage}}"/>
                         </Border.Background>
@@ -88,6 +115,10 @@
                 </Grid>
         </Grid>
         </Border>
+        
+        <!-- no conversation selected -->
+        <Image Grid.Column="1" Source="Resources/talk.png" Stretch="Uniform" Height="150" Width="150"/>
+        <TextBlock Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,170,0,0" FontSize="20" Foreground="Gray">Windows Talk - Hangout client</TextBlock>
         
         <!-- Conversation part -->
         <Grid Grid.Column="1" DataContext="{Binding SelectedConversation}">
