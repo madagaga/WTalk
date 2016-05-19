@@ -21,8 +21,7 @@ namespace Wtalk.Desktop.ViewModel
             get { return _selectedConversation; }
             set
             {
-                _selectedConversation = value;
-                _selectedConversation.SetFocusCommand.Execute(null);
+                _selectedConversation = value;                
                 OnPropertyChanged("SelectedConversation");
                 OnPropertyChanged("ActiveContacts");                
             }
@@ -38,21 +37,25 @@ namespace Wtalk.Desktop.ViewModel
         {
             get { return _currentPresenceIndex; }
             set {
-                if (value == 2)
+                switch (value)
                 {
-                    _authenticationManager.Disconnect();
-                    System.Diagnostics.Process.Start(System.Windows.Application.ResourceAssembly.Location);
-                    System.Windows.Application.Current.Shutdown();
-                    return;
+                    case 2:
+                        _client.SetActiveClient(false);
+                        _client.SetPresence(0);
+                        _authenticationManager.Disconnect();
+                        System.Diagnostics.Process.Start(System.Windows.Application.ResourceAssembly.Location);
+                        System.Windows.Application.Current.Shutdown();
+                        return;
+                    case 3:
+                        _client.SetPresence(0);
+                        System.Windows.Application.Current.Shutdown();
+                        return;
+                    default:
+                        _currentPresenceIndex = value;
+                        _lastStateUpdate = DateTime.Now.AddSeconds(-750);
+                        SetPresence();
+                        break;
                 }
-                if(value == 3)
-                {
-                    System.Windows.Application.Current.Shutdown();
-                    return;
-                }
-                _currentPresenceIndex = value;
-                _lastStateUpdate = DateTime.Now.AddSeconds(-750);
-                SetPresence();
             }
         }
 
@@ -65,7 +68,7 @@ namespace Wtalk.Desktop.ViewModel
 
         public RelayCommand<string> SetAuthenticationCodeCommand { get; private set; }
         public RelayCommand GetCodeCommand { get; private set; }
-        public RelayCommand SetPresenceCommand { get; private set; }
+        public RelayCommand SetPresenceCommand { get; private set; }        
 
 
         private static object _lock = new object();
@@ -199,8 +202,8 @@ namespace Wtalk.Desktop.ViewModel
                 _client.SetPresence(_currentPresenceIndex == 0 ? 40 : 1);
                 _lastStateUpdate = DateTime.Now;
             }
-
-            //_client.QuerySelfPresence();
+            if(_client.CurrentUser != null)
+                _client.QuerySelfPresence();
             
         }
 

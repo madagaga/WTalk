@@ -25,16 +25,8 @@ namespace WTalk.Model
         public ObservableCollection<Message> MessagesHistory { get; internal set; }
         public bool HistoryEnabled { get { return _conversation.otr_status == OffTheRecordStatus.OFF_THE_RECORD_STATUS_ON_THE_RECORD; } }
 
-        public DateTime ReadState { get; private set; }
-        public DateTime SelfReadState { get; private set; }
-
-
-
-
-        public void UpdateReadState()
-        {
-            this.SelfReadState = DateTime.UtcNow;
-        }
+        public DateTime ReadState { get; internal set; }
+        public DateTime SelfReadState { get; internal set; }
 
         public event EventHandler<Message> NewMessageReceived;
 
@@ -44,9 +36,9 @@ namespace WTalk.Model
 
             _conversation = conversationState.conversation;
             if (_conversation.read_state.Count > 0)
-                ReadState = DateTime.Now.FromMillisecondsSince1970(_conversation.read_state.Last().latest_read_timestamp / 1000);
+                ReadState = _conversation.read_state.Last(c=>c.latest_read_timestamp > 0).latest_read_timestamp.FromUnixTime();
             if (_conversation.self_conversation_state.self_read_state != null)
-                SelfReadState = DateTime.Now.FromMillisecondsSince1970(_conversation.self_conversation_state.self_read_state.latest_read_timestamp / 1000);
+                SelfReadState = _conversation.self_conversation_state.self_read_state.latest_read_timestamp.FromUnixTime();
             Participants = _conversation.participant_data.ToDictionary(c=>c.id.chat_id, c => new Participant(c));
             MessagesHistory = new ObservableCollection<Message>();
             

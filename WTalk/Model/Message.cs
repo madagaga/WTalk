@@ -20,7 +20,7 @@ namespace WTalk.Model
             SenderId = chatEvent.sender_id.gaia_id;
             selfUserId = chatEvent.self_event_state.user_id.gaia_id;
             AppendContent(chatEvent);
-            MessageDate = DateTime.Now.FromMillisecondsSince1970(chatEvent.timestamp / 1000);            
+            MessageDate = chatEvent.timestamp.FromUnixTime();            
         }
 
         string selfUserId;
@@ -40,7 +40,7 @@ namespace WTalk.Model
         internal void AppendContent(WTalk.Core.ProtoJson.Schema.Event chatEvent)
         {
             _content.AddRange(chatEvent.chat_message.message_content.segment.Select(c => c.text));
-            MessageDate = DateTime.Now.FromMillisecondsSince1970(chatEvent.timestamp / 1000); 
+            MessageDate = chatEvent.timestamp.FromUnixTime(); 
             OnPropertyChanged("Content");
 
         }

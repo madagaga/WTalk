@@ -64,7 +64,8 @@ namespace WTalk.Core.Utils
                // _logger.Debug("Sending data : {0}", body.ToString().Replace("\r\n", ""));
                 string uri = string.Format("{0}{1}?alt={2}", HangoutUri.CHAT_SERVER_URL, endPoint, useJson ? "json" : "protojson");
                 message = client.PostAsync(uri, new StringContent(body.ToString(), Encoding.UTF8, "application/json+protobuf")).Result;
-                message.EnsureSuccessStatusCode();                
+                _logger.Debug("Request : {0} => {1} ", endPoint, message.StatusCode);
+                message.EnsureSuccessStatusCode();
                // _logger.Debug("Received data : {0}", message.Content.ReadAsStringAsync().Result.Replace("\n", ""));
                 
             }

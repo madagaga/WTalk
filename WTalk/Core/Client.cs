@@ -298,6 +298,14 @@ namespace WTalk
                                     available = state_update.self_presence_notification.client_presence_state.state == ClientPresenceStateType.CLIENT_PRESENCE_STATE_DESKTOP_ACTIVE
                                 }
                             );
+
+                        if(state_update.watermark_notification != null)
+                        {
+                            if (state_update.watermark_notification.sender_id.gaia_id == CurrentUser.Id)
+                                _active_conversations[state_update.watermark_notification.conversation_id.id].SelfReadState = state_update.watermark_notification.latest_read_timestamp.FromUnixTime();
+                            else
+                                _active_conversations[state_update.watermark_notification.conversation_id.id].ReadState = state_update.watermark_notification.latest_read_timestamp.FromUnixTime();
+                        }
                     }
 
                     _timestamp = long.Parse(wrapper["1"]["4"].ToString());
@@ -332,6 +340,8 @@ namespace WTalk
 
         #region API
 
+
+        #region request header 
         private RequestHeader _requestHeader;
 
         RequestHeader RequestHeaderBody
@@ -343,20 +353,22 @@ namespace WTalk
                     _requestHeader = new RequestHeader();
                     _requestHeader.client_identifier = new ClientIdentifier() { header_id = _header_id, resource = _client_id};
                     _requestHeader.client_version = new ClientVersion() { client_id = ClientId.CLIENT_ID_WEB_GMAIL, 
-                        build_type = ClientBuildType.BUILD_TYPE_PRODUCTION_APP, major_version = _header_version , version_timestamp = long.Parse(_header_date) };
+                    build_type = ClientBuildType.BUILD_TYPE_PRODUCTION_APP, major_version = _header_version , version_timestamp = long.Parse(_header_date) };
                     _requestHeader.language_code = "en";
 
                 }
                 return _requestHeader;
             }
-        } 
-       
-        long randomId
+        }
+        static Random rnd = new Random();
+        string random_id()
         {
-            get
-            { return long.Parse((DateTime.Now.TimeIntervalSince1970().Seconds * Math.Pow(2,32)).ToString("0")); }
+            return rnd.Next(6544455, int.MaxValue).ToString();
         }
 
+        #endregion
+
+        #region presence
         public void QueryPresences()
         {
             QueryPresenceRequest request = new QueryPresenceRequest()
@@ -395,15 +407,16 @@ namespace WTalk
         }
 
         
-        public void SetActiveClient()
+        public void SetActiveClient(bool active = true)
         {
 
             SetActiveClientRequest request = new SetActiveClientRequest()
             {
                 request_header = RequestHeaderBody,
                 full_jid = string.Format("{0}/{1}", CurrentUser.Email, _client_id),
-                is_active = true,
-                timeout_secs = 120
+                is_active = active,
+                timeout_secs = 120, 
+                unknown = true
             };
                         
             HttpResponseMessage message = _client.PostProtoJson( "clients/setactiveclient", request);
@@ -423,6 +436,10 @@ namespace WTalk
             message.Dispose();
         }
 
+        #endregion
+
+        #region conversation
+
         public void SetFocus(string conversationId)
         {
             if (conversationId.Length == 0)
@@ -440,6 +457,8 @@ namespace WTalk
             message.Dispose();
         }
 
+
+
         public void SetUserTyping(string conversationId)
         {
             SetTypingRequest request = new SetTypingRequest()
@@ -452,23 +471,81 @@ namespace WTalk
             HttpResponseMessage message = _client.PostProtoJson("conversations/settyping", request);
             
         }
-        
+
         public void SendChatMessage(string conversationId, string messageText)
         {
+
+            OffTheRecordStatus expected_otr = _active_conversations[conversationId]._conversation.otr_status;
+
             SendChatMessageRequest request = new SendChatMessageRequest()
             {
                 request_header = RequestHeaderBody,
                 annotation = new List<EventAnnotation>(),
-                message_content = new MessageContent() { attachment = new List<Attachment>(), segment = new List<Segment>() { new Segment() { text=messageText, type = SegmentType.SEGMENT_TYPE_TEXT, formatting = new Formatting() { bold = false, italic = false, strikethrough = false, underline = false }, link_data = new LinkData() } } },
-                event_request_header = new EventRequestHeader { conversation_id = new ConversationId() { id = conversationId }, client_generated_id = randomId, /*expected_otr = OffTheRecordStatus.OFF_THE_RECORD_STATUS_ON_THE_RECORD,*/ delivery_medium = new DeliveryMedium() { medium_type = DeliveryMediumType.DELIVERY_MEDIUM_BABEL }, event_type = EventType.EVENT_TYPE_REGULAR_CHAT_MESSAGE }
-
-
+                message_content = new MessageContent() { attachment = new List<Attachment>(), segment = new List<Segment>() { new Segment() { text=messageText, type = SegmentType.SEGMENT_TYPE_TEXT, formatting = new Formatting() { bold = false, italic = false, strikethrough = false, underline = false }} } },
+                event_request_header = new EventRequestHeader { conversation_id = new ConversationId() { id = conversationId }, client_generated_id = random_id(), expected_otr = expected_otr, delivery_medium = new DeliveryMedium() { medium_type = DeliveryMediumType.DELIVERY_MEDIUM_BABEL }, event_type = EventType.EVENT_TYPE_REGULAR_CHAT_MESSAGE }
             };
             
             HttpResponseMessage message = _client.PostProtoJson("conversations/sendchatmessage", request);
-            
+            message.Dispose();
         }
 
+        public void SyncRecentConversations()
+        {
+            SyncRecentConversationsRequest request = new SyncRecentConversationsRequest()
+            {
+                request_header = RequestHeaderBody
+            };
+
+
+            using (HttpResponseMessage message = _client.PostProtoJson("conversations/syncrecentconversations", request))
+            {
+
+                if (ConversationHistoryLoaded != null)
+                {
+                    SyncRecentConversationsResponse response = message.Content.ReadAsProtoJson<SyncRecentConversationsResponse>();
+                    _active_conversations = response.conversation_state.ToDictionary(c => c.conversation_id.id, c => new WTalk.Model.Conversation(c));
+                    ConversationHistoryLoaded(this, _active_conversations.Values.ToList());
+                }
+            }
+        }
+
+        public void ModifyOTRStatus(string conversationId, bool enable)
+        {
+            ModifyOTRStatusRequest request = new ModifyOTRStatusRequest()
+            {
+                request_header = RequestHeaderBody,
+                otr_status = enable ? OffTheRecordStatus.OFF_THE_RECORD_STATUS_ON_THE_RECORD : OffTheRecordStatus.OFF_THE_RECORD_STATUS_OFF_THE_RECORD,
+                event_request_header = new EventRequestHeader()
+                {
+                    conversation_id = new ConversationId() { id = conversationId },
+                    event_type = EventType.EVENT_TYPE_OTR_MODIFICATION,
+                    client_generated_id = random_id(),
+                    expected_otr = enable ? OffTheRecordStatus.OFF_THE_RECORD_STATUS_ON_THE_RECORD : OffTheRecordStatus.OFF_THE_RECORD_STATUS_OFF_THE_RECORD
+                }
+            };
+
+            HttpResponseMessage message = _client.PostProtoJson("conversations/modifyotrstatus", request);
+            message.Dispose();
+        }
+
+        public void UpdateWaterMark(string conversationId, DateTime last_read_state)
+        {            
+            UpdateWatermarkRequest request = new UpdateWatermarkRequest()
+            {
+                request_header = RequestHeaderBody,
+                conversation_id = new ConversationId() {  id = conversationId },
+                last_read_timestamp = last_read_state.ToUnixTime()
+            };
+
+            HttpResponseMessage message = _client.PostProtoJson("conversations/updatewatermark", request);
+            message.Dispose();
+
+        }
+
+
+        #endregion
+
+        #region contacts
 
         public void GetEntityById(params string[] ids)
         {
@@ -509,6 +586,20 @@ namespace WTalk
 
         }
 
+        public void GetSuggestedEntities()
+        {
+            GetSuggestedEntitiesRequest request = new GetSuggestedEntitiesRequest()
+            {
+                request_header = RequestHeaderBody,
+
+            };
+
+            HttpResponseMessage message = _client.PostProtoJson("contacts/getsuggestedentities", request);
+            message.Dispose();
+        }
+
+        #endregion
+
         public void GetSelfInfo()
         {
             GetSelfInfoRequest request = new GetSelfInfoRequest()
@@ -529,64 +620,6 @@ namespace WTalk
                 }
             }
         }
-
-        public void SyncRecentConversations()
-        {
-            SyncRecentConversationsRequest request = new SyncRecentConversationsRequest()
-            {
-                request_header = RequestHeaderBody  
-            };
-
-
-            using (HttpResponseMessage message = _client.PostProtoJson("conversations/syncrecentconversations", request))
-            {
-
-                if (ConversationHistoryLoaded != null)
-                {
-                    SyncRecentConversationsResponse response = message.Content.ReadAsProtoJson<SyncRecentConversationsResponse>();
-                    _active_conversations = response.conversation_state.ToDictionary(c => c.conversation_id.id, c => new WTalk.Model.Conversation(c));
-                    ConversationHistoryLoaded(this, _active_conversations.Values.ToList());
-                }
-            }
-        }
-
-        public void SyncAllNewEvents()
-        {
-
-        }
-
-        public void ModifyOTRStatus(string conversationId, bool enable)
-        {
-            ModifyOTRStatusRequest request = new ModifyOTRStatusRequest()
-            {
-                request_header = RequestHeaderBody,
-                otr_status = enable ? OffTheRecordStatus.OFF_THE_RECORD_STATUS_ON_THE_RECORD : OffTheRecordStatus.OFF_THE_RECORD_STATUS_OFF_THE_RECORD,
-                event_request_header = new EventRequestHeader()
-                {
-                    conversation_id = new ConversationId() { id = conversationId },
-                    event_type = EventType.EVENT_TYPE_OTR_MODIFICATION,
-                    client_generated_id = randomId,
-                    expected_otr = enable ? OffTheRecordStatus.OFF_THE_RECORD_STATUS_ON_THE_RECORD : OffTheRecordStatus.OFF_THE_RECORD_STATUS_OFF_THE_RECORD
-                }
-            };
-
-            HttpResponseMessage message = _client.PostProtoJson("conversations/modifyotrstatus", request);
-            message.Dispose();
-        }
-
-
-        public void GetSuggestedEntities()
-        {
-            GetSuggestedEntitiesRequest request = new GetSuggestedEntitiesRequest()
-            {
-                request_header = RequestHeaderBody         ,
-                       
-            };
-
-            HttpResponseMessage message = _client.PostProtoJson("contacts/getsuggestedentities",request);
-            message.Dispose();
-        }
-
 
         #endregion
     }

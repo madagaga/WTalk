@@ -104,114 +104,70 @@ namespace WTalk
             headerData.Add("VER", "8");  // channel protocol version
             headerData.Add("RID", "rpc");  // request identifier
             headerData.Add("SID", _sid);  // session ID
-            headerData.Add("CI", "1");  // 0 if streaming/chunked requests should be used
+            headerData.Add("CI", "0");  // 0 if streaming/chunked requests should be used
             headerData.Add("AID", _aid);  // 
             headerData.Add("TYPE", "xmlhttp");  // type of request
             // zx ?
             headerData.Add("t", "1");  // trial
 
 
-            using (HttpResponseMessage message = await _client.Execute(HangoutUri.CHANNEL_URL + "channel/bind", headerData))
-            {
-                if (message != null)
-                {
-                    message.EnsureSuccessStatusCode();
-                    dataReceived(await message.Content.ReadAsStringAsync());
-                }
-            }
-
-            #region if streaming 
-            //StringBuilder query = new StringBuilder(HangoutUri.CHANNEL_URL + "channel/bind?");
-
-
-            //query.Append(string.Join("&", headerData.Select(c => string.Format("{0}={1}", c.Key, Uri.EscapeUriString(c.Value))).ToArray()));
-
-
-            //using (System.IO.StreamReader reader = new System.IO.StreamReader( await _client.GetStreamAsync(query.ToString()), true))
+            //using (HttpResponseMessage message = await _client.Execute(HangoutUri.CHANNEL_URL + "channel/bind", headerData))
             //{
-            //    int response_count =0, chunkSize= 0;
-            //    char[] buffer;
-            //    string data;                 
-            //    try
+            //    if (message != null)
             //    {
-
-            //        while (!reader.EndOfStream && response_count < 5)
-            //        {
-            //            data = reader.ReadLine();
-            //            if (data == null)
-            //                break;
-
-
-            //            chunkSize = int.Parse(data);
-            //            buffer = new char[chunkSize];
-            //            reader.Read(buffer, 0, chunkSize);
-
-            //            dataReceived(new string(buffer));
-            //            response_count++;                        
-            //        }
+            //        message.EnsureSuccessStatusCode();
+            //        dataReceived(await message.Content.ReadAsStringAsync());
             //    }
-            //    catch
-            //    {
-
-            //    }
-
-
-
-
-
-            //StringBuilder builder = new StringBuilder();
-            //string data = reader.ReadLine();
-            //int chunkSize = int.Parse(data);
-            //char[] buffer;
-            //int response_count = 0;
-
-            //while (!reader.EndOfStream && response_count < 5)
-            //{
-
-            //    buffer = new char[chunkSize];
-            //    reader.Read(buffer, 0, chunkSize);
-            //    builder.Append(buffer);
-
-
-            //    dataReceived(builder.ToString());
-            //    response_count++;
-            //    //reader.BaseStream.Position = chunkSize;
-            //    builder.Clear();
-            //    data = reader.ReadLine();
-            //    if (data == null)
-            //        break;
-            //    chunkSize = int.Parse(data);
             //}
 
-        //}
-#endregion
+            #region if streaming 
+            StringBuilder query = new StringBuilder(HangoutUri.CHANNEL_URL + "channel/bind?");
+
+
+            query.Append(string.Join("&", headerData.Select(c => string.Format("{0}={1}", c.Key, Uri.EscapeUriString(c.Value))).ToArray()));
+
+
+            using (System.IO.Stream reader = await _client.GetStreamAsync(query.ToString()))
+            {
+                try
+                {
+                    while (reader.CanRead)
+                        dataReceived(await (DecodeStream(reader)));
+                }
+                catch { }
+            }
+
+
+
+            #endregion
 
         }
 
-        private void dataReceived(string data)
+        public int GetSizeDescriptor(System.IO.Stream stream)
         {
-
-            _logger.Debug("Received data : {0}", data.Replace("\n", ""));
-
-            Connected = true;
-
-            // parse chunk data
-            // chunk contains a container array
-            // remove length information    
-
-            string[] chunkDatas = Parser.CleanDataArray(data);
-            JArray chunkJsonData = null;
-            foreach (string chunkData in chunkDatas)
-            {
-                chunkJsonData = Parser.ParseData(chunkData);
-                foreach (var chunkJson in chunkJsonData)
-                {
-                    // first part is aid
-                    _aid = chunkJson[0].ToString();
-                    if (chunkJson[1] != null && OnDataReceived != null)
-                        OnDataReceived(this, chunkJson[1] as JArray);
-                }
+            // search for the first new line
+            byte[] buffer = new byte[1];
+            List<char> content = new List<char>();
+            while (buffer[0] != '\n' && stream.CanRead)
+            {                
+                content.Add((char)buffer[0]);
+                stream.Read(buffer, 0, 1);
             }
+
+            return int.Parse(new string(content.Where(c=>char.IsDigit(c)).ToArray()));
+        }
+
+        private void dataReceived(JArray data)
+        {
+            Connected = true;
+            foreach (var chunkJson in data)
+            {
+                // first part is aid
+                _aid = chunkJson[0].ToString();
+                if (chunkJson[1] != null && OnDataReceived != null)
+                    OnDataReceived(this, chunkJson[1] as JArray);
+            }
+
         }
 
         /// <summary>
@@ -220,8 +176,7 @@ namespace WTalk
         /// <param name="lastSubscribe"></param>
         internal async void SendAck(long lastSubscribe)
         {
-            TimeSpan epoch = DateTime.UtcNow.TimeIntervalSince1970();
-
+            
             Dictionary<string, string> subscribeData = new Dictionary<string, string>();
             subscribeData.Add("count", "1");
             subscribeData.Add("ofs", (++ofs_count).ToString());
@@ -235,7 +190,7 @@ namespace WTalk
             subscribeData.Add("req0_p", "{\"3\": {\"1\": {\"1\": \"babel\"}}}");
 
             System.Threading.Tasks.Task.Delay(1000).Wait();           
-            string response = await sendMapsRequest(subscribeData);
+            await sendMapsRequest(subscribeData);
                         
         }
 
@@ -279,8 +234,8 @@ namespace WTalk
 
 
             _logger.Info("Sending sid request");
-            string response = await sendMapsRequest(new Dictionary<string, string>());            
-            JArray array = Parser.ParseData(response);
+                   
+            JArray array = await sendMapsRequest(new Dictionary<string, string>());  
             _sid = array[0][1][1].ToString();
             if(array.Count>1)
                 _gsession_id = array[1][1][0]["gsid"].ToString();
@@ -290,7 +245,7 @@ namespace WTalk
         /// Sends a request to the server containing maps (dicts).
         /// </summary>
         /// <returns></returns>
-        async Task<string> sendMapsRequest(Dictionary<string, string> map_list = null)
+        async Task<JArray> sendMapsRequest(Dictionary<string, string> map_list = null)
         {
             Dictionary<string, string> headerData = new Dictionary<string, string>();
             //            parameters.add(CHANNEL_URL, "channel/bind?");
@@ -312,8 +267,85 @@ namespace WTalk
             {
                 if (!response.IsSuccessStatusCode)
                     throw new Exception(response.ReasonPhrase);
-                return await response.Content.ReadAsStringAsync();
+                return await DecodeStream( response.Content.ReadAsStreamAsync());
             }
+        }
+
+
+        async Task<JArray> DecodeStream(Task<System.IO.Stream> stream)
+        {
+            return await DecodeStream(await stream);
+        }
+
+        async Task<JArray> DecodeStream(System.IO.Stream stream)
+        {
+            int expectedLength = 0, receivedLength = 1, readLength = 0;
+            byte[] buffer = null;            
+            try
+            {
+                while (stream.CanRead)
+                {
+                    if (expectedLength == 0)
+                    {
+                        expectedLength = GetSizeDescriptor(stream);
+                        readLength = receivedLength = 0;
+                        buffer = new byte[expectedLength];
+                    }
+
+                    readLength = await stream.ReadAsync(buffer, Math.Max(readLength - 1, 0), expectedLength - receivedLength);
+                    receivedLength += readLength;
+
+                    if (receivedLength == expectedLength)
+                    {
+                        string received = validateData(buffer);
+                        _logger.Info("Received data : {0}", received);
+                        return JArray.Parse(received);                        
+                    }
+                        
+                }
+            }
+            catch
+            {
+                throw new Exception("Decode stream error");
+            }
+
+            return new JArray();
+        }
+
+        string validateData(byte[] data)
+        {
+            StringBuilder builder = new StringBuilder();
+
+            int aCount = 0, bCount=0;
+
+            for(int i= 0 ;i<data.Length;i++)
+            {
+                switch(data[i])
+                {
+                    case 123:
+                        aCount ++;
+                        break;
+                    case 125:
+                        aCount --;
+                        break;
+                    //case 92:
+                    //    if (data[i - 1] == 92)
+                    //        continue;
+                    //    break;
+                    //case '[':
+                    //    bCount ++;
+                    //    break;
+                    //case ']':
+                    //    bCount --;
+                    //    break;
+                }
+                builder.Append((char)data[i]);
+            }
+
+            if (aCount > 0)
+                builder.Append(new String('}', aCount));
+
+            return builder.ToString();
         }
 
     }

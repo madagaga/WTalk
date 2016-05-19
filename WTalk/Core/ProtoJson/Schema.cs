@@ -274,7 +274,7 @@ major exception that "Client" prefixes have been removed.
         public Formatting formatting { get; set; }
 
         // Link data for this segment, if it is a link.
-        [ProtoMember(Position = 4)]
+        [ProtoMember(Position = 4, Optional=true)]
         public LinkData link_data { get; set; }
 
     }
@@ -924,7 +924,7 @@ major exception that "Client" prefixes have been removed.
         public ConversationId conversation_id { get; set; }
 
         [ProtoMember(Position = 2)]
-        public long client_generated_id { get; set; }
+        public string client_generated_id { get; set; }
 
         [ProtoMember(Position = 3)]
         public OffTheRecordStatus expected_otr { get; set; }

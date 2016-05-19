@@ -81,15 +81,17 @@ namespace Wtalk.Desktop.ViewModel
         
         private void SetFocus()
         {
-            this.Conversation.UpdateReadState();
+            
+            if(this.HasUnreadMessages)
+                _client.UpdateWaterMark(Conversation.Id, DateTime.UtcNow);
+
             _client.SetFocus(Conversation.Id);
             OnPropertyChanged("HasUnreadMessages");
         }
 
       
         private void SendMessage()
-        {
-            this.Conversation.UpdateReadState();
+        {            
             _client.SendChatMessage(Conversation.Id, MessageContent);
             MessageContent = null;
             OnPropertyChanged(MessageContent);
