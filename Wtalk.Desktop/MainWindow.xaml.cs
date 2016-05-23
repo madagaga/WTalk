@@ -28,6 +28,7 @@ namespace Wtalk.Desktop
             this.DataContext = new MainViewModel();            
             this.Activated += MainWindow_Activated;
             this.Closing += MainWindow_Closing;
+            this.sendMessageTextBox.GotFocus += (s, e) => { ((MainViewModel)this.DataContext).SelectedConversation.SetFocusCommand.Execute(null); };
             AppDomain.CurrentDomain.FirstChanceException += CurrentDomain_FirstChanceException;
             
         }

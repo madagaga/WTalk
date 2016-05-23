@@ -155,10 +155,9 @@
                     </ItemsControl>
                 </StackPanel>
             </ScrollViewer>
-            <TextBox Grid.Row="2" Padding="0,4" VerticalAlignment="Bottom" TextWrapping="Wrap" BorderThickness="0,1,0,0" Text="{Binding MessageContent , UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" Margin="0,0,20,0">
+            <TextBox x:Name="sendMessageTextBox" Grid.Row="2" Padding="0,4" VerticalAlignment="Bottom" TextWrapping="Wrap" BorderThickness="0,1,0,0" Text="{Binding MessageContent , UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" Margin="0,0,20,0">
                 <TextBox.InputBindings>
-                    <KeyBinding Command="{Binding SendMessageCommand}" Key="Enter"></KeyBinding>
-                    <MouseBinding Command="{Binding SetFocusCommand}" MouseAction="LeftClick" ></MouseBinding>
+                    <KeyBinding Command="{Binding SendMessageCommand}" Key="Enter"></KeyBinding>                    
                 </TextBox.InputBindings>                
             </TextBox>
         </Grid>
