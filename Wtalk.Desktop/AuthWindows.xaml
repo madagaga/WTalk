@@ -1,18 +1,14 @@
 ﻿<Window x:Class="Wtalk.Desktop.AuthWindows"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="AuthWindows" Height="300" Width="725" Style="{DynamicResource window_style}">
-    <Window.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="Resources\WTalkStyle.xaml" />
-                <ResourceDictionary>
-                    <!--<local:DynamicBindingConverter x:Key="dynamicBindingConverter" />-->
-                </ResourceDictionary>
-            </ResourceDictionary.MergedDictionaries>            
-        </ResourceDictionary>
-    </Window.Resources>
-    <Grid>
-        
+        Title="AuthWindows" Height="428" Width="550" AllowsTransparency="False">    
+    <Grid>        
+        <!-- loading -->
+        <Grid Background="#fbfdfc" x:Name="loading" Visibility="Hidden">
+            <Image Source="Resources/talk.png" Stretch="Uniform" Height="50" Width="50" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+            <TextBlock VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,100,0,0" >Loading</TextBlock>
+            <ProgressBar Height="10" VerticalAlignment="Center" HorizontalAlignment="Center" Width="250" Margin="0,150,0,0" IsIndeterminate="True"/>
+        </Grid>
+        <WebBrowser x:Name="webBrowser" />
     </Grid>
 </Window>

@@ -66,21 +66,20 @@ namespace Wtalk.Desktop.ViewModel
         Client _client;
         AuthenticationManager _authenticationManager;
 
-        public RelayCommand<string> SetAuthenticationCodeCommand { get; private set; }
-        public RelayCommand GetCodeCommand { get; private set; }
+        public RelayCommand AuthenticateCommand { get; private set; }        
         public RelayCommand SetPresenceCommand { get; private set; }        
 
 
         private static object _lock = new object();
         public MainViewModel()
-        {            
+        {
 
-            SetAuthenticationCodeCommand = new RelayCommand<string>((p) => SetAuthenticationCode(p));
-            GetCodeCommand = new RelayCommand(() => GetCode());
+            AuthenticateCommand = new RelayCommand(() => Authenticate());            
             SetPresenceCommand = new RelayCommand(() => SetPresence());
 
-            _authenticationManager = new AuthenticationManager();
+            _authenticationManager = WTalk.AuthenticationManager.Current;
             _authenticationManager.Connect();
+
 
             _client = new Client();
             _client.ConversationHistoryLoaded += _client_ConversationHistoryLoaded;
@@ -175,24 +174,18 @@ namespace Wtalk.Desktop.ViewModel
             //_client.GetSuggestedEntities();
         }
 
-
-        void GetCode()
+        void Authenticate()
         {
-            string url = _authenticationManager.GetCodeUrl();
-            System.Diagnostics.Process p = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo()
-            {
-                WorkingDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Windows),
-                FileName = url,
-                UseShellExecute = true
-            });
-        }
 
-        void SetAuthenticationCode(string code)
-        {
-            _authenticationManager.AuthenticateWithCode(code);
+            AuthWindows auth_window = new AuthWindows();
+            auth_window.ShowDialog();
+
+            //_authenticationManager.AuthenticateWithCode(code);
             if (_authenticationManager.IsAuthenticated)
+            {
                 _client.Connect();
-            OnPropertyChanged("AuthenticationRequired");
+                OnPropertyChanged("AuthenticationRequired");
+            }
         }
 
         void SetPresence()

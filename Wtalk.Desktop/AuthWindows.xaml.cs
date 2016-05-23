@@ -22,6 +22,30 @@ namespace Wtalk.Desktop
         public AuthWindows()
         {
             InitializeComponent();
+            this.Loaded += AuthWindows_Loaded;            
+            webBrowser.Navigated += webBrowser_Navigated;
+            
+        }
+
+        void webBrowser_Navigated(object sender, System.Windows.Navigation.NavigationEventArgs e)
+        {
+            if (e.Uri.AbsoluteUri.Contains("approval"))
+            {
+                webBrowser.Visibility = System.Windows.Visibility.Hidden;
+                loading.Visibility = System.Windows.Visibility.Visible;
+                
+                string title = ((dynamic)webBrowser.Document).Title;
+                string code = title.Split('=')[1];
+                WTalk.AuthenticationManager.Current.AuthenticateWithCode(code);
+                this.Close();
+                return;
+            }
+
+        }
+
+        void AuthWindows_Loaded(object sender, RoutedEventArgs e)
+        {
+            webBrowser.Source = new Uri(WTalk.AuthenticationManager.Current.GetCodeUrl());
         }
     }
 }

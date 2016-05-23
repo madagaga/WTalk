@@ -21,16 +21,28 @@ namespace WTalk
 
 
         //string[] scopes = new string[] { "https://www.googleapis.com/auth/chat", "https://www.googleapis.com/auth/client_channel", "https://www.googleapis.com/auth/googlevoice", "https://www.googleapis.com/auth/hangouts", "https://www.googleapis.com/auth/photos", "https://www.googleapis.com/auth/plus.circles.read", "https://www.googleapis.com/auth/plus.contactphotos", "https://www.googleapis.com/auth/plus.me", "https://www.googleapis.com/auth/plus.peopleapi.readwrite", "https://www.googleapis.com/auth/youtube.readonly" };
-        string[] scopes = new string[] { "https://www.google.com/accounts/OAuthLogin" };
+        public readonly string[] Scopes = new string[] { "https://www.google.com/accounts/OAuthLogin", "https://www.googleapis.com/auth/userinfo.email" };
 
 
         HttpClient _client;
 
         // not a good idea ...
-        
         AccessToken _token;
 
         public bool IsAuthenticated { get; private set; }
+
+        // singleton 
+        static AuthenticationManager _current;
+        public static AuthenticationManager Current
+        {
+            get
+            {
+                if (_current == null)
+                    _current = new AuthenticationManager();
+                return _current;
+            }
+        }
+
 
         IFile _file;
         public AuthenticationManager()
@@ -43,11 +55,6 @@ namespace WTalk
                 LoadToken();
             }
             catch { }
-        }
-
-        public AuthenticationManager (string accessToken)
-        {
-            _token = new AccessToken() { access_token = accessToken };
         }
 
         void LoadToken()
@@ -70,7 +77,7 @@ namespace WTalk
             builder.Append("https://accounts.google.com/o/oauth2/auth?");
             builder.AppendFormat("client_id={0}", CLIENT_ID);
             //builder.AppendFormat("&scope={0}", System.Uri.EscapeDataString("https://www.google.com/accounts/OAuthLogin"));//"https://www.googleapis.com/auth/googletalk"));
-            builder.AppendFormat("&scope={0}", string.Join(" ", scopes));
+            builder.AppendFormat("&scope={0}", string.Join(" ", Scopes));
             builder.AppendFormat("&redirect_uri={0}", REDIRECT_URI);
             builder.AppendFormat("&response_type={0}", "code");
             return builder.ToString();
@@ -105,8 +112,11 @@ namespace WTalk
             catch{}
         }
 
-        public void Connect()
+        public void Connect(AccessToken token = null)
         {
+            if (token != null)
+                _token = token;
+
             // if token exists get session cookie;
             if (_token != null && _token.access_token != null)
             {
@@ -157,7 +167,7 @@ namespace WTalk
 
     }
 
-    internal class AccessToken
+    public class AccessToken
     {
         public string access_token { get; set; }
         public string refresh_token { get; set; }

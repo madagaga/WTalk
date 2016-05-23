@@ -34,7 +34,8 @@ namespace Wtalk.Desktop
 
         void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            ((MainViewModel)this.DataContext).CurrentPresenceIndex = 3;
+            if (((MainViewModel)this.DataContext).Connected)
+                ((MainViewModel)this.DataContext).CurrentPresenceIndex = 3;
         }
 
         void CurrentDomain_FirstChanceException(object sender, System.Runtime.ExceptionServices.FirstChanceExceptionEventArgs e)

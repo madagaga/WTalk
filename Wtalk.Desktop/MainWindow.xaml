@@ -195,11 +195,7 @@
             </Grid.Style>
             <Image Source="Resources/talk.png" Stretch="Uniform" Height="50" Width="50"/>
             <Border BorderBrush="#FFC1C1C1" BorderThickness="1" CornerRadius="3">
-                <Button BorderBrush="Transparent" Content="Load authorization" Height="30" Width="150" Margin="0,130,0,0" HorizontalAlignment="Center" Command="{Binding GetCodeCommand}" />
-            </Border>
-            <TextBox Height="30" Margin="10,230,10,0" x:Name="auth_code"/>
-            <Border BorderBrush="#FFC1C1C1" BorderThickness="1" CornerRadius="3">
-                <Button BorderBrush="Transparent" Content="Authenticate" Height="30" Width="150" Margin="0,300,0,0" HorizontalAlignment="Center" Command="{Binding SetAuthenticationCodeCommand}" CommandParameter="{Binding ElementName=auth_code,Path=Text}" />
+                <Button BorderBrush="Transparent" Content="Authenticate" Height="30" Width="150" Margin="0,300,0,0" HorizontalAlignment="Center" Command="{Binding AuthenticateCommand}" />
             </Border>
 
         </Grid>
