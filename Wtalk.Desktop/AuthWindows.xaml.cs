@@ -23,7 +23,7 @@ namespace Wtalk.Desktop
         {
             InitializeComponent();
             this.Loaded += AuthWindows_Loaded;            
-            webBrowser.Navigated += webBrowser_Navigated;
+            
             
         }
 
@@ -32,7 +32,7 @@ namespace Wtalk.Desktop
             if (e.Uri.AbsoluteUri.Contains("approval"))
             {
                 webBrowser.Visibility = System.Windows.Visibility.Hidden;
-                loading.Visibility = System.Windows.Visibility.Visible;
+                
                 
                 string title = ((dynamic)webBrowser.Document).Title;
                 string code = title.Split('=')[1];
@@ -45,7 +45,32 @@ namespace Wtalk.Desktop
 
         void AuthWindows_Loaded(object sender, RoutedEventArgs e)
         {
-            webBrowser.Source = new Uri(WTalk.AuthenticationManager.Current.GetCodeUrl());
+            webBrowser.Navigated += webBrowser_Navigated;
+            Uri url = new Uri(WTalk.AuthenticationManager.Current.GetCodeUrl());
+            NativeMethods.SuppressCookiePersistence();
+            webBrowser.Navigate(url);
+            
+        }
+
+
+    }
+
+    public static partial class NativeMethods
+    {
+        [System.Runtime.InteropServices.DllImport("wininet.dll", CharSet = System.Runtime.InteropServices.CharSet.Auto, SetLastError = true)]
+        private static extern bool InternetSetOption(IntPtr hInternet, int dwOption, IntPtr lpBuffer, int dwBufferLength);
+
+        private const int INTERNET_OPTION_SUPPRESS_BEHAVIOR = 81;
+        private const int INTERNET_SUPPRESS_COOKIE_PERSIST = 3;
+
+        public static void SuppressCookiePersistence()
+        {
+            var lpBuffer = System.Runtime.InteropServices.Marshal.AllocCoTaskMem(System.Runtime.InteropServices.Marshal.SizeOf(typeof(int)));
+            System.Runtime.InteropServices.Marshal.StructureToPtr(INTERNET_SUPPRESS_COOKIE_PERSIST, lpBuffer, true);
+
+            InternetSetOption(IntPtr.Zero, INTERNET_OPTION_SUPPRESS_BEHAVIOR, lpBuffer, sizeof(int));
+
+            System.Runtime.InteropServices.Marshal.FreeCoTaskMem(lpBuffer);
         }
     }
 }

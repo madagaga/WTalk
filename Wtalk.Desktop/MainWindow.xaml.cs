@@ -29,6 +29,30 @@ namespace Wtalk.Desktop
             this.Activated += MainWindow_Activated;
             this.Closing += MainWindow_Closing;
             this.sendMessageTextBox.GotFocus += (s, e) => { ((MainViewModel)this.DataContext).SelectedConversation.SetFocusCommand.Execute(null); };
+            this.sendMessageTextBox.PreviewKeyDown += (s, e) => { 
+                if(e.Key == Key.Enter)
+                {
+                    e.Handled = true;                    
+                    ((MainViewModel)this.DataContext).SelectedConversation.SendMessageCommand.Execute(null);
+
+                }
+                else
+                    ((MainViewModel)this.DataContext).SelectedConversation.SetUserTypingCommand.Execute(null);
+
+            };
+
+            // scrollViewer scroll position can not be bound
+            activeContactList.MouseLeftButtonUp += (s, e) => {
+                if (activeContactList.SelectedItem != null)
+                    messagesScrollViewer.ScrollToVerticalOffset(((ConversationViewModel)activeContactList.SelectedItem).ScrollPosition);
+            };
+
+            messagesScrollViewer.ScrollChanged += (s, e) =>
+            {
+                if (activeContactList.SelectedItem != null && e.VerticalChange != 0)
+                    ((ConversationViewModel)activeContactList.SelectedItem).ScrollPosition = messagesScrollViewer.VerticalOffset;
+            };
+
             AppDomain.CurrentDomain.FirstChanceException += CurrentDomain_FirstChanceException;
             
         }
@@ -49,8 +73,7 @@ namespace Wtalk.Desktop
             if (this.WindowState == System.Windows.WindowState.Normal)
             {
                 ((MainViewModel)this.DataContext).SetPresenceCommand.Execute(null);
-                this.StopFlashingWindow();
-                this.scrollBar.ScrollToBottom();
+                this.StopFlashingWindow();                
             }
         }        
     }

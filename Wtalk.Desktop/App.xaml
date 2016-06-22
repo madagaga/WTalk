@@ -5,7 +5,7 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="Resources\WTalkStyle.xaml" />
-                <ResourceDictionary Source="Resources\MessageDataTemplate.xaml" />
+                <ResourceDictionary Source="Resources\MessageDataTemplate.xaml" />                
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>

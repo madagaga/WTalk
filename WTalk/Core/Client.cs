@@ -262,7 +262,7 @@ namespace WTalk
 
                                     if (_active_conversations.ContainsKey(state_update.event_notification.current_event.conversation_id.id))
                                     {
-                                        _active_conversations[state_update.event_notification.current_event.conversation_id.id].HandleNewMessage( state_update.event_notification.current_event);
+                                        _active_conversations[state_update.event_notification.current_event.conversation_id.id].AddNewMessage(state_update.event_notification.current_event);
                                         if (NewMessageReceived != null)
                                             NewMessageReceived(this, _active_conversations[state_update.event_notification.current_event.conversation_id.id]);
                                     }
@@ -283,6 +283,9 @@ namespace WTalk
                                 case EventType.EVENT_TYPE_OTR_MODIFICATION:
                                     _active_conversations[state_update.event_notification.current_event.conversation_id.id]._conversation.otr_status = state_update.event_notification.current_event.otr_status;
                                     break;
+                                case EventType.EVENT_TYPE_CONVERSATION_RENAME:
+                                    _active_conversations[state_update.event_notification.current_event.conversation_id.id]._conversation.name = state_update.event_notification.current_event.conversation_rename.new_name;
+                                    break;                                    
                             }
                             
 
@@ -465,7 +468,7 @@ namespace WTalk
             {
                 request_header = RequestHeaderBody,
                 conversation_id = new ConversationId() {  id = conversationId },
-                type = TypingType.TYPING_TYPE_STARTED
+                type = TypingType.TYPING_TYPE_STARTED 
             };
 
             HttpResponseMessage message = _client.PostProtoJson("conversations/settyping", request);
@@ -540,6 +543,28 @@ namespace WTalk
             HttpResponseMessage message = _client.PostProtoJson("conversations/updatewatermark", request);
             message.Dispose();
 
+        }
+
+        public void GetConversation(string conversationId)
+        {
+            var conv = _active_conversations[conversationId]._conversation;
+            var evt = _active_conversations[conversationId].messagesIds.Values.Min();
+            GetConversationRequest request = new GetConversationRequest()
+            {
+                request_header = RequestHeaderBody,
+                include_event = true,
+                max_events_per_conversation = 50,
+                conversation_spec = new ConversationSpec() { conversation_id = conv.conversation_id },
+                event_continuation_token = new EventContinuationToken() { event_id = null, storage_continuation_token=null, event_timestamp = evt }
+
+            };
+
+            using(HttpResponseMessage message = _client.PostProtoJson("conversations/getconversation", request))
+            {
+                GetConversationResponse response = message.Content.ReadAsProtoJson<GetConversationResponse>();
+                _active_conversations[response.conversation_state.conversation_id.id].AddOldMessages(response.conversation_state.events);
+            }
+            
         }
 
 

@@ -10,17 +10,8 @@
         mc:Ignorable="d"                        
         d:DataContext="{d:DesignInstance Type=designData:DesignMainViewModel, IsDesignTimeCreatable=True}"
         Title="{Binding CurrentUser.DisplayName, StringFormat='Wtalk - {0}'}" Height="420" Width="800"  x:Name="mainWindow"
-       Style="{DynamicResource window_style}" UseLayoutRounding="True">
-    <Window.Resources>
-        <ResourceDictionary>
-            <CollectionViewSource x:Key="SortedActiveContacts" Source="{Binding ActiveContacts}" >
-                        <CollectionViewSource.SortDescriptions>
-                            <scm:SortDescription PropertyName="Contact.Online" Direction="Descending" />
-                            <scm:SortDescription PropertyName="LastMessageDate" Direction="Descending" />
-                        </CollectionViewSource.SortDescriptions>
-                    </CollectionViewSource>                
-        </ResourceDictionary>
-    </Window.Resources>
+       Style="{DynamicResource window_style}" UseLayoutRounding="True"       
+        >    
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="250" />            
@@ -80,8 +71,8 @@
                 </Grid>
             </Grid>
                 <Grid Grid.Row="1">
-                    <ListView BorderThickness="0,0,1,0"  
-                              ItemsSource="{Binding Source={StaticResource SortedActiveContacts}}"  
+                    <ListView BorderThickness="0,0,1,0" x:Name="activeContactList"                            
+                              ItemsSource="{Binding Path=ActiveContacts}"  
                               SelectedItem="{Binding SelectedConversation, UpdateSourceTrigger=PropertyChanged}"
                               ScrollViewer.HorizontalScrollBarVisibility="Hidden">
                         <ListView.ItemTemplate>
@@ -140,13 +131,12 @@
             <!-- header -->
             <Grid Background="#019f55">
                 <TextBlock Grid.Column="1" Margin="10,0,0,0" VerticalAlignment="Center" Text="{Binding Path=ConversationName}" Foreground="White" />
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Width="130">
-                    <!--<Path Height="20" Width="20" Stretch="Fill" Fill="white" Data="F1 M 53.8333,41.1667C 53.8333,49.9112 46.7445,57 38,57C 29.2555,57 22.1667,49.9112 22.1667,41.1667C 22.1667,32.9565 28.4156,26.2059 36.4167,25.4115L 36.4167,23.75L 31.6667,23.75L 31.6667,19L 44.3333,19L 44.3333,23.75L 39.5833,23.75L 39.5833,25.4115C 42.7678,25.7277 45.6747,26.9874 48.0205,28.907L 49.1629,27.7646L 46.9237,25.5254L 50.2825,22.1667L 57,28.8842L 53.6412,32.2429L 51.4021,30.0038L 50.2597,31.1462C 52.4933,33.8756 53.8333,37.3647 53.8333,41.1667 Z M 26.2296,39.5834L 30.0833,39.5834L 30.0833,42.75L 26.2296,42.75C 26.9347,48.0419 31.1248,52.232 36.4166,52.9371L 36.4166,49.0833L 39.5833,49.0833L 39.5833,52.937C 44.8752,52.232 49.0653,48.0419 49.7703,42.75L 45.9166,42.75L 45.9166,39.5834L 49.7703,39.5834C 49.0652,34.2915 44.8751,30.1014 39.5833,29.3964L 39.5833,33.25L 36.4166,33.25L 36.4166,29.3963C 31.1248,30.1014 26.9347,34.2915 26.2296,39.5834 Z M 38,38C 39.7489,38 41.1666,39.4178 41.1666,41.1667C 41.1666,42.9156 39.7489,44.3334 38,44.3334L 31.6666,49.0834L 34.8333,41.1667C 34.8333,39.4178 36.2511,38 38,38 Z "/>-->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Width="130">                    
                     <Label VerticalAlignment="Center" Foreground="White">Save History</Label>
                     <ToggleButton Style="{StaticResource AnimatedSwitch}" Height="20" IsChecked="{Binding Path=Conversation.HistoryEnabled,Mode=OneWay, FallbackValue=True}" Command="{Binding SetOTRCommand}" Margin="10,0"/>
                 </StackPanel>
             </Grid>
-            <ScrollViewer x:Name="scrollBar" Padding="2,5,2,0" Grid.Row="1" Background="#e5e5e5">
+            <ScrollViewer x:Name="messagesScrollViewer" Padding="2,5,2,0" Grid.Row="1" Background="#e5e5e5">                
                 <StackPanel>                    
                     <ItemsControl ItemsSource="{Binding Path= Conversation.MessagesHistory, Mode=OneWay}">
                         <ItemsControl.ItemTemplateSelector>
@@ -155,11 +145,7 @@
                     </ItemsControl>
                 </StackPanel>
             </ScrollViewer>
-            <TextBox x:Name="sendMessageTextBox" Grid.Row="2" Padding="0,4" VerticalAlignment="Bottom" TextWrapping="Wrap" BorderThickness="0,1,0,0" Text="{Binding MessageContent , UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" Margin="0,0,20,0">
-                <TextBox.InputBindings>
-                    <KeyBinding Command="{Binding SendMessageCommand}" Key="Enter"></KeyBinding>                    
-                </TextBox.InputBindings>                
-            </TextBox>
+            <TextBox x:Name="sendMessageTextBox" Grid.Row="2" Padding="0,4" VerticalAlignment="Bottom" TextWrapping="Wrap" BorderThickness="0,1,0,0" Text="{Binding MessageContent , UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" Margin="0,0,20,0" />
         </Grid>
 
         <!-- loading -->

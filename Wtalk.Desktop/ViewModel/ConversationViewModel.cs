@@ -24,6 +24,19 @@ namespace Wtalk.Desktop.ViewModel
             set { _name = value; }
         }
 
+        double _scrollPosition = double.MaxValue;
+
+        public double ScrollPosition
+        {
+            get { return _scrollPosition; }
+            set { 
+                
+                _scrollPosition = value;
+                if (value == 0)
+                    _client.GetConversation(Conversation.Id);
+            }
+        }
+        
         public string MessageContent { get; set; }
 
         // conversations        
@@ -38,13 +51,15 @@ namespace Wtalk.Desktop.ViewModel
         public RelayCommand DeleteConversationCommand { get; private set; }
         public RelayCommand SetOTRCommand { get; private set; }
 
+        public RelayCommand SetUserTypingCommand { get; private set; }
         
         public ConversationViewModel()
-        {
+        {            
             SendMessageCommand = new RelayCommand(() => SendMessage());
             SetFocusCommand = new RelayCommand(() => SetFocus());
             DeleteConversationCommand = new RelayCommand(() => DeleteConversation());
             SetOTRCommand = new RelayCommand(() => SetOTR());
+            SetUserTypingCommand = new RelayCommand(() => SetUserTyping());
         }
 
         public ConversationViewModel(Client client):this()
@@ -95,6 +110,13 @@ namespace Wtalk.Desktop.ViewModel
             _client.SendChatMessage(Conversation.Id, MessageContent);
             MessageContent = null;
             OnPropertyChanged(MessageContent);
+        }
+
+
+        
+        private void SetUserTyping()
+        {
+            Task.Factory.StartNew(t => { _client.SetUserTyping(Conversation.Id); }, System.Threading.CancellationToken.None);
         }
                
 

@@ -5,28 +5,27 @@ using System.Text;
 using System.Threading.Tasks;
 using WTalk.Mvvm;
 using WTalk.Core.Utils;
+using WTalk.Core.ProtoJson.Schema;
 
 namespace WTalk.Model
 {
     public class Message : ObservableObject
-    {   
+    {
+        internal Event _event;
         public Message()
         {
         }
 
         internal Message(WTalk.Core.ProtoJson.Schema.Event chatEvent)
         {
-            Id = chatEvent.event_id;
-            SenderId = chatEvent.sender_id.gaia_id;
-            selfUserId = chatEvent.self_event_state.user_id.gaia_id;
-            AppendContent(chatEvent);
+            _event = chatEvent;
+            AddContent(chatEvent);
             MessageDate = chatEvent.timestamp.FromUnixTime();            
         }
 
-        string selfUserId;
-        public string Id { get; internal set; }
-        public string SenderId { get; internal set; }        
-        public bool IncomingMessage { get { return SenderId != selfUserId; } }
+        public string Id { get { return _event.event_id; } }
+        public string SenderId { get { return _event.sender_id.gaia_id; } }
+        public bool IncomingMessage { get { return _event.sender_id.gaia_id != _event.self_event_state.user_id.gaia_id; } }
         public string SenderPhotoUrl { get { return FileCache.Current.Get(SenderId); } }
 
         //public Enums.MessageType Type { get; internal set; }
@@ -37,9 +36,12 @@ namespace WTalk.Model
         
         List<string> _content = new List<string>();
 
-        internal void AppendContent(WTalk.Core.ProtoJson.Schema.Event chatEvent)
+        internal void AddContent(WTalk.Core.ProtoJson.Schema.Event chatEvent, bool prepend = false )
         {
-            _content.AddRange(chatEvent.chat_message.message_content.segment.Select(c => c.text));
+            if(prepend)
+                _content.InsertRange(0, chatEvent.chat_message.message_content.segment.Select(c => c.text));
+            else
+                _content.AddRange(chatEvent.chat_message.message_content.segment.Select(c => c.text));
             MessageDate = chatEvent.timestamp.FromUnixTime(); 
             OnPropertyChanged("Content");
 

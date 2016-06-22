@@ -13,7 +13,12 @@ namespace Wtalk.Desktop.ViewModel
 {
     public class MainViewModel : ObservableObject
     {
-        public ObservableCollection<ConversationViewModel> ActiveContacts { get; private set; }
+        public List<ConversationViewModel> ActiveContacts
+        {
+            get;
+            private set;
+        }
+    
 
         ConversationViewModel _selectedConversation;
         public ConversationViewModel SelectedConversation
@@ -92,24 +97,28 @@ namespace Wtalk.Desktop.ViewModel
             
             if(_authenticationManager.IsAuthenticated)
                 _client.Connect();
-            ActiveContacts = new ObservableCollection<ConversationViewModel>();
+            ActiveContacts = new List<ConversationViewModel>();
             App.Current.Dispatcher.Invoke(() =>
             {
                 System.Windows.Data.BindingOperations.EnableCollectionSynchronization(ActiveContacts, _lock);
             });
         }
 
-        void refreshActiveContacts()
+        void reorderContacts()
         {
             App.Current.Dispatcher.Invoke(() =>
             {
-                ((System.Windows.Data.CollectionViewSource)App.Current.MainWindow.Resources["SortedActiveContacts"]).View.Refresh();
+                if (ActiveContacts.Count > 0)
+                {
+                    ActiveContacts = ActiveContacts.OrderByDescending(c => c.Contact.Online).ThenByDescending(c => c.LastMessageDate).ToList();
+                    OnPropertyChanged("ActiveContacts");
+                }
             });
         }
 
         void _client_UserPresenceChanged(object sender, User e)
         {
-            refreshActiveContacts();
+            reorderContacts();
         }
 
         void _client_NewMessageReceived(object sender, Conversation e)
@@ -120,7 +129,8 @@ namespace Wtalk.Desktop.ViewModel
                     App.Current.MainWindow.FlashWindow();
             });
 
-            refreshActiveContacts();
+            reorderContacts();
+            
         }
 
         void _client_UserInformationReceived(object sender, User e)
@@ -131,7 +141,9 @@ namespace Wtalk.Desktop.ViewModel
 
         void _client_NewConversationCreated(object sender, Conversation e)
         {
-            ActiveContacts.Add(new ConversationViewModel(e, _client)); 
+            ActiveContacts.Add(new ConversationViewModel(e, _client));
+            reorderContacts();
+            
         }
 
        
@@ -147,15 +159,14 @@ namespace Wtalk.Desktop.ViewModel
             // associate contact list and last active conversation
             // only 1 to 1 conversation supported   
             if (ActiveContacts == null)
-                ActiveContacts = new ObservableCollection<ConversationViewModel>();
+                ActiveContacts = new List<ConversationViewModel>();
 
             foreach (Conversation conversation in e)
                 ActiveContacts.Add(new ConversationViewModel(conversation, _client));
 
-            OnPropertyChanged("ActiveContacts");
+            reorderContacts();
+            
         }
-
-       
 
 
         void _client_OnConnectionEstablished(object sender, EventArgs e)

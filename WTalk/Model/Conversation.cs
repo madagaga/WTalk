@@ -27,6 +27,8 @@ namespace WTalk.Model
 
         public DateTime ReadState { get; internal set; }
         public DateTime SelfReadState { get; internal set; }
+        internal Dictionary<string, long> messagesIds = new Dictionary<string, long>();
+
 
         public event EventHandler<Message> NewMessageReceived;
 
@@ -44,8 +46,9 @@ namespace WTalk.Model
             
             foreach(var cse in conversationState.events.Where(c=>c.chat_message != null))
             {
+                messagesIds.Add(cse.event_id, cse.timestamp);
                 if (_lastMessage != null && _lastMessage.SenderId == cse.sender_id.gaia_id)
-                    _lastMessage.AppendContent(cse);
+                    _lastMessage.AddContent(cse);
                 else 
                 {
                     _lastMessage = new Message(cse);
@@ -55,11 +58,11 @@ namespace WTalk.Model
             }           
         }
 
-        internal void HandleNewMessage(Event e)
-        {   
-
+        internal void AddNewMessage(Event e)
+        {
+            messagesIds.Add(e.event_id, e.timestamp);
             if (_lastMessage.SenderId == e.sender_id.chat_id)
-                _lastMessage.AppendContent(e);
+                _lastMessage.AddContent(e);
             else
             {
                 _lastMessage = new Message(e);
@@ -77,6 +80,31 @@ namespace WTalk.Model
                 NewMessageReceived(this, _lastMessage);
 
            
+        }
+
+        internal void AddOldMessages(List<Event> events)
+        {
+            _synchronizationContext.Post((obj) =>
+            {   
+                IEnumerable<Event> orderedEvents = ((List<Event>)obj).OrderByDescending(c => c.timestamp);
+                Message current = MessagesHistory.First();
+                // hangout return all messages                 
+                foreach (Event e in orderedEvents)
+                {
+                    if (messagesIds.ContainsKey(e.event_id))
+                        continue;
+
+                    messagesIds.Add(e.event_id, e.timestamp);
+                    if (current.SenderId == e.sender_id.chat_id)
+                        current.AddContent(e, true);
+                    else
+                    {
+                        current = new Message(e);
+                        MessagesHistory.Insert(0, current);
+                    }
+                }
+                
+            }, events);
         }
         
     }

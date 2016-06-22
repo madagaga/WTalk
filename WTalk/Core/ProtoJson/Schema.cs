@@ -2015,8 +2015,14 @@ major exception that "Client" prefixes have been removed.
         [ProtoMember(Position = 2)]
         public ConversationSpec conversation_spec { get; set; }
 
+        [ProtoMember(Position = 3)]
+        public bool include_conversation_metadata { get; set; }
+
         [ProtoMember(Position = 4)]
         public bool include_event { get; set; }
+
+        [ProtoMember(Position = 5)]
+        public object unknown1 { get; set; }
 
         [ProtoMember(Position = 6)]
         public long max_events_per_conversation { get; set; }
