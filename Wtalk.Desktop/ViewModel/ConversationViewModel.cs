@@ -33,7 +33,7 @@ namespace Wtalk.Desktop.ViewModel
                 
                 _scrollPosition = value;
                 if (value == 0)
-                    _client.GetConversation(Conversation.Id);
+                    _client.GetConversationAsync(Conversation.Id);
             }
         }
         
@@ -72,16 +72,16 @@ namespace Wtalk.Desktop.ViewModel
         {
             this.Conversation = conversation;
             this.Conversation.NewMessageReceived += Conversation_NewMessageReceived;
-            this.Contact = client.GetContactFromCache(conversation.Participants.Where(c => c.Key != client.CurrentUser.Id).FirstOrDefault().Key);
+            this.Contact = client.GetContactFromCache(conversation.Participants.Where(c => c.Key != client.CurrentUser.Id).FirstOrDefault().Key).Result;
             if (this.Contact != null)
                 _name = this.Contact.DisplayName;
-            else
+            else                
                 _name = "Unknown User";
         }
 
         private void SetOTR()
         {
-            _client.ModifyOTRStatus(Conversation.Id, !Conversation.HistoryEnabled);
+            _client.ModifyOTRStatusAsync(Conversation.Id, !Conversation.HistoryEnabled);
         }
 
         private void DeleteConversation()
@@ -94,20 +94,20 @@ namespace Wtalk.Desktop.ViewModel
             OnPropertyChanged("HasUnreadMessages");
         }
         
-        private void SetFocus()
+        private async Task SetFocus()
         {
             
             if(this.HasUnreadMessages)
-                _client.UpdateWaterMark(Conversation.Id, DateTime.UtcNow);
+                _client.UpdateWaterMarkAsync(Conversation.Id, DateTime.UtcNow);
 
-            _client.SetFocus(Conversation.Id);
+            await _client.SetFocusAsync(Conversation.Id);
             OnPropertyChanged("HasUnreadMessages");
         }
 
       
-        private void SendMessage()
+        private async void SendMessage()
         {            
-            _client.SendChatMessage(Conversation.Id, MessageContent);
+            await _client.SendChatMessageAsync(Conversation.Id, MessageContent);
             MessageContent = null;
             OnPropertyChanged(MessageContent);
         }
@@ -116,7 +116,7 @@ namespace Wtalk.Desktop.ViewModel
         
         private void SetUserTyping()
         {
-            Task.Factory.StartNew(t => { _client.SetUserTyping(Conversation.Id); }, System.Threading.CancellationToken.None);
+            _client.SetUserTypingAsync(Conversation.Id);
         }
                
 

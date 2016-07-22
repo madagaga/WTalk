@@ -43,18 +43,18 @@ namespace WTalk.Core.Utils
             return null;
         }
 
-        public static HttpResponseMessage PostJson(this HttpClient client, string endPoint, JArray body)
+        public async static Task<HttpResponseMessage> PostJson(this HttpClient client, string apiKey, string endPoint, JArray body)
         {
-            return client.execute(endPoint, body, true);
+            return await client.execute(endPoint,apiKey, body, true);
         }
 
-        public static HttpResponseMessage PostProtoJson<T>(this HttpClient client, string endPoint, T protoJsonObject) where T:class
+        public async static Task<HttpResponseMessage> PostProtoJson<T>(this HttpClient client, string endPoint, string apiKey, T protoJsonObject) where T : class
         {
             JArray body = ProtoJsonSerializer.Serialize(protoJsonObject);
-            return client.execute(endPoint, body, false);
+            return await client.execute(endPoint,apiKey, body, false);
         }
 
-        static HttpResponseMessage execute(this HttpClient client, string endPoint, JArray body, bool useJson)
+        async static Task<HttpResponseMessage> execute(this HttpClient client, string endPoint, string apiKey, JArray body, bool useJson)
         {
              HttpResponseMessage message = null;
             try
@@ -62,8 +62,9 @@ namespace WTalk.Core.Utils
                
                 _logger.Debug("Sending Request : {0}", endPoint);
                // _logger.Debug("Sending data : {0}", body.ToString().Replace("\r\n", ""));
-                string uri = string.Format("{0}{1}?alt={2}", HangoutUri.CHAT_SERVER_URL, endPoint, useJson ? "json" : "protojson");
-                message = client.PostAsync(uri, new StringContent(body.ToString(), Encoding.UTF8, "application/json+protobuf")).Result;
+//                string uri = string.Format("{0}{1}?alt={2}", HangoutUri.CHAT_SERVER_URL, endPoint, useJson ? "json" : "protojson");
+                string uri = string.Format("{0}{1}?key={2}&alt={3}", HangoutUri.CHAT_SERVER_URL, endPoint, Uri.EscapeUriString(apiKey), useJson ? "json" : "protojson");
+                message = await client.PostAsync(uri, new StringContent(body.ToString(), Encoding.UTF8, "application/json+protobuf"));
                 _logger.Debug("Request : {0} => {1} ", endPoint, message.StatusCode);
                 message.EnsureSuccessStatusCode();
                // _logger.Debug("Received data : {0}", message.Content.ReadAsStringAsync().Result.Replace("\n", ""));
@@ -76,9 +77,9 @@ namespace WTalk.Core.Utils
             return message;
         }
 
-        public static T ReadAsProtoJson<T>(this HttpContent content) where T : new()
+        public async static Task<T> ReadAsProtoJson<T>(this HttpContent content) where T : new()
         {
-            using (System.IO.Stream stream = content.ReadAsStreamAsync().Result)
+            using (System.IO.Stream stream = await content.ReadAsStreamAsync())
             {
                 var reader = new Newtonsoft.Json.JsonTextReader(new System.IO.StreamReader(stream));
                 var arrayBody = JArray.Load(reader);

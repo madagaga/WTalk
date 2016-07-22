@@ -38,6 +38,11 @@ namespace WTalk.Model
             _entity.presence = presence;
             OnPropertyChanged("Online");
         }
+
+        public bool IsSynced
+        {
+            get { return this._entity != null; }
+        }
     }
 
 

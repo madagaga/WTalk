@@ -45,14 +45,14 @@ namespace Wtalk.Desktop.ViewModel
                 switch (value)
                 {
                     case 2:
-                        _client.SetActiveClient(false);
-                        _client.SetPresence(0);
+                        _client.SetActiveClientAsync(false);
+                        _client.SetPresenceAsync(0);
                         _authenticationManager.Disconnect();
                         System.Diagnostics.Process.Start(System.Windows.Application.ResourceAssembly.Location);
                         System.Windows.Application.Current.Shutdown();
                         return;
                     case 3:
-                        _client.SetPresence(0);
+                        _client.SetPresenceAsync(0);
                         System.Windows.Application.Current.Shutdown();
                         return;
                     default:
@@ -79,7 +79,7 @@ namespace Wtalk.Desktop.ViewModel
         public MainViewModel()
         {
 
-            AuthenticateCommand = new RelayCommand(() => Authenticate());            
+            AuthenticateCommand = new RelayCommand(async () =>  await Authenticate());            
             SetPresenceCommand = new RelayCommand(() => SetPresence());
 
             _authenticationManager = WTalk.AuthenticationManager.Current;
@@ -94,9 +94,11 @@ namespace Wtalk.Desktop.ViewModel
             _client.NewMessageReceived += _client_NewMessageReceived;
             _client.UserInformationReceived += _client_UserInformationReceived;
             _client.UserPresenceChanged += _client_UserPresenceChanged;
+
+            _client.ContactInformationReceived += _client_ContactInformationReceived;
             
             if(_authenticationManager.IsAuthenticated)
-                _client.Connect();
+                _client.ConnectAsync();
             ActiveContacts = new List<ConversationViewModel>();
             App.Current.Dispatcher.Invoke(() =>
             {
@@ -104,6 +106,7 @@ namespace Wtalk.Desktop.ViewModel
             });
         }
 
+        
         void reorderContacts()
         {
             App.Current.Dispatcher.Invoke(() =>
@@ -146,6 +149,11 @@ namespace Wtalk.Desktop.ViewModel
             
         }
 
+        void _client_ContactInformationReceived(object sender, User e)
+        {
+            reorderContacts();
+        }
+
        
              
         void _client_UserInformationLoaded(object sender, User e)
@@ -172,9 +180,9 @@ namespace Wtalk.Desktop.ViewModel
         void _client_OnConnectionEstablished(object sender, EventArgs e)
         {  
             if (CurrentUser != null)
-                _client.SetPresence();
+                _client.SetPresenceAsync();
             else
-                _client.GetSelfInfo();
+                _client.GetSelfInfoAsync();
 
             Connected = true;
             OnPropertyChanged("Connected");
@@ -185,7 +193,7 @@ namespace Wtalk.Desktop.ViewModel
             //_client.GetSuggestedEntities();
         }
 
-        void Authenticate()
+        async Task Authenticate()
         {
 
             AuthWindows auth_window = new AuthWindows();
@@ -194,7 +202,7 @@ namespace Wtalk.Desktop.ViewModel
             //_authenticationManager.AuthenticateWithCode(code);
             if (_authenticationManager.IsAuthenticated)
             {
-                _client.Connect();
+                _client.ConnectAsync();
                 OnPropertyChanged("AuthenticationRequired");
             }
         }
@@ -203,11 +211,11 @@ namespace Wtalk.Desktop.ViewModel
         {               
             if (this.CurrentUser != null && (DateTime.Now - _lastStateUpdate).TotalSeconds > 720)
             {                
-                _client.SetPresence(_currentPresenceIndex == 0 ? 40 : 1);
+                _client.SetPresenceAsync(_currentPresenceIndex == 0 ? 40 : 1);
                 _lastStateUpdate = DateTime.Now;
             }
             if(_client.CurrentUser != null)
-                _client.QuerySelfPresence();
+                _client.QuerySelfPresenceAsync();
             
         }
 
