@@ -14,18 +14,9 @@ namespace WTalk.Core.Reflection
     {        
         private Action<T, object> _setter;
         private Func<T, object> _getter;
-
-        Type _entityType = typeof(T);
-
-        public PropertyInfo Property
-        {
-            get;
-            private set;
-        }
-
+        
         public CompiledPropertyAccessor(PropertyInfo property)            
-        {
-            Property = property;
+        {            
             _setter = MakeSetter(property);
             _getter = MakeGetter( property);
         }
@@ -63,19 +54,6 @@ namespace WTalk.Core.Reflection
             UnaryExpression convert = Expression.Convert(fromProperty, typeof(Object));
             Expression<Func<T, object>> lambda = Expression.Lambda<Func<T, object>>(convert, entityParameter);
             return lambda.Compile();
-        }
-
-        public void Copy(T from, T to)
-        {
-            if (from == null)
-            {
-                throw new ArgumentNullException("from");
-            }
-            if (to == null)
-            {
-                throw new ArgumentNullException("to");
-            }
-            Set(to, Get(from));
-        }
+        }               
     }
 }

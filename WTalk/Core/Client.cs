@@ -70,12 +70,7 @@ namespace WTalk
         
 
         public Client()
-        {
-
-            //_initParams.Add("prop", "StartPage");
-            //_initParams.Add("client", "sm");
-            //_initParams.Add("stime", DateTime.Now.TimeIntervalSince1970().TotalSeconds.ToString("0"));
-            //_initParams.Add("nav", "true");
+        {   
             _initParams.Add("prop", "aChromeExtension");
             _initParams.Add("fid", "gtn-roster-iframe-id");
             _initParams.Add("ec", "[\"ci:ec\",true,true,false]");
@@ -189,18 +184,7 @@ namespace WTalk
             // call all events 
             if (UserInformationReceived != null)
                 UserInformationReceived(this, CurrentUser);
-
-            if (ContactListLoaded != null)
-                ContactListLoaded(this, _contacts.Values.ToList());
-
-            if (_contacts == null || _contacts.Count == 0)
-            {
-                string[] participants_id = _active_conversations.Values.SelectMany(c => c._conversation.current_participant.Where(p => p.gaia_id != CurrentUser.Id).Select(p => p.gaia_id)).Distinct().ToArray();
-                await GetEntityByIdAsync(participants_id);
-            }
-            
-            if (ConversationHistoryLoaded != null)
-                ConversationHistoryLoaded(this, _active_conversations.Values.ToList());
+                       
 
             data = null;
             dataDictionary = null;
@@ -209,7 +193,7 @@ namespace WTalk
         }
 
 
-        void _channel_OnDataReceived(object sender, JArray rawdata)
+        async void _channel_OnDataReceived(object sender, JArray rawdata)
         {               
 
             //Parse channel array and call the appropriate events.
@@ -221,6 +205,10 @@ namespace WTalk
                     SetActiveClientAsync();
                     _last_response_date = DateTime.UtcNow;
                 }
+            }
+            else if (rawdata[0].ToString() == "resync")
+            {
+                SyncAllNewEventsAsync(long.Parse(rawdata[1].ToString()));
             }
             else if (rawdata[0]["p"] != null)
             {
@@ -237,8 +225,18 @@ namespace WTalk
                         _wasConnected = _channel.Connected;
                         if (ConnectionEstablished != null)
                             ConnectionEstablished(this, null);
-                       
-                       
+
+                        // check if contacts are loaded
+                        if (_contacts == null || _contacts.Count == 0)
+                        {
+                            if (ContactListLoaded != null)
+                                ContactListLoaded(this, _contacts.Values.ToList());
+
+                            string[] participants_id = _active_conversations.Values.SelectMany(c => c._conversation.current_participant.Where(p => p.gaia_id != CurrentUser.Id).Select(p => p.gaia_id)).Distinct().ToArray();
+                            await GetEntityByIdAsync(participants_id);
+                            if (ConversationHistoryLoaded != null)
+                                ConversationHistoryLoaded(this, _active_conversations.Values.ToList());
+                        }
 
                     }
                 }
@@ -565,6 +563,26 @@ namespace WTalk
                 _active_conversations[response.conversation_state.conversation_id.id].AddOldMessages(response.conversation_state.events);
             }
             
+        }
+
+        public async Task SyncAllNewEventsAsync(long last_sync_timestamp)
+        {
+            SyncAllNewEventsRequest request = new SyncAllNewEventsRequest()
+            {
+                request_header = RequestHeaderBody,
+                last_sync_timestamp = last_sync_timestamp * 1000,
+                max_response_size_bytes = 1048576
+
+            };
+
+            using(HttpResponseMessage message = await _client.PostProtoJson("conversations/syncallnewevents", _api_key, request))
+            {
+                SyncAllNewEventsResponse response = await message.Content.ReadAsProtoJson<SyncAllNewEventsResponse>();
+                foreach(var conversation in response.conversation_state)
+                    _active_conversations[conversation.conversation_id.id].AddNewMessage(conversation.events);
+                
+                
+            }            
         }
 
 

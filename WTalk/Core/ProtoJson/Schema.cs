@@ -2521,6 +2521,21 @@ major exception that "Client" prefixes have been removed.
         [ProtoMember(Position = 2)]
         public long last_sync_timestamp { get; set; }
 
+        [ProtoMember(Position = 3)]
+        public List<object> unknown { get; set; }
+
+        [ProtoMember(Position = 4)]
+        public object unknown1 { get; set; }
+
+        [ProtoMember(Position = 5)]
+        public List<object> unknown2 { get; set; }
+
+        [ProtoMember(Position = 6)]
+        public bool unknown3 { get; set; }
+
+        [ProtoMember(Position = 7)]
+        public List<object> unknown4 { get; set; }
+
         [ProtoMember(Position = 8)]
         public long max_response_size_bytes { get; set; }
 

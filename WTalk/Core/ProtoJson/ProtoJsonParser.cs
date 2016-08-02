@@ -23,7 +23,7 @@ namespace WTalk.Core.ProtoJson
                         .GetTypeInfo().DeclaredProperties
                         //.Where(p => p.GetSetMethod() != null && p.GetGetMethod() != null)
                         .Select<PropertyInfo, ProtoJsonPropertyAccessor>(p => new ProtoJsonPropertyAccessor(p))
-                        .ToDictionary(p => p.Property.Name));
+                        .ToDictionary(p => p.Name));
         }
 
         public static JArray Serialize<T>(T protojson) where T : class
@@ -64,7 +64,7 @@ namespace WTalk.Core.ProtoJson
                         result.Add(list);
                     }
                     else if (property.IsProtoContract)
-                        result.Add(ToJson(property.Property.PropertyType, currentValue));
+                        result.Add(ToJson(property.UnderlyingType, currentValue));
                     else if (property.IsEnum)
                         result.Add((int)currentValue);                    
                     else
@@ -113,16 +113,16 @@ namespace WTalk.Core.ProtoJson
                             property.Set(result, list);
                         }
                         else if (property.IsProtoContract)
-                            property.Set(result, ParseObject(property.Property.PropertyType, jArray[property.Position] as JArray));
+                            property.Set(result, ParseObject(property.UnderlyingType, jArray[property.Position] as JArray));
                         else if (property.IsEnum)
                         {
                             if (!string.IsNullOrEmpty(jArray[property.Position].ToString()))
-                                property.Set(result, Enum.Parse(property.Property.PropertyType, jArray[property.Position].ToString()));
+                                property.Set(result, Enum.Parse(property.UnderlyingType, jArray[property.Position].ToString()));
                         }
                         else
                         {
-                            if (property.Property.PropertyType == typeof(string) || !string.IsNullOrEmpty(jArray[property.Position].ToString()))
-                                property.Set(result, Convert.ChangeType(jArray[property.Position], property.Property.PropertyType));
+                            if (property.UnderlyingType == typeof(string) || !string.IsNullOrEmpty(jArray[property.Position].ToString()))
+                                property.Set(result, Convert.ChangeType(((JValue)jArray[property.Position]).Value, property.UnderlyingType));
                         }
                     }
                 }

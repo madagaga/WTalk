@@ -29,8 +29,6 @@ namespace WTalk
         string _appver = "chat_frontend_20151111.11_p0"; // default 
 
         int ofs_count = 0;        
-        //bool _initialized = false;
-
 
         public Channel()
         {
@@ -91,14 +89,14 @@ namespace WTalk
         ///Raises hangups.NetworkError or UnknownSIDError.
         /// </summary>
         /// <returns></returns>
-        async Task LongPollRequest()
+        async Task LongPollRequest(bool streaming = true)
         {
            
 
             Dictionary<string, string> headerData = new Dictionary<string, string>();
            
             headerData.Add("ctype", "hangouts");  // client type
-            headerData.Add("prop", "ChromeApp");
+            headerData.Add("prop", "gmail");
             headerData.Add("appver", _appver);  // client type
             headerData.Add("gsessionid", _gsession_id);
             headerData.Add("VER", "8");  // channel protocol version
@@ -111,33 +109,39 @@ namespace WTalk
             headerData.Add("t", "1");  // trial
 
 
-            //using (HttpResponseMessage message = await _client.Execute(HangoutUri.CHANNEL_URL + "channel/bind", headerData))
-            //{
-            //    if (message != null)
-            //    {
-            //        message.EnsureSuccessStatusCode();
-            //        dataReceived(await message.Content.ReadAsStringAsync());
-            //    }
-            //}
-
-            #region if streaming 
-            StringBuilder query = new StringBuilder(HangoutUri.CHANNEL_URL + "channel/bind?");
-
-
-            query.Append(string.Join("&", headerData.Select(c => string.Format("{0}={1}", c.Key, Uri.EscapeUriString(c.Value))).ToArray()));
-
-
-            using (System.IO.Stream reader = await _client.GetStreamAsync(query.ToString()))
-            {
-                try
+            #region if streaming
+            if (streaming)
+            {   
+                using (HttpResponseMessage message = await _client.Execute(HangoutUri.CHANNEL_URL + "channel/bind", headerData,null,HttpCompletionOption.ResponseHeadersRead))
                 {
-                    while (reader.CanRead)
-                        dataReceived(await (DecodeStream(reader)));
+                    long last_sync_date = DateTime.UtcNow.ToUnixTime();
+                    try
+                    {
+                        using(System.IO.Stream reader = await message.Content.ReadAsStreamAsync())
+                        while (reader.CanRead)
+                            dataReceived(await (DecodeStream(reader)));
+                    }
+                    catch (Exception e) {
+                        if (e.Message.Contains("SID"))
+                            throw e;
+                        if(e.Message.Contains("Decode"))
+                            dataReceived(JArray.Parse(string.Format("[[{0},[\"resync\", {1}]]]", (int.Parse(_aid) + 1), last_sync_date)));
+                    }
                 }
-                catch { }
+
             }
-
-
+            else
+            {
+                headerData["CI"] = "1";
+                using (HttpResponseMessage message = await _client.Execute(HangoutUri.CHANNEL_URL + "channel/bind", headerData))
+                {
+                    if (message != null)
+                    {
+                        message.EnsureSuccessStatusCode();
+                        dataReceived(await (DecodeStream(message.Content.ReadAsStreamAsync())));
+                    }
+                }
+            }
 
             #endregion
 
@@ -161,12 +165,16 @@ namespace WTalk
         {
             Connected = true;
             foreach (var chunkJson in data)
-            {
-                // first part is aid
-                _aid = chunkJson[0].ToString();
+            {                
                 if (chunkJson[1] != null && OnDataReceived != null)
                     OnDataReceived(this, chunkJson[1] as JArray);
+
+                // first part is aid
+                _aid = chunkJson[0].ToString();
             }
+            
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
 
         }
 
@@ -180,12 +188,6 @@ namespace WTalk
             Dictionary<string, string> subscribeData = new Dictionary<string, string>();
             subscribeData.Add("count", "1");
             subscribeData.Add("ofs", (++ofs_count).ToString());
-
-            // original data 
-            //subscribeData.Add("req0_p", "{\"1\":{\"1\":{\"1\":{\"1\":3,\"2\":2}},\"2\":{\"1\":{\"1\":3,\"2\":2},\"2\":\"6.3\",\"3\":\"JS\",\"4\":\"lcsclient\"},\"3\":" + epoch.TotalMilliseconds.ToString("N0") + ",\"4\":" + lastSubscribe + ",\"5\":\"c1\"},\"3\":{\"1\":{\"1\":\"tango_service\"}}}");
-            //subscribeData.Add("req1_p", "{\"1\":{\"1\":{\"1\":{\"1\":3,\"2\":2}},\"2\":{\"1\":{\"1\":3,\"2\":2},\"2\":\"6.3\",\"3\":\"JS\",\"4\":\"lcsclient\"},\"3\":" + epoch.TotalMilliseconds.ToString("N0") + ",\"4\":" + lastSubscribe + ",\"5\":\"c2\"},\"3\":{\"1\":{\"1\":\"babel\"}}}");
-            //subscribeData.Add("req2_p", "{\"1\":{\"1\":{\"1\":{\"1\":3,\"2\":2}},\"2\":{\"1\":{\"1\":3,\"2\":2},\"2\":\"6.3\",\"3\":\"JS\",\"4\":\"lcsclient\"},\"3\":" + epoch.TotalMilliseconds.ToString("N0") + ",\"4\":" + lastSubscribe + ",\"5\":\"c3\"},\"3\":{\"1\":{\"1\":\"hangout_invite\"}}}");
-                        
             // tdryer version
             subscribeData.Add("req0_p", "{\"3\": {\"1\": {\"1\": \"babel\"}}}");
 
@@ -194,41 +196,6 @@ namespace WTalk
                         
         }
 
-        //// not used but this is initialization process
-        //void initialize()
-        //{
-        //    Dictionary<string, string> headerData = new Dictionary<string, string>();
-        //    headerData.Add("ctype", "hangouts");  // client type
-        //    headerData.Add("appver", "wtalk");  // client type
-        //    headerData.Add("VER", "8");  // channel protocol version            
-        //    headerData.Add("t", "1");  // trial
-
-        //    // first get gsessionid 
-        //    string message;
-        //    JArray array;
-            
-        //    HttpResponseMessage response = _client.Execute(HangoutUri.CHANNEL_URL + "gsid", null, null);
-        //    response.EnsureSuccessStatusCode();
-        //    message = response.Content.ReadAsStringAsync().Result;
-        //    array = Parser.ParseData(message);
-        //    _gsession_id = array[1].ToString();
-
-        //    // set mode init
-        //    headerData.Add("gsessionid", _gsession_id);
-        //    headerData.Add("MODE", "init");
-        //    response = _client.Execute(HangoutUri.CHANNEL_URL + "channel/cbp", headerData, null);
-        //    response.EnsureSuccessStatusCode();
-        //    message = response.Content.ReadAsStringAsync().Result;
-
-        //    headerData.Remove("MODE");
-        //    headerData.Add("TYPE", "xmlhttp");
-        //    response = _client.Execute(HangoutUri.CHANNEL_URL + "channel/cbp", headerData, null);
-        //    response.EnsureSuccessStatusCode();
-        //    message = response.Content.ReadAsStringAsync().Result;
-
-        //    _initialized = true;
-        //}
-        
         async Task retrieve_sid()
         {
 
@@ -247,11 +214,10 @@ namespace WTalk
         /// <returns></returns>
         async Task<JArray> sendMapsRequest(Dictionary<string, string> map_list = null)
         {
-            Dictionary<string, string> headerData = new Dictionary<string, string>();
-            //            parameters.add(CHANNEL_URL, "channel/bind?");
+            Dictionary<string, string> headerData = new Dictionary<string, string>();            
 
             headerData.Add("ctype", "hangouts");  // client type
-            headerData.Add("prop", "ChromeApp");
+            headerData.Add("prop", "gmail");
             headerData.Add("appver", _appver);  // client type
             if(!string.IsNullOrEmpty(_gsession_id))
                 headerData.Add("gsessionid", _gsession_id);
@@ -304,8 +270,9 @@ namespace WTalk
                         
                 }
             }
-            catch
-            {
+            catch (System.IO.IOException) { }                
+            catch(Exception e)
+            {                
                 throw new Exception("Decode stream error");
             }
 
@@ -315,35 +282,48 @@ namespace WTalk
         string validateData(byte[] data)
         {
             StringBuilder builder = new StringBuilder();
-
-            int aCount = 0, bCount=0;
-
+            int bCount = 0;
             for(int i= 0 ;i<data.Length;i++)
             {
                 switch(data[i])
                 {
-                    case 123:
-                        aCount ++;
-                        break;
-                    case 125:
-                        aCount --;
-                        break;
+                    case 93:
+                        if (data[i - 1] == 93 && data[i + 1] == 10 && data[i + 2] == 44)
+                        {
+                            builder.Append((char)data[i]);
+                            builder.Append((char)data[i]);
+
+                            return builder.ToString();
+                        }
+                    //    bCount--;
+                        break;  
+                    //case 91:
+                    //    bCount++;
+                    //    break;
+                //    case 123:
+                //        aCount ++;
+                //        break;
+                //    case 125:
+                //        aCount --;
+                //        break;
                     //case 92:
-                    //    if (data[i - 1] == 92)
+                    //    if (data[i + 1] == 92 && data[i + 2] == 34)
                     //        continue;
+                    //    else if (data[i + 1] == 92 && data[i + 2] == 92)
+                    //        continue;
+                    //    else if (data[i + 1] == 92 && data[i + 2] == 110)
+                    //        continue;
+
                     //    break;
-                    //case '[':
-                    //    bCount ++;
-                    //    break;
-                    //case ']':
-                    //    bCount --;
-                    //    break;
+                //    //case '[':
+                //    //    bCount ++;
+                //    //    break;
+                //    //case ']':
+                //    //    bCount --;
+                //    //    break;
                 }
                 builder.Append((char)data[i]);
             }
-
-            if (aCount > 0)
-                builder.Append(new String('}', aCount));
 
             return builder.ToString();
         }

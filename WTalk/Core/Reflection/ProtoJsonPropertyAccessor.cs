@@ -18,7 +18,8 @@ namespace WTalk.Core.Reflection
 
         public bool IsOptional { get; private set; }
         public int Position { get; private set; }
-
+        public string Name { get; private set; }
+        
         public ProtoJsonPropertyAccessor(PropertyInfo p) :base(p)
         {
             TypeInfo ti = p.PropertyType.GetTypeInfo();            
@@ -27,7 +28,9 @@ namespace WTalk.Core.Reflection
             ProtoMemberAttribute attribute = p.GetCustomAttribute<ProtoMemberAttribute>();
             IsOptional = attribute.Optional;
             Position = attribute.Position;
-            
+
+            Name = p.Name;
+            UnderlyingType = p.PropertyType;
             if (IsList)
             {
                 UnderlyingType = ti.GenericTypeArguments.FirstOrDefault();

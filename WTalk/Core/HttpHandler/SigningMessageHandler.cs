@@ -28,14 +28,14 @@ namespace WTalk.Core.HttpHandler
             request.Headers.Add("UserAgent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.132 Safari/537.36");
             request.Headers.Add("X-Origin", HangoutUri.ORIGIN_URL);
             request.Headers.Add("X-Goog-Authuser", "0");
-            request.Headers.AcceptEncoding.Add(new System.Net.Http.Headers.StringWithQualityHeaderValue("utf-8"));
+            //request.Headers.AcceptEncoding.Add(new System.Net.Http.Headers.StringWithQualityHeaderValue("utf-8"));
 
             Cookie sapsid = Client.CookieContainer.GetCookies(request.RequestUri).Cast<Cookie>().FirstOrDefault(c => c.Name == "SAPISID");
 
             if (sapsid != null)
             {
 
-                string secondsSinceEpoch = DateTime.Now.ToUnixTime().ToString(); //t.TotalMilliseconds.ToString("0", System.Globalization.CultureInfo.InvariantCulture);
+                string secondsSinceEpoch = DateTime.Now.ToUnixTime().ToString();
 
                 string sapisidHash = string.Format("{0} {1} {2}", secondsSinceEpoch, sapsid.Value, HangoutUri.ORIGIN_URL);
                 sapisidHash = sapisidHash.ComputeSHA1Hash();

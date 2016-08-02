@@ -58,8 +58,18 @@ namespace WTalk.Model
             }           
         }
 
+        internal void AddNewMessage(List<Event> events)
+        {
+            IEnumerable<Event> orderedEvents = events.OrderBy(c => c.timestamp);
+            foreach (Event e in orderedEvents)
+                AddNewMessage(e);
+        }
+
         internal void AddNewMessage(Event e)
         {
+            if (messagesIds.ContainsKey(e.event_id))
+                return;
+
             messagesIds.Add(e.event_id, e.timestamp);
             if (_lastMessage.SenderId == e.sender_id.chat_id)
                 _lastMessage.AddContent(e);
@@ -70,16 +80,14 @@ namespace WTalk.Model
                 {
                     MessagesHistory.Add(obj as Message);
                 }, _lastMessage);
-                
+
             }
-                        
+
             OnPropertyChanged("MessagesHistory");
-            OnPropertyChanged("LastMessage");            
+            OnPropertyChanged("LastMessage");
 
             if (NewMessageReceived != null)
                 NewMessageReceived(this, _lastMessage);
-
-           
         }
 
         internal void AddOldMessages(List<Event> events)

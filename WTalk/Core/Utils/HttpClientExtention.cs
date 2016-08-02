@@ -17,7 +17,7 @@ namespace WTalk.Core.Utils
 
         static NLog.Logger _logger = NLog.LogManager.GetLogger("HttpClient");        
 
-        public static async Task<HttpResponseMessage> Execute(this HttpClient client, string url, Dictionary<string, string> queryString = null, Dictionary<string, string> postData = null)
+        public static async Task<HttpResponseMessage> Execute(this HttpClient client, string url, Dictionary<string, string> queryString = null, Dictionary<string, string> postData = null, HttpCompletionOption option = HttpCompletionOption.ResponseContentRead)
         {            
             try
             {
@@ -34,18 +34,13 @@ namespace WTalk.Core.Utils
                 if (postData != null)
                     return await client.PostAsync(query.ToString(), new FormUrlEncodedContent(postData));
                 else
-                    return await client.GetAsync(query.ToString());
+                    return await client.GetAsync(query.ToString(),option);
             }
             catch
             {
 
             }
             return null;
-        }
-
-        public async static Task<HttpResponseMessage> PostJson(this HttpClient client, string apiKey, string endPoint, JArray body)
-        {
-            return await client.execute(endPoint,apiKey, body, true);
         }
 
         public async static Task<HttpResponseMessage> PostProtoJson<T>(this HttpClient client, string endPoint, string apiKey, T protoJsonObject) where T : class
@@ -63,7 +58,7 @@ namespace WTalk.Core.Utils
                 _logger.Debug("Sending Request : {0}", endPoint);
                // _logger.Debug("Sending data : {0}", body.ToString().Replace("\r\n", ""));
 //                string uri = string.Format("{0}{1}?alt={2}", HangoutUri.CHAT_SERVER_URL, endPoint, useJson ? "json" : "protojson");
-                string uri = string.Format("{0}{1}?key={2}&alt={3}", HangoutUri.CHAT_SERVER_URL, endPoint, Uri.EscapeUriString(apiKey), useJson ? "json" : "protojson");
+                string uri = string.Format("{0}{1}?key={2}&alt=protojson", HangoutUri.CHAT_SERVER_URL, endPoint, Uri.EscapeUriString(apiKey));
                 message = await client.PostAsync(uri, new StringContent(body.ToString(), Encoding.UTF8, "application/json+protobuf"));
                 _logger.Debug("Request : {0} => {1} ", endPoint, message.StatusCode);
                 message.EnsureSuccessStatusCode();
