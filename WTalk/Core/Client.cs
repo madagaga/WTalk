@@ -29,7 +29,7 @@ namespace WTalk
                 if (_cookieContainer == null)
                     _cookieContainer = new CookieContainer();
                 return _cookieContainer;
-            }
+            }            
         }
 
 

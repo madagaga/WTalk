@@ -15,9 +15,13 @@ namespace WTalk
 {
     public class AuthenticationManager
     {
-        public const string CLIENT_ID = "936475272427.apps.googleusercontent.com";
-        public const string CLIENT_SECRET = "KWsJlkaMn1jGLxQpWxMnOox-";
+        const string CLIENT_ID = "936475272427.apps.googleusercontent.com";
+        const string CLIENT_SECRET = "KWsJlkaMn1jGLxQpWxMnOox-";
         const string REDIRECT_URI = "urn:ietf:wg:oauth:2.0:oob";
+
+        const string OAUTH_CODE_INIT_URL = "https://accounts.google.com/o/oauth2/programmatic_auth?";
+        const string OAUTH_VALIDATION_URL = "https://www.googleapis.com/oauth2/v4/token";
+
 
 
         //string[] scopes = new string[] { "https://www.googleapis.com/auth/chat", "https://www.googleapis.com/auth/client_channel", "https://www.googleapis.com/auth/googlevoice", "https://www.googleapis.com/auth/hangouts", "https://www.googleapis.com/auth/photos", "https://www.googleapis.com/auth/plus.circles.read", "https://www.googleapis.com/auth/plus.contactphotos", "https://www.googleapis.com/auth/plus.me", "https://www.googleapis.com/auth/plus.peopleapi.readwrite", "https://www.googleapis.com/auth/youtube.readonly" };
@@ -73,14 +77,25 @@ namespace WTalk
         public string GetCodeUrl()
         {
             StringBuilder builder = new StringBuilder();
-            //builder.Append("https://accounts.google.com/o/oauth2/device/code?");
-            builder.Append("https://accounts.google.com/o/oauth2/auth?");
-            builder.AppendFormat("client_id={0}", CLIENT_ID);
-            //builder.AppendFormat("&scope={0}", System.Uri.EscapeDataString("https://www.google.com/accounts/OAuthLogin"));//"https://www.googleapis.com/auth/googletalk"));
-            builder.AppendFormat("&scope={0}", string.Join(" ", Scopes));
-            builder.AppendFormat("&redirect_uri={0}", REDIRECT_URI);
-            builder.AppendFormat("&response_type={0}", "code");
+            
+            builder.Append(OAUTH_CODE_INIT_URL);
+            builder.AppendFormat("client_id={0}", CLIENT_ID);            
+            builder.AppendFormat("&scope={0}", string.Join("+", Scopes));
+            //builder.AppendFormat("&redirect_uri={0}", REDIRECT_URI);
+            //builder.AppendFormat("&response_type={0}", "code");
             return builder.ToString();
+            
+        }
+
+        public void RetrieveCode(CookieContainer container, string url)
+        {
+            using (HttpClient client = new HttpClient(new HttpClientHandler() { AllowAutoRedirect = true, CookieContainer = container, UseCookies = true }))
+            {
+                var response = client.GetAsync(url).Result;
+                string code = response.Headers.GetValues("Set-Cookie").FirstOrDefault();
+                code = code.Split(';')[0].Split('=')[1];
+                AuthenticateWithCode(code);
+            }
 
         }
 
@@ -95,7 +110,7 @@ namespace WTalk
                     new KeyValuePair<string, string>("redirect_uri", REDIRECT_URI),
                     }
                );
-            var response = _client.PostAsync("https://accounts.google.com/o/oauth2/token", c).Result;
+            var response = _client.PostAsync(OAUTH_VALIDATION_URL, c).Result;
             string content = response.Content.ReadAsStringAsync().Result;
             _token = JsonConvert.DeserializeObject<AccessToken>(content);
             SaveToken(content);
@@ -147,6 +162,8 @@ namespace WTalk
             if (_token.refresh_token == null)
             {
                 _token = null;
+                if (_client.DefaultRequestHeaders.Contains("Authorization"))
+                    _client.DefaultRequestHeaders.Remove("Authorization");
                 return;
             }
             FormUrlEncodedContent c = new FormUrlEncodedContent(
@@ -158,7 +175,7 @@ namespace WTalk
                     }
              );
 
-            var response = _client.PostAsync("https://accounts.google.com/o/oauth2/token", c).Result;
+            var response = _client.PostAsync(OAUTH_VALIDATION_URL, c).Result;
             string content = response.Content.ReadAsStringAsync().Result;
             _token = JsonConvert.DeserializeObject<AccessToken>(content);
             SaveToken(content);

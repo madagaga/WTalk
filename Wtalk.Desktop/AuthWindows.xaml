@@ -2,16 +2,9 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="WTalk - Authentication" Height="450" Width="550" 
-        UseLayoutRounding="True" ResizeMode="NoResize" AllowsTransparency="False"
-        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
-        TextElement.Foreground="{DynamicResource MaterialDesignBody}"
-        TextElement.FontWeight="Regular"
-        TextElement.FontSize="13"
-        TextOptions.TextFormattingMode="Ideal" 
-        TextOptions.TextRenderingMode="Auto"        
-        Background="{DynamicResource MaterialDesignPaper}"
-        FontFamily="{DynamicResource MaterialDesignFont}">
-    <Grid>
+        UseLayoutRounding="True" ResizeMode="NoResize" 
+        Style="{DynamicResource window_style}" AllowsTransparency="False">
+    <Grid>        
         <WebBrowser x:Name="webBrowser" />
     </Grid>
 </Window>
