@@ -70,10 +70,10 @@ namespace WTalk
         
 
         public Client()
-        {   
-            _initParams.Add("prop", "aChromeExtension");
-            _initParams.Add("fid", "gtn-roster-iframe-id");
-            _initParams.Add("ec", "[\"ci:ec\",true,true,false]");
+        {
+            _initParams.Add("prop", "StartPage");
+            _initParams.Add("fc", "https://hangouts.google.com");
+            //_initParams.Add("ec", "[\"ci:ec\",true,true,false]");
             _initParams.Add("pvt", "");
 
             
@@ -93,7 +93,7 @@ namespace WTalk
         public async Task ConnectAsync()
         {   
             await initializeChat().ContinueWith(t=>  {
-                _channel.setAppVer(_header_version);
+                _channel.setAppVer(_header_version);                                
                 _channel.Listen();
             });
             
@@ -184,8 +184,7 @@ namespace WTalk
             // call all events 
             if (UserInformationReceived != null)
                 UserInformationReceived(this, CurrentUser);
-                       
-
+            
             data = null;
             dataDictionary = null;
             //this._timestamp = double.Parse(dataDictionary["ds:21"][0][1][4].ToString());
@@ -353,7 +352,7 @@ namespace WTalk
                 {
                     _requestHeader = new RequestHeader();
                     _requestHeader.client_identifier = new ClientIdentifier() { header_id = _header_id, resource = _client_id};
-                    _requestHeader.client_version = new ClientVersion() { client_id = ClientId.CLIENT_ID_WEB_GMAIL, 
+                    _requestHeader.client_version = new ClientVersion() { client_id = ClientId.CLIENT_ID_UNKNOWN, 
                     build_type = ClientBuildType.BUILD_TYPE_PRODUCTION_APP, major_version = _header_version , version_timestamp = long.Parse(_header_date) };
                     _requestHeader.language_code = "en";
 

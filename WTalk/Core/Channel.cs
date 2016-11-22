@@ -57,7 +57,11 @@ namespace WTalk
                 }
 
                 if (string.IsNullOrEmpty(_sid))
+                {
                     await retrieve_sid();
+                    if (!Connected)
+                        SendAck(0);
+                }
 
                 try
                 {
@@ -91,24 +95,24 @@ namespace WTalk
         /// <returns></returns>
         async Task LongPollRequest(bool streaming = true)
         {
+
+
+            Dictionary<string, string> headerData = new Dictionary<string, string>()
+            {
+                { "ctype", "hangouts"},  // client type
+                {"prop", "StartPage"},
+                {"appver", _appver},  // client type
+                {"gsessionid", _gsession_id},
+                {"VER", "8"},  // channel protocol version
+                {"RID", "rpc"},  // request identifier
+                {"SID", _sid},  // session ID
+                {"CI", "0"},  // 0 if streaming/chunked requests should be used
+                {"AID", _aid},  // 
+                {"TYPE", "xmlhttp"},  // type of request
+                // zx ?
+                {"t", "1"}  // trial
+            };
            
-
-            Dictionary<string, string> headerData = new Dictionary<string, string>();
-           
-            headerData.Add("ctype", "hangouts");  // client type
-            headerData.Add("prop", "gmail");
-            headerData.Add("appver", _appver);  // client type
-            headerData.Add("gsessionid", _gsession_id);
-            headerData.Add("VER", "8");  // channel protocol version
-            headerData.Add("RID", "rpc");  // request identifier
-            headerData.Add("SID", _sid);  // session ID
-            headerData.Add("CI", "0");  // 0 if streaming/chunked requests should be used
-            headerData.Add("AID", _aid);  // 
-            headerData.Add("TYPE", "xmlhttp");  // type of request
-            // zx ?
-            headerData.Add("t", "1");  // trial
-
-
             #region if streaming
             if (streaming)
             {   
@@ -184,14 +188,17 @@ namespace WTalk
         /// <param name="lastSubscribe"></param>
         internal async void SendAck(long lastSubscribe)
         {
-            
-            Dictionary<string, string> subscribeData = new Dictionary<string, string>();
-            subscribeData.Add("count", "1");
-            subscribeData.Add("ofs", (++ofs_count).ToString());
-            // tdryer version
-            subscribeData.Add("req0_p", "{\"3\": {\"1\": {\"1\": \"babel\"}}}");
 
-            System.Threading.Tasks.Task.Delay(1000).Wait();           
+            Dictionary<string, string> subscribeData = new Dictionary<string, string>()
+            {
+                {"count", "1"},
+                { "ofs", (++ofs_count).ToString()},
+                // tdryer version
+                { "req0_p", "{\"3\": {\"1\": {\"1\": \"babel\"}}}"}
+
+            };
+            
+            
             await sendMapsRequest(subscribeData);
                         
         }
@@ -214,21 +221,25 @@ namespace WTalk
         /// <returns></returns>
         async Task<JArray> sendMapsRequest(Dictionary<string, string> map_list = null)
         {
-            Dictionary<string, string> headerData = new Dictionary<string, string>();            
+            Dictionary<string, string> headerData = new Dictionary<string, string>()
+            {
+                {"ctype", "hangouts"}, // client type
+                {"prop", "StartPage"},
+                {"appver", _appver}, // client type
+                {"VER", "8"},  // channel protocol version
+                {"CVER", "5"},  // ??   
+                {"RID", "43117"},  // request identifier
 
-            headerData.Add("ctype", "hangouts");  // client type
-            headerData.Add("prop", "gmail");
-            headerData.Add("appver", _appver);  // client type
+                {"t", "1"}  // trial
+            };
+
+            
             if(!string.IsNullOrEmpty(_gsession_id))
                 headerData.Add("gsessionid", _gsession_id);
-            headerData.Add("VER", "8");  // channel protocol version
-            headerData.Add("RID", "81188");  // request identifier
+            
             if (!string.IsNullOrEmpty(_sid))
                 headerData.Add("SID", _sid);  // session ID
-                        
-            headerData.Add("t", "1");  // trial
-
-
+            
             using (HttpResponseMessage response = await _client.Execute(HangoutUri.CHANNEL_URL + "channel/bind", headerData, map_list))
             {
                 if (!response.IsSuccessStatusCode)

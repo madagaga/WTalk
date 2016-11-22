@@ -1,0 +1,113 @@
+﻿<#@ template debug="false" hostspecific="true" language="C#" #>
+<#@ import namespace="System.IO" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ output extension=".cs" #>
+using System.Collections.Generic;
+namespace WTalk.Core.ProtoJson.Schema
+{
+<# init(); #>
+}
+<#+
+
+public void init()
+{
+	 using(System.IO.StreamReader reader = new System.IO.StreamReader(Host.ResolvePath("hangout.proto")))
+	 {
+		string line = null;                
+        while(!reader.EndOfStream)
+        {
+            line = reader.ReadLine();
+
+            if (string.IsNullOrEmpty(line) || line.StartsWith("syntax"))
+                continue;
+            else if (line.StartsWith("/*"))
+            {
+                while (!line.Contains("*/"))
+                    line = reader.ReadLine();
+                line = reader.ReadLine();
+            }
+            else
+            {
+                parseProto(line.Trim());
+            }
+        }
+	 }
+}
+
+	    bool isEnum = false;
+		bool isOneOf = false;
+        public void parseProto(string content)
+        {			
+            if(content.StartsWith("}"))
+            {
+				if(isOneOf)
+				{
+					isOneOf = false;
+				}
+				else
+				{
+					
+					isEnum = false;
+					echo("}}");
+					echo("");					
+				}
+				return;
+            }
+			if(isOneOf && !content.StartsWith("//"))
+				content = "required " + content;
+            
+            string[] lineSplit = content.Split(' ');
+            
+            switch (lineSplit[0])
+            {
+                case "enum":
+                    echo("internal enum {0} :int {{ ", lineSplit[1]);
+                    isEnum = true;
+                    break;  
+                case "message":
+					echo("[ProtoContract]");
+                    echo("internal class {0} {{ ", lineSplit[1]);
+                    break;
+                case "optional":
+				case "required":				   
+					WriteHeader(content);
+                    echo("public {0} {1} {{ get; set; }} ", lineSplit[1].Replace("uint64", "long").Replace("bytes", "string").Replace("int32", "int"), lineSplit[2]);
+                    break;
+                case "repeated":
+                    echo("public List<{0}> {1} {{ get; set; }} ", lineSplit[1], lineSplit[2]);
+                    break;
+                case "//":
+                    echo(content);
+                    break;
+					case "oneof":
+					isOneOf = true;
+					break;
+                default:
+                    if (content.Length == 0)
+                        break;
+                    else
+                    {
+                        echo(content.Replace(';',','));                        
+                    }
+                    break;
+            }
+        }
+
+        public void WriteHeader(string p)
+        {
+			if(p.Contains("optional"))
+				echo("[ProtoMember(Position = {0}, Optional = true)]", p.Split('=').Last().Trim(';'));
+			else
+				echo("[ProtoMember(Position = {0})]", p.Split('=').Last().Trim(';'));
+        }
+
+		public void echo(string format, params string[] content)
+        {
+            this.WriteLine(format, content);
+        }
+
+
+#>
