@@ -49,7 +49,7 @@ namespace WTalk
 
 
         IFile _file;
-        public AuthenticationManager()
+        private AuthenticationManager()
         {
             FileCache.Initialize("cache");
             _client = new HttpClient(new HttpClientHandler() { AllowAutoRedirect = true, CookieContainer = Client.CookieContainer, UseCookies = true });
@@ -77,14 +77,14 @@ namespace WTalk
         public string GetCodeUrl()
         {
             StringBuilder builder = new StringBuilder();
-            
+
             builder.Append(OAUTH_CODE_INIT_URL);
-            builder.AppendFormat("client_id={0}", CLIENT_ID);            
+            builder.AppendFormat("client_id={0}", CLIENT_ID);
             builder.AppendFormat("&scope={0}", string.Join("+", Scopes));
-            //builder.AppendFormat("&redirect_uri={0}", REDIRECT_URI);
-            //builder.AppendFormat("&response_type={0}", "code");
+            builder.AppendFormat("&hl={0}", "en");
+            builder.Append("&access_type=offline");
+            builder.Append("&top_level_cookie=1");
             return builder.ToString();
-            
         }
 
         public void RetrieveCode(CookieContainer container, string url)

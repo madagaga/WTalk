@@ -25,8 +25,7 @@ namespace WTalk.Model
         {
             get
             {
-                return
-                       FileCache.Current.GetOrUpdate(Id, string.Format("https:{0}", _entity.properties.photo_url));
+                return FileCache.Current.GetOrUpdate(Id, string.Format("https:{0}", _entity.properties.photo_url));
             }
         }
         public List<string> Emails { get { return _entity.properties.email; } }

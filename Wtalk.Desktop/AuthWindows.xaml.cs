@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -58,7 +59,9 @@ namespace Wtalk.Desktop
             {
                 webBrowser.Visibility = System.Windows.Visibility.Hidden;
                 System.Net.CookieContainer container = NativeMethods.GetUriCookieContainer(webBrowser.Source);
-                WTalk.AuthenticationManager.Current.RetrieveCode(container, webBrowser.Source.AbsoluteUri);
+                Cookie oauth_code = container.GetCookies(webBrowser.Source).Cast<Cookie>().FirstOrDefault(c => c.Name == "oauth_code");
+                WTalk.AuthenticationManager.Current.AuthenticateWithCode(oauth_code.Value);
+//                WTalk.AuthenticationManager.Current.RetrieveCode(container, webBrowser.Source.AbsoluteUri);
                 this.Close();
                 return;
             }

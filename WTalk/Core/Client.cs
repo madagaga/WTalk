@@ -212,15 +212,16 @@ namespace WTalk
             else if (rawdata[0]["p"] != null)
             {
                 JObject wrapper = JObject.Parse(rawdata[0]["p"].ToString());
-                if (wrapper["3"] != null && wrapper["3"]["2"] != null)
+                if (wrapper["4"] != null && wrapper["4"]["2"] != null)
                 {
-                    _client_id = wrapper["3"]["2"].ToString();
+                    if (_channel.Connected && !_wasConnected)
+                    { 
+                    _client_id = wrapper["4"]["2"].ToString();
                     _requestHeader = null;
 
                     _channel.SendAck(0);
 
-                    if (_channel.Connected && !_wasConnected)
-                    {                        
+                                          
                         _wasConnected = _channel.Connected;
                         if (ConnectionEstablished != null)
                             ConnectionEstablished(this, null);
