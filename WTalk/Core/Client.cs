@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -13,6 +12,8 @@ using WTalk.Core.Utils;
 using WTalk.Core.ProtoJson.Schema;
 using WTalk.Core.ProtoJson;
 using System.Threading;
+using coreJson;
+using System.Collections;
 
 namespace WTalk
 {
@@ -107,12 +108,13 @@ namespace WTalk
             // initialization request (otherwise it will return 400).
             HttpResponseMessage message = await _client.Execute(HangoutUri.PVT_TOKEN_URL, _initParams);
             string data = await message.Content.ReadAsStringAsync();
-            Newtonsoft.Json.Linq.JArray array = JArray.Parse(data);
+            List<object> array = JSON.ParseAsList(data);
 
             _initParams["pvt"] = array[1].ToString();
+            _email = array[3].ToString();
 
-            // Now make the actual initialization request:
-            message = await _client.Execute(HangoutUri.CHAT_INIT_URL, _initParams);
+           // Now make the actual initialization request:
+           message = await _client.Execute(HangoutUri.CHAT_INIT_URL, _initParams);
             data = await message.Content.ReadAsStringAsync();
             message.Dispose();
 
@@ -120,18 +122,17 @@ namespace WTalk
             // Parse the response by using a regex to find all the JS objects, and
             // parsing them. Not everything will be parsable, but we don't care if
             // an object we don't need can't be parsed.
-
-            Dictionary<string, Newtonsoft.Json.Linq.JArray> dataDictionary = Parser.ParseInitParams(data);
-
-            // a this time we can not fix key as index can change.
+            
+            IEnumerable<DynamicJson> dataDictionary = Parser.ParseInitParams(data); 
+            
+            //// a this time we can not fix key as index can change.
             string key = null;
-            foreach (JArray jarray in dataDictionary.Values)
+            foreach (DynamicJson jarray in dataDictionary)
             {
-                try
-                {
+                if (jarray.Count > 0 && jarray[0].Count > 0 && !string.IsNullOrEmpty(jarray[0][0].ToString()))
                     key = jarray[0][0].ToString();
-                }
-                catch { key = null; }
+                else
+                    continue;
 
                 switch (key)
                 {
@@ -142,57 +143,54 @@ namespace WTalk
                         _email = jarray[0][2].ToString(); // cic:vd
                         break;
                     case "cin:acc":
-                        if (jarray[0].Count() > 6)
+                        if (jarray[0].Count > 6)
                         {
                             _header_date = jarray[0][4].ToString(); //cin:acc
                             _header_version = jarray[0][6].ToString();
                         }
                         break;
                     case "cin:bcsc":
-                        _header_id = jarray[0][7].ToString(); // cin:bcsc
+                        if (jarray[0].Count > 7)
+                            _header_id = jarray[0][7].ToString(); // cin:bcsc
                         break;
-                    case "cgserp":
-                        jarray[0][0].Remove();
-                        GetSuggestedEntitiesResponse cgserp = ProtoJsonSerializer.Deserialize<GetSuggestedEntitiesResponse>(jarray[0] as JArray);
-                        if (cgserp.response_header.status == ResponseStatus.RESPONSE_STATUS_OK)
-                        {
-                            _contacts = cgserp.contacts_you_hangout_with.contact.ToDictionary(c => c.entity.id.gaia_id, c => new User(c.entity));
-                        }
-                        break;
-                    case "cgsirp":
-                        jarray[0][0].Remove();
-                        GetSelfInfoResponse cgsirp = ProtoJsonSerializer.Deserialize<GetSelfInfoResponse>(jarray[0] as JArray);
-                        if (cgsirp.response_header.status == ResponseStatus.RESPONSE_STATUS_OK)
-                        {
-                            if (!string.IsNullOrEmpty(_email))
-                                cgsirp.self_entity.properties.canonical_email = _email;
-                            CurrentUser = new User(cgsirp.self_entity);                                
-                        }
-                        break;
-                    case "csrcrp":
-                        jarray[0][0].Remove();
-                        SyncRecentConversationsResponse csrcrp = ProtoJsonSerializer.Deserialize<SyncRecentConversationsResponse>(jarray[0] as JArray);
-                        if (csrcrp.response_header.status == ResponseStatus.RESPONSE_STATUS_OK)
-                        {
-                            _active_conversations = csrcrp.conversation_state.ToDictionary(c => c.conversation_id.id, c => new WTalk.Model.Conversation(c));
-                        }
-                        break;
+                        #region loaded on connection
+                        //case "cgserp":
+                        //    jarray[0].RemoveAt(0);
+                        //    GetSuggestedEntitiesResponse cgserp = ProtoJsonSerializer.Deserialize<GetSuggestedEntitiesResponse>(jarray[0]);
+                        //    if (cgserp.response_header.status == ResponseStatus.RESPONSE_STATUS_OK)
+                        //    {
+                        //        _contacts = cgserp.contacts_you_hangout_with.contact.ToDictionary(c => c.entity.id.gaia_id, c => new User(c.entity));
+                        //    }
+                        //    break;
+                        //case "cgsirp":
+                        //    jarray[0].RemoveAt(0);
+                        //    GetSelfInfoResponse cgsirp = ProtoJsonSerializer.Deserialize<GetSelfInfoResponse>(jarray[0]);
+                        //    if (cgsirp.response_header.status == ResponseStatus.RESPONSE_STATUS_OK)
+                        //    {
+                        //        if (!string.IsNullOrEmpty(_email))
+                        //            cgsirp.self_entity.properties.canonical_email = _email;
+                        //        CurrentUser = new User(cgsirp.self_entity);                                
+                        //    }
+                        //    break;
+                        //case "csrcrp":
+                        //    jarray[0].RemoveAt(0);
+                        //    SyncRecentConversationsResponse csrcrp = ProtoJsonSerializer.Deserialize<SyncRecentConversationsResponse>(jarray[0]);
+                        //    if (csrcrp.response_header.status == ResponseStatus.RESPONSE_STATUS_OK)
+                        //    {
+                        //        _active_conversations = csrcrp.conversation_state.ToDictionary(c => c.conversation_id.id, c => new WTalk.Model.Conversation(c));
+                        //    }
+                        //    break;
+                        #endregion
 
                 }
             }
-                        
-            // call all events 
-            if (UserInformationReceived != null)
-                UserInformationReceived(this, CurrentUser);
-            
+
             data = null;
             dataDictionary = null;
-            //this._timestamp = double.Parse(dataDictionary["ds:21"][0][1][4].ToString());
-
         }
 
 
-        async void _channel_OnDataReceived(object sender, JArray rawdata)
+        async void _channel_OnDataReceived(object sender, DynamicJson rawdata)
         {               
 
             //Parse channel array and call the appropriate events.
@@ -205,57 +203,58 @@ namespace WTalk
                     _last_response_date = DateTime.UtcNow;
                 }
             }
-            else if (rawdata[0].ToString() == "resync")
+            else if (rawdata[0].ToString() == "resync") // internal handling
             {
                 SyncAllNewEventsAsync(long.Parse(rawdata[1].ToString()));
             }
             else if (rawdata[0]["p"] != null)
             {
-                JObject wrapper = JObject.Parse(rawdata[0]["p"].ToString());
+                DynamicJson wrapper = new DynamicJson(rawdata[0]["p"].ToString());
                 if (wrapper["4"] != null && wrapper["4"]["2"] != null)
                 {
                     if (_channel.Connected && !_wasConnected)
-                    { 
-                    _client_id = wrapper["4"]["2"].ToString();
-                    _requestHeader = null;
+                    {
+                        _client_id = wrapper["4"]["2"].ToString();
+                        _requestHeader = null;
+                        _channel.SendAck(0);
 
-                    _channel.SendAck(0);
-
-                                          
                         _wasConnected = _channel.Connected;
-                        if (ConnectionEstablished != null)
-                            ConnectionEstablished(this, null);
+                        
+                        // load self info 
+                        await GetSelfInfoAsync();
+
+                        // load conversations
+                        await SyncRecentConversationsAsync();
+
 
                         // check if contacts are loaded
                         if (_contacts == null || _contacts.Count == 0)
                         {
-                            if (ContactListLoaded != null)
-                                ContactListLoaded(this, _contacts.Values.ToList());
-
                             string[] participants_id = _active_conversations.Values.SelectMany(c => c._conversation.current_participant.Where(p => p.gaia_id != CurrentUser.Id).Select(p => p.gaia_id)).Distinct().ToArray();
-                            await GetEntityByIdAsync(participants_id);
-                            if (ConversationHistoryLoaded != null)
-                                ConversationHistoryLoaded(this, _active_conversations.Values.ToList());
+                            await GetEntityByIdAsync(participants_id);                            
                         }
 
+                        if (ConnectionEstablished != null)
+                            ConnectionEstablished(this, null);
                     }
                 }
 
                 if (wrapper["2"] != null && wrapper["2"]["2"] != null)
                 {
-                    JArray cbu = JArray.Parse(wrapper["2"]["2"].ToString());
+                    DynamicJson cbu = new DynamicJson(wrapper["2"]["2"].ToString());
                     cbu.RemoveAt(0);
-                    BatchUpdate batchUpdate = ProtoJsonSerializer.Deserialize<BatchUpdate>(cbu as JArray);
+                    BatchUpdate batchUpdate = ProtoJsonSerializer.Deserialize<BatchUpdate>(cbu as DynamicJson);
 
                     foreach(StateUpdate state_update in batchUpdate.state_update)
                     {
-                        
-                        if(state_update.event_notification != null)
-                            switch(state_update.event_notification.current_event.event_type)
+
+                        if (state_update.event_notification != null )
+                        {
+                            switch (state_update.event_notification.current_event.event_type)
                             {
                                 case EventType.EVENT_TYPE_REGULAR_CHAT_MESSAGE:
                                 case EventType.EVENT_TYPE_UNKNOWN:
-                                     if (state_update.event_notification.current_event.conversation_id == null)
+                                    if (state_update.event_notification.current_event.conversation_id == null)
                                         break;
 
                                     if (_active_conversations.ContainsKey(state_update.event_notification.current_event.conversation_id.id))
@@ -283,9 +282,9 @@ namespace WTalk
                                     break;
                                 case EventType.EVENT_TYPE_CONVERSATION_RENAME:
                                     _active_conversations[state_update.event_notification.current_event.conversation_id.id]._conversation.name = state_update.event_notification.current_event.conversation_rename.new_name;
-                                    break;                                    
+                                    break;
                             }
-                            
+                        }
 
                         if (state_update.presence_notification != null)
                             foreach (var presence in state_update.presence_notification.presence)
@@ -300,7 +299,7 @@ namespace WTalk
                                 }
                             );
 
-                        if(state_update.watermark_notification != null)
+                        if(state_update.watermark_notification != null )
                         {
                             if (state_update.watermark_notification.sender_id.gaia_id == CurrentUser.Id)
                                 _active_conversations[state_update.watermark_notification.conversation_id.id].SelfReadState = state_update.watermark_notification.latest_read_timestamp.FromUnixTime();
@@ -406,23 +405,7 @@ namespace WTalk
                     setPresence(CurrentUser, presence.presence);
             }
         }
-
-
-        public async Task SetActiveClientAsync(bool active = true)
-        {
-
-            SetActiveClientRequest request = new SetActiveClientRequest()
-            {
-                request_header = RequestHeaderBody,
-                full_jid = string.Format("{0}/{1}", CurrentUser.Email, _client_id),
-                is_active = active,
-                timeout_secs = 120, 
-                unknown = true
-            };
-
-            HttpResponseMessage message = await _client.PostProtoJson("clients/setactiveclient", _api_key, request);
-            message.Dispose();
-        }
+        
 
         public async Task SetPresenceAsync(int state = 40)
         {
@@ -437,6 +420,21 @@ namespace WTalk
             message.Dispose();
         }
 
+        public async Task SetActiveClientAsync(bool active = true)
+        {
+
+            SetActiveClientRequest request = new SetActiveClientRequest()
+            {
+                request_header = RequestHeaderBody,
+                full_jid = string.Format("{0}/{1}", _email, _client_id),
+                is_active = active,
+                timeout_secs = 120,
+                unknown = true
+            };
+
+            HttpResponseMessage message = await _client.PostProtoJson("clients/setactiveclient", _api_key, request);
+            message.Dispose();
+        }
         #endregion
 
         #region conversation
@@ -494,7 +492,7 @@ namespace WTalk
         {
             SyncRecentConversationsRequest request = new SyncRecentConversationsRequest()
             {
-                request_header = RequestHeaderBody
+                request_header = RequestHeaderBody                
             };
 
 
@@ -592,6 +590,9 @@ namespace WTalk
 
         public async Task GetEntityByIdAsync(params string[] ids)
         {
+            if (ids.Length == 0)
+                return;
+
             GetEntityByIdRequest request = new GetEntityByIdRequest()
             {
                 request_header = RequestHeaderBody,

@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -7,6 +6,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using coreJson;
 using WTalk.Core.HttpHandler;
 using WTalk.Core.Utils;
 
@@ -20,7 +20,7 @@ namespace WTalk
         HttpClient _client;       
 
         #region events        
-        public event EventHandler<JArray> OnDataReceived;
+        public event EventHandler<DynamicJson> OnDataReceived;
         #endregion
 
         public bool Connected { get; private set; }
@@ -126,10 +126,10 @@ namespace WTalk
                             dataReceived(await (DecodeStream(reader)));
                     }
                     catch (Exception e) {
-                        if (e.Message.Contains("SID"))
-                            throw e;
+                        if (message.ReasonPhrase.Contains("SID"))
+                            throw new Exception(message.ReasonPhrase);
                         if(e.Message.Contains("Decode"))
-                            dataReceived(JArray.Parse(string.Format("[[{0},[\"resync\", {1}]]]", (int.Parse(_aid) + 1), last_sync_date)));
+                            dataReceived(new DynamicJson(string.Format("[[{0},[\"resync\", {1}]]]", (int.Parse(_aid) + 1), last_sync_date)));
                     }
                 }
 
@@ -156,22 +156,26 @@ namespace WTalk
             // search for the first new line
             byte[] buffer = new byte[1];
             List<char> content = new List<char>();
-            while (buffer[0] != '\n' && stream.CanRead)
+
+            int result = 0;
+
+            while (buffer[0] != 10 && stream.CanRead)
             {                
                 content.Add((char)buffer[0]);
                 stream.Read(buffer, 0, 1);
             }
 
-            return int.Parse(new string(content.Where(c=>char.IsDigit(c)).ToArray()));
+            if(int.TryParse(new string(content.Where(c=>char.IsDigit(c)).ToArray()), out result));
+            return result;
         }
 
-        private void dataReceived(JArray data)
+        private void dataReceived(DynamicJson data)
         {
             Connected = true;
-            foreach (var chunkJson in data)
+            foreach (DynamicJson chunkJson in data)
             {                
                 if (chunkJson[1] != null && OnDataReceived != null)
-                    OnDataReceived(this, chunkJson[1] as JArray);
+                    OnDataReceived(this, chunkJson[1]);
 
                 // first part is aid
                 _aid = chunkJson[0].ToString();
@@ -208,8 +212,8 @@ namespace WTalk
 
 
             _logger.Info("Sending sid request");
-                   
-            JArray array = await sendMapsRequest(new Dictionary<string, string>());  
+
+            DynamicJson array = await sendMapsRequest(new Dictionary<string, string>());  
             _sid = array[0][1][1].ToString();
             if(array.Count>1)
                 _gsession_id = array[1][1][0]["gsid"].ToString();
@@ -219,7 +223,7 @@ namespace WTalk
         /// Sends a request to the server containing maps (dicts).
         /// </summary>
         /// <returns></returns>
-        async Task<JArray> sendMapsRequest(Dictionary<string, string> map_list = null)
+        async Task<DynamicJson> sendMapsRequest(Dictionary<string, string> map_list = null)
         {
             Dictionary<string, string> headerData = new Dictionary<string, string>()
             {
@@ -249,12 +253,12 @@ namespace WTalk
         }
 
 
-        async Task<JArray> DecodeStream(Task<System.IO.Stream> stream)
+        async Task<DynamicJson> DecodeStream(Task<System.IO.Stream> stream)
         {
             return await DecodeStream(await stream);
         }
 
-        async Task<JArray> DecodeStream(System.IO.Stream stream)
+        async Task<DynamicJson> DecodeStream(System.IO.Stream stream)
         {
             int expectedLength = 0, receivedLength = 1, readLength = 0;
             byte[] buffer = null;            
@@ -265,6 +269,8 @@ namespace WTalk
                     if (expectedLength == 0)
                     {
                         expectedLength = GetSizeDescriptor(stream);
+                        if (expectedLength == 0)
+                            continue;
                         readLength = receivedLength = 0;
                         buffer = new byte[expectedLength];
                     }
@@ -274,9 +280,9 @@ namespace WTalk
 
                     if (receivedLength == expectedLength)
                     {
-                        string received = validateData(buffer);
+                        string received = new string(buffer.Select(c => (char)c).ToArray());
                         _logger.Info("Received data : {0}", received);
-                        return JArray.Parse(received);                        
+                        return new DynamicJson(received);                        
                     }
                         
                 }
@@ -287,57 +293,57 @@ namespace WTalk
                 throw new Exception("Decode stream error");
             }
 
-            return new JArray();
+            return null;
         }
 
-        string validateData(byte[] data)
-        {
-            StringBuilder builder = new StringBuilder();
-            int bCount = 0;
-            for(int i= 0 ;i<data.Length;i++)
-            {
-                switch(data[i])
-                {
-                    case 93:
-                        if (data[i - 1] == 93 && data[i + 1] == 10 && data[i + 2] == 44)
-                        {
-                            builder.Append((char)data[i]);
-                            builder.Append((char)data[i]);
+        //string validateData(byte[] data)
+        //{
+        //    StringBuilder builder = new StringBuilder();
+        //    int bCount = 0;
+        //    for(int i= 0 ;i<data.Length;i++)
+        //    {
+        //        switch(data[i])
+        //        {
+        //            case 93:
+        //                if (data[i - 1] == 93 && data[i + 1] == 10 && data[i + 2] == 44)
+        //                {
+        //                    builder.Append((char)data[i]);
+        //                    builder.Append((char)data[i]);
 
-                            return builder.ToString();
-                        }
-                    //    bCount--;
-                        break;  
-                    //case 91:
-                    //    bCount++;
-                    //    break;
-                //    case 123:
-                //        aCount ++;
-                //        break;
-                //    case 125:
-                //        aCount --;
-                //        break;
-                    //case 92:
-                    //    if (data[i + 1] == 92 && data[i + 2] == 34)
-                    //        continue;
-                    //    else if (data[i + 1] == 92 && data[i + 2] == 92)
-                    //        continue;
-                    //    else if (data[i + 1] == 92 && data[i + 2] == 110)
-                    //        continue;
+        //                    return builder.ToString();
+        //                }
+        //            //    bCount--;
+        //                break;  
+        //            //case 91:
+        //            //    bCount++;
+        //            //    break;
+        //        //    case 123:
+        //        //        aCount ++;
+        //        //        break;
+        //        //    case 125:
+        //        //        aCount --;
+        //        //        break;
+        //            //case 92:
+        //            //    if (data[i + 1] == 92 && data[i + 2] == 34)
+        //            //        continue;
+        //            //    else if (data[i + 1] == 92 && data[i + 2] == 92)
+        //            //        continue;
+        //            //    else if (data[i + 1] == 92 && data[i + 2] == 110)
+        //            //        continue;
 
-                    //    break;
-                //    //case '[':
-                //    //    bCount ++;
-                //    //    break;
-                //    //case ']':
-                //    //    bCount --;
-                //    //    break;
-                }
-                builder.Append((char)data[i]);
-            }
+        //            //    break;
+        //        //    //case '[':
+        //        //    //    bCount ++;
+        //        //    //    break;
+        //        //    //case ']':
+        //        //    //    bCount --;
+        //        //    //    break;
+        //        }
+        //        builder.Append((char)data[i]);
+        //    }
 
-            return builder.ToString();
-        }
+        //    return builder.ToString();
+        //}
 
     }
 }

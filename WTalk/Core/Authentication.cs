@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+﻿
 using PCLStorage;
 using System;
 using System.Collections.Generic;
@@ -66,7 +66,7 @@ namespace WTalk
 
             string content = _file.ReadAllTextAsync().Result;
             if(!string.IsNullOrEmpty(content))
-                _token = JsonConvert.DeserializeObject<AccessToken>(content);
+                _token = coreJson.JSON.Deserialize<AccessToken>(content);
         }
 
         void SaveToken(string token)
@@ -112,7 +112,7 @@ namespace WTalk
                );
             var response = _client.PostAsync(OAUTH_VALIDATION_URL, c).Result;
             string content = response.Content.ReadAsStringAsync().Result;
-            _token = JsonConvert.DeserializeObject<AccessToken>(content);
+            _token = coreJson.JSON.Deserialize<AccessToken>(content);
             SaveToken(content);
             Connect();
         }
@@ -177,7 +177,7 @@ namespace WTalk
 
             var response = _client.PostAsync(OAUTH_VALIDATION_URL, c).Result;
             string content = response.Content.ReadAsStringAsync().Result;
-            _token = JsonConvert.DeserializeObject<AccessToken>(content);
+            _token = coreJson.JSON.Deserialize<AccessToken>(content);
             SaveToken(content);
         }
 

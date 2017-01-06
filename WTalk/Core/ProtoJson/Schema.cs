@@ -2565,15 +2565,18 @@ major exception that "Client" prefixes have been removed.
         [ProtoMember(Position = 1)]
         public RequestHeader request_header { get; set; }
 
-        [ProtoMember(Position = 3)]
-        public long max_conversations { get; set; }
+        [ProtoMember(Position =2, Optional =true)]
+        public object timestamp_since { get; set; }
 
-        [ProtoMember(Position = 4)]
-        public long max_events_per_conversation { get; set; }
+        [ProtoMember(Position = 3, Optional = true)]
+        public long? max_conversations { get; set; }
 
-        [ProtoMember(Position = 5)]
+        [ProtoMember(Position = 4, Optional = true)]
+        public long? max_events_per_conversation { get; set; }
+
+        [ProtoMember(Position = 5, Optional = true)]
         //        public List<SyncFilter> sync_filter { get; set; }
-        public SyncFilter sync_filter { get; set; }
+        public SyncFilter? sync_filter { get; set; }
 
     }
 

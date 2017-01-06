@@ -45,6 +45,12 @@
     <Compile Include="Core\Authentication.cs" />
     <Compile Include="Core\Channel.cs" />
     <Compile Include="Core\Client.cs" />
+    <Compile Include="Core\coreJson\CompiledPropertyAccessor.cs" />
+    <Compile Include="Core\coreJson\DynamicJson.cs" />
+    <Compile Include="Core\coreJson\JSON.cs" />
+    <Compile Include="Core\coreJson\JsonParser.cs" />
+    <Compile Include="Core\coreJson\JsonSerializer.cs" />
+    <Compile Include="Core\coreJson\Queue.cs" />
     <Compile Include="Core\HangoutUri.cs" />
     <Compile Include="Core\HttpHandler\SigningMessageHandler.cs" />
     <Compile Include="Core\ProtoJson\ProtoAttributes.cs" />
@@ -52,6 +58,7 @@
     <Compile Include="Core\ProtoJson\Schema.cs" />
     <Compile Include="Core\Reflection\CompiledPropertyAccessor.cs" />
     <Compile Include="Core\Reflection\ProtoJsonPropertyAccessor.cs" />
+    <Compile Include="Core\Reflection\ReflectionCache.cs" />
     <Compile Include="Core\Utils\DateTimeExtension.cs" />
     <Compile Include="Core\Utils\HttpClientExtention.cs" />
     <Compile Include="Core\Utils\FileCache.cs" />
@@ -67,10 +74,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.9.0.1\lib\portable-net45+wp80+win8+wpa81\Newtonsoft.Json.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="PCLStorage">
       <HintPath>..\packages\PCLStorage.1.0.2\lib\portable-net45+wp8+wpa81+win8+monoandroid+monotouch+Xamarin.iOS+Xamarin.Mac\PCLStorage.dll</HintPath>
     </Reference>

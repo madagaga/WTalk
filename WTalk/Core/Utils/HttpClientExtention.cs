@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using coreJson;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -45,11 +45,11 @@ namespace WTalk.Core.Utils
 
         public async static Task<HttpResponseMessage> PostProtoJson<T>(this HttpClient client, string endPoint, string apiKey, T protoJsonObject) where T : class
         {
-            JArray body = ProtoJsonSerializer.Serialize(protoJsonObject);
-            return await client.execute(endPoint,apiKey, body, false);
+            var body = ProtoJsonSerializer.Serialize(protoJsonObject);
+            return await client.execute(endPoint,apiKey, JSON.Serialize(body), false);
         }
 
-        async static Task<HttpResponseMessage> execute(this HttpClient client, string endPoint, string apiKey, JArray body, bool useJson)
+        async static Task<HttpResponseMessage> execute(this HttpClient client, string endPoint, string apiKey, string body, bool useJson)
         {
              HttpResponseMessage message = null;
             try
@@ -59,7 +59,7 @@ namespace WTalk.Core.Utils
                // _logger.Debug("Sending data : {0}", body.ToString().Replace("\r\n", ""));
 //                string uri = string.Format("{0}{1}?alt={2}", HangoutUri.CHAT_SERVER_URL, endPoint, useJson ? "json" : "protojson");
                 string uri = string.Format("{0}{1}?key={2}&alt=protojson", HangoutUri.CHAT_SERVER_URL, endPoint, Uri.EscapeUriString(apiKey));
-                message = await client.PostAsync(uri, new StringContent(body.ToString(), Encoding.UTF8, "application/json+protobuf"));
+                message = await client.PostAsync(uri, new StringContent(body, Encoding.UTF8, "application/json+protobuf"));
                 _logger.Debug("Request : {0} => {1} ", endPoint, message.StatusCode);
                 message.EnsureSuccessStatusCode();
                // _logger.Debug("Received data : {0}", message.Content.ReadAsStringAsync().Result.Replace("\n", ""));
@@ -74,13 +74,20 @@ namespace WTalk.Core.Utils
 
         public async static Task<T> ReadAsProtoJson<T>(this HttpContent content) where T : new()
         {
-            using (System.IO.Stream stream = await content.ReadAsStreamAsync())
-            {
-                var reader = new Newtonsoft.Json.JsonTextReader(new System.IO.StreamReader(stream));
-                var arrayBody = JArray.Load(reader);
-                arrayBody.RemoveAt(0);
-                return ProtoJsonSerializer.Deserialize<T>(arrayBody);
-            }
+            //using (System.IO.Stream stream = await content.ReadAsStreamAsync())
+            //{
+            //    var reader = new Newtonsoft.Json.JsonTextReader(new System.IO.StreamReader(stream));
+            //    var arrayBody = JArray.Load(reader);
+            //    arrayBody.RemoveAt(0);
+            //    return ProtoJsonSerializer.Deserialize<T>(arrayBody);
+            //}
+
+            string stringContent = await content.ReadAsStringAsync();            
+            
+            var arrayBody = new DynamicJson(stringContent);
+            arrayBody.RemoveAt(0);
+            return ProtoJsonSerializer.Deserialize<T>(arrayBody);
+            
         }
     }
 }

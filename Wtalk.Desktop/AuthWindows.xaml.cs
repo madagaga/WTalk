@@ -61,7 +61,6 @@ namespace Wtalk.Desktop
                 System.Net.CookieContainer container = NativeMethods.GetUriCookieContainer(webBrowser.Source);
                 Cookie oauth_code = container.GetCookies(webBrowser.Source).Cast<Cookie>().FirstOrDefault(c => c.Name == "oauth_code");
                 WTalk.AuthenticationManager.Current.AuthenticateWithCode(oauth_code.Value);
-//                WTalk.AuthenticationManager.Current.RetrieveCode(container, webBrowser.Source.AbsoluteUri);
                 this.Close();
                 return;
             }
