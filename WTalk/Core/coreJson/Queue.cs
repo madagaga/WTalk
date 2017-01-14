@@ -17,6 +17,14 @@ namespace coreJson
             get { return _buffer.Length - _position; }
         }
 
+        public int Position
+        {
+            get
+            {
+                return _position;
+            }
+        }
+
         public ByteQueue(byte[] v)
         {
             this._buffer = v;
@@ -44,6 +52,11 @@ namespace coreJson
                 buffer[i] = _buffer[_position + i];
 
             return buffer;
+        }
+
+        internal void Skip(int length)
+        {
+            _position += length;
         }
     }
 }

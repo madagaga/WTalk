@@ -165,13 +165,15 @@ namespace WTalk
                 stream.Read(buffer, 0, 1);
             }
 
-            if(int.TryParse(new string(content.Where(c=>char.IsDigit(c)).ToArray()), out result));
+            int.TryParse(new string(content.Where(c => char.IsDigit(c)).ToArray()), out result);
             return result;
         }
 
         private void dataReceived(DynamicJson data)
         {
             Connected = true;
+            if (data == null)
+                return;
             foreach (DynamicJson chunkJson in data)
             {                
                 if (chunkJson[1] != null && OnDataReceived != null)

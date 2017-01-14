@@ -86,7 +86,7 @@ namespace coreJson
 
         public override string ToString()
         {
-            return Value?.ToString();
+            return Value != null ? Value.ToString() : null;
         }
 
         public void RemoveAt(int index)

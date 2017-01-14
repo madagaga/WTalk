@@ -82,6 +82,7 @@ namespace coreJson
                     return parseNumber();
 
                 case ParseToken.String:
+                case ParseToken.UnprotectedString:
                     return parseString();
 
                 case ParseToken.Curly_Open:
@@ -111,11 +112,18 @@ namespace coreJson
             consumeToken();
             string number = parseString(true);
 
+            try
+            {
+                if (number.IndexOf('.') > -1)
+                    return float.Parse(number, System.Globalization.CultureInfo.InvariantCulture.NumberFormat);
 
-            if (number.IndexOf('.') > -1)
-                return float.Parse(number, System.Globalization.CultureInfo.InvariantCulture.NumberFormat);
-
-            return long.Parse(number, System.Globalization.CultureInfo.InvariantCulture.NumberFormat);            
+                return long.Parse(number, System.Globalization.CultureInfo.InvariantCulture.NumberFormat);
+            }
+            catch(Exception e)
+            {
+                System.Diagnostics.Debug.WriteLine(string.Format("error :{1} {0}", e.Message, number));
+                return 0;
+            }
             
         }
 
@@ -127,28 +135,27 @@ namespace coreJson
             else
                 condition = (b) => { return !_stringDelimiter.ContainsKey(b) || (_stringDelimiter.ContainsKey(b) && _rawData.ReversePeek() == 92); };
 
-            System.Text.StringBuilder result = new System.Text.StringBuilder();
+            List<byte> result = new List<byte>();
             
-            
-                consumeToken();
+            consumeToken();
 
-                byte c = _rawData.Peek();
-                                
-                if (c == 34 ||c == 39)
-                    _rawData.Dequeue();
+            byte c = _rawData.Peek();
 
-                while (condition(c))
-                {
-                    result.Append((char)_rawData.Dequeue());
-                    c = _rawData.Peek();
-                }
+            if (c == 34 || c == 39)
+                _rawData.Dequeue();
 
+            while (condition(c))
+            {
+                result.Add(_rawData.Dequeue());
                 c = _rawData.Peek();
-                if (c == 34 || c == 39)
-                    _rawData.Dequeue();
+            }
 
-                return System.Text.RegularExpressions.Regex.Unescape(result.ToString());
-            
+            c = _rawData.Peek();
+            if (c == 34 || c == 39)
+                _rawData.Dequeue();
+
+            return System.Text.RegularExpressions.Regex.Unescape(System.Text.Encoding.UTF8.GetString(result.ToArray(),0,result.Count).ToString());
+
         }
 
         private object parseObject()
@@ -278,10 +285,9 @@ namespace coreJson
             if(_constants.ContainsKey(c))
             {
                 byte[] buffer = _rawData.Take(_constants[c].Key.Length).ToArray();
-                if(buffer.SequenceEqual(_constants[c].Key))
+                if (buffer.SequenceEqual(_constants[c].Key))
                 {
-                    for (int i = 0; i < buffer.Length - 1; i++)
-                        _rawData.Dequeue();
+                    _rawData.Skip(buffer.Length -1);
                     return _constants[c].Value;
                 }
             }

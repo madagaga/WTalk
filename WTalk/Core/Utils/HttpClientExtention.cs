@@ -84,7 +84,7 @@ namespace WTalk.Core.Utils
 
             string stringContent = await content.ReadAsStringAsync();            
             
-            var arrayBody = new DynamicJson(stringContent);
+            var arrayBody = new DynamicJson(System.Text.RegularExpressions.Regex.Unescape(stringContent));
             arrayBody.RemoveAt(0);
             return ProtoJsonSerializer.Deserialize<T>(arrayBody);
             
