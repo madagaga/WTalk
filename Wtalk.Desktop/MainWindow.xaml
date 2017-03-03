@@ -1,15 +1,15 @@
-﻿<Window x:Class="Wtalk.Desktop.MainWindow"
+﻿<Window x:Class="WTalk.Desktop.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
-        xmlns:designData="clr-namespace:Wtalk.Desktop.DesignData"
-        xmlns:dt="clr-namespace:Wtalk.Desktop.CustomDataTemplate"
+        xmlns:designData="clr-namespace:WTalk.Desktop.DesignData"
+        xmlns:dt="clr-namespace:WTalk.Desktop.CustomDataTemplate"
         xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
         mc:Ignorable="d"                        
         d:DataContext="{d:DesignInstance Type=designData:DesignMainViewModel, IsDesignTimeCreatable=True}"
-        Title="{Binding CurrentUser.DisplayName, StringFormat='Wtalk - {0}'}" Height="420" Width="800"  x:Name="mainWindow"
+        Title="{Binding CurrentUser.DisplayName, StringFormat='WTalk - {0}'}" Height="420" Width="800"  x:Name="mainWindow"
        Style="{DynamicResource window_style}" UseLayoutRounding="True"       
         >    
     <Grid>
@@ -72,7 +72,7 @@
             </Grid>
                 <Grid Grid.Row="1">
                     <ListView BorderThickness="0,0,1,0" x:Name="activeContactList"                            
-                              ItemsSource="{Binding Path=ActiveContacts}"  
+                              ItemsSource="{Binding Path=ActiveConversations}"  
                               SelectedItem="{Binding SelectedConversation, UpdateSourceTrigger=PropertyChanged}"
                               ScrollViewer.HorizontalScrollBarVisibility="Hidden">
                         <ListView.ItemTemplate>

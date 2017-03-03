@@ -1,14 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using WTalk.Mvvm;
-using WTalk;
-using WTalk.Model;
+using Wtalk.Desktop;
+using WTalk.Desktop.Model;
+using WTalk.Desktop.Mvvm;
 
-namespace Wtalk.Desktop.ViewModel
+namespace WTalk.Desktop.ViewModel
 {
     public class ConversationViewModel : ObservableObject
     {           
@@ -40,8 +37,8 @@ namespace Wtalk.Desktop.ViewModel
         public string MessageContent { get; set; }
 
         // conversations        
-        public WTalk.Model.Conversation Conversation { get; private set; }
-        public DateTime LastMessageDate { get { return Conversation.MessagesHistory.Last(c=>c.IncomingMessage).MessageDate; } }
+        public WTalk.Desktop.Model.Conversation Conversation { get; private set; }
+        public DateTime LastMessageDate { get { return (Conversation.MessagesHistory.LastOrDefault()?.MessageDate).GetValueOrDefault(DateTime.MinValue); } }
 
         public bool HasUnreadMessages { get { return Conversation.SelfReadState < LastMessageDate; } }
 
@@ -54,29 +51,28 @@ namespace Wtalk.Desktop.ViewModel
         public RelayCommand SetUserTypingCommand { get; private set; }
         
         public ConversationViewModel()
-        {            
+        {
+            _client = Singleton.DefaultClient;
             SendMessageCommand = new RelayCommand(() => SendMessage());
             SetFocusCommand = new RelayCommand(() => SetFocus());
             DeleteConversationCommand = new RelayCommand(() => DeleteConversation());
             SetOTRCommand = new RelayCommand(() => SetOTR());
             SetUserTypingCommand = new RelayCommand(() => SetUserTyping());
         }
+        
 
-        public ConversationViewModel(Client client):this()
-        {
-            _client = client;            
-        }
-
-
-        public ConversationViewModel(WTalk.Model.Conversation conversation, Client client):this(client)
+        public ConversationViewModel(WTalk.Desktop.Model.Conversation conversation):this()
         {
             this.Conversation = conversation;
             this.Conversation.NewMessageReceived += Conversation_NewMessageReceived;
-            this.Contact = client.GetContactFromCache(conversation.Participants.Where(c => c.Key != client.CurrentUser.Id).FirstOrDefault().Key).Result;
-            if (this.Contact != null)
-                _name = this.Contact.DisplayName;
-            else                
-                _name = "Unknown User";
+                        
+            this.Contact = Singleton.GetUser(conversation.Participants.Where(c => c.Key != _client.CurrentUser.id.gaia_id).FirstOrDefault().Key);
+
+            _name = conversation.Name;
+            //if (this.Contact != null)
+            //    _name = this.Contact.DisplayName;
+            //else                
+            //    _name = "Unknown User";
         }
 
         private void SetOTR()

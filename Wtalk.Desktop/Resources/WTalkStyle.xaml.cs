@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
-namespace Wtalk.Desktop.Resources
+namespace WTalk.Desktop.Resources
 {
     public partial class WTalkStyle
     {
@@ -21,7 +21,7 @@ namespace Wtalk.Desktop.Resources
 
             if (window is MainWindow)
             {
-                if (((Wtalk.Desktop.ViewModel.MainViewModel)window.DataContext).AuthenticationRequired)
+                if (((WTalk.Desktop.ViewModel.MainViewModel)window.DataContext).AuthenticationRequired)
                     App.Current.Shutdown();
                 else
                     window.WindowState = System.Windows.WindowState.Minimized;

@@ -8,8 +8,8 @@
     <ProjectGuid>{A30C8ADE-FD69-4730-A39D-FFF41F99784C}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>WTalk</RootNamespace>
-    <AssemblyName>WTalk</AssemblyName>
+    <RootNamespace>WTalk.Core</RootNamespace>
+    <AssemblyName>WTalk.Core</AssemblyName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -37,40 +37,39 @@
   <ItemGroup>
     <!-- A reference to the entire .NET Framework is automatically included -->
     <None Include="app.config" />
-    <None Include="Core\nlog.config" />
-    <None Include="Core\Schema\hangout.proto" />
+    <None Include="nlog.config" />
+    <None Include="Schema\hangout.proto" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Core\Authentication.cs" />
-    <Compile Include="Core\Channel.cs" />
-    <Compile Include="Core\Client.cs" />
-    <Compile Include="Core\coreJson\CompiledPropertyAccessor.cs" />
-    <Compile Include="Core\coreJson\DynamicJson.cs" />
-    <Compile Include="Core\coreJson\JSON.cs" />
-    <Compile Include="Core\coreJson\JsonParser.cs" />
-    <Compile Include="Core\coreJson\JsonSerializer.cs" />
-    <Compile Include="Core\coreJson\Queue.cs" />
-    <Compile Include="Core\HangoutUri.cs" />
-    <Compile Include="Core\HttpHandler\SigningMessageHandler.cs" />
-    <Compile Include="Core\ProtoJson\ProtoAttributes.cs" />
-    <Compile Include="Core\ProtoJson\ProtoJsonParser.cs" />
-    <Compile Include="Core\ProtoJson\Schema.cs" />
-    <Compile Include="Core\Reflection\CompiledPropertyAccessor.cs" />
-    <Compile Include="Core\Reflection\ProtoJsonPropertyAccessor.cs" />
-    <Compile Include="Core\Reflection\ReflectionCache.cs" />
-    <Compile Include="Core\Utils\DateTimeExtension.cs" />
-    <Compile Include="Core\Utils\HttpClientExtention.cs" />
-    <Compile Include="Core\Utils\FileCache.cs" />
-    <Compile Include="Core\Utils\Parser.cs" />
-    <Compile Include="Core\Utils\Sha1Extension.cs" />
+    <Compile Include="Authentication.cs" />
+    <Compile Include="Channel.cs" />
+    <Compile Include="Client.cs" />
+    <Compile Include="coreJson\CompiledPropertyAccessor.cs" />
+    <Compile Include="coreJson\DynamicJson.cs" />
+    <Compile Include="coreJson\JSON.cs" />
+    <Compile Include="coreJson\JsonParser.cs" />
+    <Compile Include="coreJson\JsonSerializer.cs" />
+    <Compile Include="coreJson\Queue.cs" />
+    <Compile Include="HangoutUri.cs" />
+    <Compile Include="HttpHandler\SigningMessageHandler.cs" />
+    <Compile Include="ProtoJson\ProtoAttributes.cs" />
+    <Compile Include="ProtoJson\ProtoJsonParser.cs" />
+    <Compile Include="ProtoJson\Schema.cs" />
+    <Compile Include="Reflection\AttributeTypeEnum.cs" />
+    <Compile Include="Reflection\ProtoJsonPropertyAccessor.cs" />
+    <Compile Include="Reflection\ReflectionCache.cs" />
+    <Compile Include="Schema\schema_generator.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>schema_generator.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Utils\DateTimeExtension.cs" />
+    <Compile Include="Utils\HttpClientExtention.cs" />
+    <Compile Include="Utils\FileCache.cs" />
+    <Compile Include="Utils\Parser.cs" />
+    <Compile Include="Utils\Sha1Extension.cs" />
     <Compile Include="FakeNlog\Logger.cs" />
-    <Compile Include="Model\Conversation.cs" />
-    <Compile Include="Model\Message.cs" />
-    <Compile Include="Model\Participant.cs" />
-    <Compile Include="Model\User.cs" />
-    <Compile Include="Mvvm\ObservableObject.cs" />
-    <Compile Include="Mvvm\RelayCommand.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -82,7 +81,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Core\Schema\schema_generator.tt">
+    <Content Include="Schema\schema_generator.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>schema_generator.cs</LastGenOutput>
     </Content>
@@ -90,6 +89,7 @@
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

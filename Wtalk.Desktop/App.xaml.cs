@@ -7,7 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 
-namespace Wtalk.Desktop
+namespace WTalk.Desktop
 {
     /// <summary>
     /// Interaction logic for App.xaml

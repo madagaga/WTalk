@@ -1,19 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using WTalk.Mvvm;
-using WTalk;
-using WTalk.Model;
-using System.Collections.ObjectModel;
-using Wtalk.Desktop.Extension;
+using WTalk.Desktop.Extension;
+using WTalk.Desktop.Mvvm;
+using WTalk.Desktop.Model;
+using Wtalk.Desktop;
 
-namespace Wtalk.Desktop.ViewModel
+#pragma warning disable CS4014
+namespace WTalk.Desktop.ViewModel
 {
     public class MainViewModel : ObservableObject
     {
-        public List<ConversationViewModel> ActiveContacts
+        public List<ConversationViewModel> ActiveConversations
         {
             get;
             private set;
@@ -27,8 +26,8 @@ namespace Wtalk.Desktop.ViewModel
             set
             {
                 _selectedConversation = value;                
-                OnPropertyChanged("SelectedConversation");
-                OnPropertyChanged("ActiveContacts");                
+                OnPropertyChanged(nameof(SelectedConversation));
+                OnPropertyChanged(nameof(ActiveConversations));                
             }
         }
         
@@ -68,6 +67,7 @@ namespace Wtalk.Desktop.ViewModel
         {
             get { return !_authenticationManager.IsAuthenticated; }
         }
+
         Client _client;
         AuthenticationManager _authenticationManager;
 
@@ -76,6 +76,7 @@ namespace Wtalk.Desktop.ViewModel
 
 
         private static object _lock = new object();
+
         public MainViewModel()
         {
 
@@ -86,124 +87,140 @@ namespace Wtalk.Desktop.ViewModel
             _authenticationManager.Connect();
 
 
-            _client = new Client();
-            _client.ConversationHistoryLoaded += _client_ConversationHistoryLoaded;
-            _client.NewConversationCreated += _client_NewConversationCreated;
-            _client.UserInformationReceived += _client_UserInformationLoaded;            
-            _client.ConnectionEstablished += _client_OnConnectionEstablished;
-            _client.NewMessageReceived += _client_NewMessageReceived;
-            _client.UserInformationReceived += _client_UserInformationReceived;
-            _client.UserPresenceChanged += _client_UserPresenceChanged;
+            _client = Singleton.DefaultClient;
 
-            _client.ContactInformationReceived += _client_ContactInformationReceived;
+
+            _client.OnConnectionEstablished += _client_OnConnectionEstablished;
+            _client.OnContactInformationReceived += _client_OnContactInformationReceived;
+            _client.OnContactListReceived += _client_OnContactListReceived;
+            _client.OnConversationHistoryReceived += _client_OnConversationHistoryReceived;
+
+            _client.OnConversationUpdated += _client_OnConversationUpdated;
+            _client.OnNewConversationCreated += _client_OnNewConversationCreated;
+            _client.OnNewMessageReceived += _client_OnNewMessageReceived;
+            _client.OnPresenceChanged += _client_OnPresenceChanged;
+
+            _client.OnUserInformationReceived += _client_OnUserInformationReceived;
+                       
             
             if(_authenticationManager.IsAuthenticated)
                 _client.ConnectAsync();
-            ActiveContacts = new List<ConversationViewModel>();
+
+            ActiveConversations = new List<ConversationViewModel>();
+
             App.Current.Dispatcher.Invoke(() =>
             {
-                System.Windows.Data.BindingOperations.EnableCollectionSynchronization(ActiveContacts, _lock);
+                System.Windows.Data.BindingOperations.EnableCollectionSynchronization(ActiveConversations, _lock);
             });
         }
 
-        
+       
+
         void reorderContacts()
         {
             App.Current.Dispatcher.Invoke(() =>
             {
-                if (ActiveContacts.Count > 0)
+                if (ActiveConversations.Count > 0)
                 {
-                    ActiveContacts = ActiveContacts.OrderByDescending(c => c.Contact.Online).ThenByDescending(c => c.LastMessageDate).ToList();
-                    OnPropertyChanged("ActiveContacts");
+                    ActiveConversations = ActiveConversations.OrderByDescending(c => c.Contact.Online).ThenByDescending(c => c.LastMessageDate).ToList();
+                    OnPropertyChanged(nameof(ActiveConversations));
                 }
             });
         }
 
-        void _client_UserPresenceChanged(object sender, User e)
-        {
-            reorderContacts();
-        }
 
-        void _client_NewMessageReceived(object sender, Conversation e)
-        {
-            App.Current.Dispatcher.Invoke(() =>
-            {
-            if (!App.Current.MainWindow.IsActive)
-                    App.Current.MainWindow.FlashWindow();
-            });
-
-            reorderContacts();
-            
-        }
-
-        void _client_UserInformationReceived(object sender, User e)
-        {
-            OnPropertyChanged("CurrentUser");
-            
-        }
-
-        void _client_NewConversationCreated(object sender, Conversation e)
-        {
-            ActiveContacts.Add(new ConversationViewModel(e, _client));
-            reorderContacts();
-            
-        }
-
-        void _client_ContactInformationReceived(object sender, User e)
-        {
-            reorderContacts();
-        }
-
-       
-             
-        void _client_UserInformationLoaded(object sender, User e)
-        {
-            CurrentUser = _client.CurrentUser;
-            OnPropertyChanged("CurrentUser");
-        }
-
-        void _client_ConversationHistoryLoaded(object sender, List<Conversation> e)
-        {
-            // associate contact list and last active conversation
-            // only 1 to 1 conversation supported   
-            if (ActiveContacts == null)
-                ActiveContacts = new List<ConversationViewModel>();
-
-            foreach (Conversation conversation in e)
-                ActiveContacts.Add(new ConversationViewModel(conversation, _client));
-
-            reorderContacts();
-            
-        }
-
-
+        #region events 
         void _client_OnConnectionEstablished(object sender, EventArgs e)
-        {  
+        {
             if (CurrentUser != null)
                 _client.SetPresenceAsync();
             else
                 _client.GetSelfInfoAsync();
 
             Connected = true;
-            OnPropertyChanged("Connected");
+            OnPropertyChanged(nameof(Connected));
 
             //if(_conversationCache == null || _conversationCache.Count == 0)
-               // _client.SyncRecentConversations();
+            // _client.SyncRecentConversations();
 
             //_client.GetSuggestedEntities();
         }
 
+        private void _client_OnContactInformationReceived(object sender, Core.ProtoJson.Schema.Entity e)
+        {
+            reorderContacts();
+        }
+        private void _client_OnUserInformationReceived(object sender, Core.ProtoJson.Schema.Entity e)
+        {
+            CurrentUser = new User(e);
+            OnPropertyChanged(nameof(CurrentUser));
+        }
+
+        private void _client_OnPresenceChanged(object sender, Core.ProtoJson.Schema.Entity e)
+        {
+            if (e.id.gaia_id == CurrentUser.Id)
+            {
+                CurrentUser = new User(e);
+                OnPropertyChanged(nameof(CurrentUser));
+            }
+            else
+                reorderContacts();
+        }
+
+        private void _client_OnNewConversationCreated(object sender, Core.ProtoJson.Schema.ConversationState e)
+        {
+            ActiveConversations.Add(new ConversationViewModel(new Conversation(e)));
+            reorderContacts();
+        }
+
+        private void _client_OnConversationUpdated(object sender, Core.ProtoJson.Schema.ConversationState e)
+        {
+            OnPropertyChanged(nameof(SelectedConversation));
+        }
+
+        private void _client_OnConversationHistoryReceived(object sender, List<Core.ProtoJson.Schema.ConversationState> e)
+        {
+            // associate contact list and last active conversation
+            // only 1 to 1 conversation supported   
+            if (ActiveConversations == null)
+                ActiveConversations = new List<ConversationViewModel>();
+
+            foreach (Core.ProtoJson.Schema.ConversationState conversation in e)
+                ActiveConversations.Add(new ConversationViewModel(new Conversation(conversation)));
+
+            reorderContacts();
+        }
+
+        private void _client_OnContactListReceived(object sender, List<Core.ProtoJson.Schema.Entity> e)
+        {
+
+        }
+
+        private void _client_OnNewMessageReceived(object sender, Core.ProtoJson.Schema.Event e)
+        {
+            App.Current.Dispatcher.Invoke(() =>
+            {
+                if (!App.Current.MainWindow.IsActive)
+                    App.Current.MainWindow.FlashWindow();
+            });
+
+            reorderContacts();
+
+        }
+
+        #endregion
+        
+        #region relay commands
         async Task Authenticate()
         {
 
             AuthWindows auth_window = new AuthWindows();
             auth_window.ShowDialog();
-
-            //_authenticationManager.AuthenticateWithCode(code);
+                        
             if (_authenticationManager.IsAuthenticated)
             {
-                _client.ConnectAsync();
-                OnPropertyChanged("AuthenticationRequired");
+                await _client.ConnectAsync();
+                OnPropertyChanged(nameof(AuthenticationRequired));
             }
         }
 
@@ -218,6 +235,7 @@ namespace Wtalk.Desktop.ViewModel
                 _client.QuerySelfPresenceAsync();
             
         }
+        #endregion
 
     }
 

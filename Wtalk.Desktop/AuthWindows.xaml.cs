@@ -13,7 +13,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 
-namespace Wtalk.Desktop
+namespace WTalk.Desktop
 {
     /// <summary>
     /// Interaction logic for AuthWindows.xaml
@@ -55,7 +55,8 @@ namespace Wtalk.Desktop
 
         void webBrowser_LoadCompleted(object sender, System.Windows.Navigation.NavigationEventArgs e)
         {
-            if(e.Uri.AbsoluteUri.Contains("authuser=0"))
+            // ugly ... 
+            if(e.Uri.AbsoluteUri.Contains("authuser=0") || e.Uri.AbsoluteUri.Contains("as="))
             {
                 webBrowser.Visibility = System.Windows.Visibility.Hidden;
                 System.Net.CookieContainer container = NativeMethods.GetUriCookieContainer(webBrowser.Source);

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Interop;
 
-namespace Wtalk.Desktop.Extension
+namespace WTalk.Desktop.Extension
 {
     public static class FlashingWindow
     {

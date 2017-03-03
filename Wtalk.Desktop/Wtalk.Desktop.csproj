@@ -109,7 +109,14 @@
     <Compile Include="DesignData\DesignConversationViewModel.cs" />
     <Compile Include="DesignData\DesignMainViewModel.cs" />
     <Compile Include="Extension\FlashingWindow.cs" />
+    <Compile Include="Model\Conversation.cs" />
+    <Compile Include="Model\Message.cs" />
+    <Compile Include="Model\Participant.cs" />
+    <Compile Include="Model\User.cs" />
+    <Compile Include="Mvvm\ObservableObject.cs" />
+    <Compile Include="Mvvm\RelayCommand.cs" />
     <Compile Include="Resources\WTalkStyle.xaml.cs" />
+    <Compile Include="Singleton.cs" />
     <Compile Include="ViewModel\ConversationViewModel.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />
     <Page Include="AuthWindows.xaml">
@@ -168,7 +175,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\WTalk\WTalk.csproj">
-      <Project>{06291491-4f77-4473-9ed2-970552edf115}</Project>
+      <Project>{A30C8ADE-FD69-4730-A39D-FFF41F99784C}</Project>
       <Name>WTalk</Name>
     </ProjectReference>
   </ItemGroup>

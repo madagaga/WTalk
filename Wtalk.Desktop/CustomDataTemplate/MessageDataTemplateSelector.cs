@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using WTalk.Model;
+﻿using System.Windows;
 
-namespace Wtalk.Desktop.CustomDataTemplate
+namespace WTalk.Desktop.CustomDataTemplate
 {
     public class MessageDataTemplateSelector : System.Windows.Controls.DataTemplateSelector
     {

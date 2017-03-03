@@ -12,10 +12,10 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using Wtalk.Desktop.ViewModel;
-using Wtalk.Desktop.Extension;
+using WTalk.Desktop.ViewModel;
+using WTalk.Desktop.Extension;
 
-namespace Wtalk.Desktop
+namespace WTalk.Desktop
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
