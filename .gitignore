@@ -9,6 +9,8 @@
 
 WTalk.8.1/
 WTalk.Phone_old/
+designdata.xaml
+WTalk/Schema/
 
 # Build results
 [Dd]ebug/
