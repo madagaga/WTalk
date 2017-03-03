@@ -1,5 +1,6 @@
 # WTalk
 Google Talk like client for Windows
+/!\ This is more a proof of concept than a real app.
 
 ## Summary
 Client library (pcl) and desktop client for Google Hangouts written in c#
