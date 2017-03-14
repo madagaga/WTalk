@@ -93,7 +93,7 @@ namespace coreJson
                         property.Set(result, Enum.Parse(property.GenericType, input[property.Name].ToString()));
                 }                
                 else
-                    property.Set(result, Convert.ChangeType(input[property.Name], property.GenericType));
+                    property.Set(result, input[property.Name]);
             }
             return result;
         }

@@ -151,7 +151,7 @@ namespace WTalk.Core.ProtoJson
                                 break;
                             default:
                                 if (property.GenericType == typeof(string) || !string.IsNullOrEmpty(jArray[property.Position].ToString()))
-                                    property.Set(result, Convert.ChangeType(jArray[property.Position].Value, property.GenericType));
+                                    property.Set(result, jArray[property.Position].Value);
                                 break;
                         }
                     }
