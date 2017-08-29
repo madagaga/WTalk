@@ -6,12 +6,11 @@
 *.user
 *.sln.docstates
 *.pfx
+*.7z
 
-WTalk.8.1/
-WTalk.Phone_old/
-designdata.xaml
 WTalk/Schema/
-
+Wtalk.Desktop/
+MainPage - Copie*.xaml
 # Build results
 [Dd]ebug/
 [Dd]ebugPublic/
@@ -194,3 +193,5 @@ FakesAssemblies/
 GeneratedArtifacts/
 _Pvt_Extensions/
 ModelManifest.xml
+/ClassLibrary1
+/ClassLibrary1

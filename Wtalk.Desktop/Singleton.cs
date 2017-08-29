@@ -9,15 +9,12 @@ using WTalk.Desktop.Model;
 namespace Wtalk.Desktop
 {
     public class Singleton
-    {
-        static Client _clientInstance;
+    {        
         public static Client DefaultClient
         {
             get
             {
-                if (_clientInstance == null)
-                    _clientInstance = new Client();
-                return _clientInstance;
+                return Client.Current;
             }
         }
 

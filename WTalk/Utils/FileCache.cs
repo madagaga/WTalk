@@ -1,5 +1,4 @@
-﻿using PCLStorage;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -11,12 +10,10 @@ namespace WTalk.Core.Utils
 {
     public class FileCache
     {
-
         string _cacheToken;
-        Dictionary<string, string> _cachedFiles;
-        IFolder _folder;
+        Dictionary<string, string> _cachedFiles;        
         HttpClient _httpClient;
-
+        string _folder;
 
         static FileCache _fileCache;        
         public static FileCache Current
@@ -29,47 +26,40 @@ namespace WTalk.Core.Utils
             }
         }
 
-        internal FileCache(string cacheToken)
+        public string Root { get { return _folder; } }
+
+        internal FileCache(string rootFolder, string cacheToken)
         {
             _cacheToken = cacheToken;
-            _folder = FileSystem.Current.LocalStorage.CreateFolderAsync(_cacheToken, CreationCollisionOption.OpenIfExists).Result;
+            _folder = Path.Combine(rootFolder, cacheToken);
+            var dir = System.IO.Directory.CreateDirectory(_folder);
+            
             _httpClient =  new HttpClient(new HttpClientHandler() { AllowAutoRedirect = true, CookieContainer = Client.CookieContainer, UseCookies = true });
-            _cachedFiles = new Dictionary<string, string>();
-
-            IList<IFile> files = _folder.GetFilesAsync().Result;
-
-            foreach(IFile file in files)
-            {
-                _cachedFiles.Add(file.Name, file.Path);
-            }
+            _cachedFiles = dir.GetFiles().ToDictionary(c => c.Name, c => c.FullName);
         }
 
-        public static void Initialize(string cacheToken)
+        public static void Initialize(string rootFolder, string cacheToken)
         {
-            _fileCache = new FileCache(cacheToken);
+            _fileCache = new FileCache(rootFolder,cacheToken);
            
         }
 
-        public string GetOrUpdate(string fileKey, string file)
+        public string GetOrUpdate(string fileKey, string url)
         {
-            if (file.Length < 7)
+            if (url.Length < 7)
                 return null;
             
             if(!_cachedFiles.ContainsKey(fileKey) )            
             {
 
-               byte[] data = _httpClient.GetByteArrayAsync(new Uri(file)).Result;
-               IFile downloadedFile = _folder.CreateFileAsync(fileKey, CreationCollisionOption.OpenIfExists).Result;
-               using(Stream stream = downloadedFile.OpenAsync(FileAccess.ReadAndWrite).Result)
-               {
-                   stream.Write(data, 0, data.Length);
-               }
-
-               _cachedFiles.Add(downloadedFile.Name, downloadedFile.Path);
+               byte[] data = _httpClient.GetByteArrayAsync(new Uri(url)).Result;
+                string path = Path.Combine(_folder, fileKey);
+                File.WriteAllBytes(path, data);
+               _cachedFiles.Add(fileKey, path);
             }
             return _cachedFiles[fileKey];
         }
-
+        
         public string Get(string fileKey)
         {
             if (_cachedFiles.ContainsKey(fileKey))
@@ -78,9 +68,14 @@ namespace WTalk.Core.Utils
                 return null;
         }
 
+        public void Add(string filekey, string content)
+        {
+            
+        }
+
         public void Reset()
         {
-            _folder.DeleteAsync().Wait();
+            Directory.Delete(_folder);
         }
     }
 }

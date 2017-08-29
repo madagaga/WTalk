@@ -150,8 +150,8 @@ namespace WTalk.Core.ProtoJson
                                     property.Set(result, Enum.Parse(property.GenericType, jArray[property.Position].ToString()));
                                 break;
                             default:
-                                if (property.GenericType == typeof(string) || !string.IsNullOrEmpty(jArray[property.Position].ToString()))
-                                    property.Set(result, jArray[property.Position].Value);
+                                if (property.GenericType.IsPrimitiveType() || !string.IsNullOrEmpty(jArray[property.Position].ToString()))
+                                    property.Set(result, Convert.ChangeType(jArray[property.Position].Value, property.GenericType));
                                 break;
                         }
                     }

@@ -1,101 +1,25 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
   <PropertyGroup>
-    <MinimumVisualStudioVersion>12.0</MinimumVisualStudioVersion>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{A30C8ADE-FD69-4730-A39D-FFF41F99784C}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>WTalk.Core</RootNamespace>
+    <TargetFramework>netstandard1.4</TargetFramework>
     <AssemblyName>WTalk.Core</AssemblyName>
-    <DefaultLanguage>en-US</DefaultLanguage>
-    <FileAlignment>512</FileAlignment>
-    <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-    <TargetFrameworkProfile>Profile151</TargetFrameworkProfile>
-    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
-    <NuGetPackageImportStamp>31deba70</NuGetPackageImportStamp>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
+    <RootNamespace>WTalk.Core</RootNamespace>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <UpgradeBackupLocation>
+    </UpgradeBackupLocation>
+    <OldToolsVersion>2.0</OldToolsVersion>
   </PropertyGroup>
   <ItemGroup>
-    <!-- A reference to the entire .NET Framework is automatically included -->
-    <None Include="app.config" />
-    <None Include="nlog.config" />
-    <None Include="Schema\hangout.proto" />
-    <None Include="packages.config" />
+    <Compile Remove="Schema\schema_generator.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Authentication.cs" />
-    <Compile Include="Channel.cs" />
-    <Compile Include="Client.cs" />
-    <Compile Include="coreJson\CompiledPropertyAccessor.cs" />
-    <Compile Include="coreJson\DynamicJson.cs" />
-    <Compile Include="coreJson\JSON.cs" />
-    <Compile Include="coreJson\JsonParser.cs" />
-    <Compile Include="coreJson\JsonSerializer.cs" />
-    <Compile Include="coreJson\Queue.cs" />
-    <Compile Include="HangoutUri.cs" />
-    <Compile Include="HttpHandler\SigningMessageHandler.cs" />
-    <Compile Include="ProtoJson\ProtoAttributes.cs" />
-    <Compile Include="ProtoJson\ProtoJsonParser.cs" />
-    <Compile Include="ProtoJson\Schema.cs" />
-    <Compile Include="Reflection\AttributeTypeEnum.cs" />
-    <Compile Include="Reflection\ProtoJsonPropertyAccessor.cs" />
-    <Compile Include="Reflection\ReflectionCache.cs" />
-    <Compile Include="Schema\schema_generator.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>schema_generator.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Utils\DateTimeExtension.cs" />
-    <Compile Include="Utils\HttpClientExtention.cs" />
-    <Compile Include="Utils\FileCache.cs" />
-    <Compile Include="Utils\Parser.cs" />
-    <Compile Include="Utils\Sha1Extension.cs" />
-    <Compile Include="FakeNlog\Logger.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
+    <None Remove="Schema\hangout.proto" />
+    <None Remove="Schema\schema_generator.tt" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="PCLStorage">
-      <HintPath>..\packages\PCLStorage.1.0.2\lib\portable-net45+wp8+wpa81+win8+monoandroid+monotouch+Xamarin.iOS+Xamarin.Mac\PCLStorage.dll</HintPath>
-    </Reference>
-    <Reference Include="PCLStorage.Abstractions">
-      <HintPath>..\packages\PCLStorage.1.0.2\lib\portable-net45+wp8+wpa81+win8+monoandroid+monotouch+Xamarin.iOS+Xamarin.Mac\PCLStorage.Abstractions.dll</HintPath>
-    </Reference>
+    <Folder Include="Schema\" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Schema\schema_generator.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>schema_generator.cs</LastGenOutput>
-    </Content>
+    <PackageReference Include="System.Net.Http" Version="4.3.2" />
   </ItemGroup>
-  <ItemGroup>
-    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
-  </ItemGroup>
-  <ItemGroup />
-  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
 </Project>

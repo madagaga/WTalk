@@ -10,7 +10,7 @@ namespace coreJson
     {
 
         private System.IO.Stream _stream;
-        private byte[] _buffer;
+        
         public int Count
         {
             get { return (int)(_stream.Length - _stream.Position); }

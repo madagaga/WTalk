@@ -14,19 +14,26 @@ using coreJson;
 namespace WTalk
 {
     public class Client
-    { 
+    {
+        
         Dictionary<string, string> _initParams = new Dictionary<string, string>();        
         Channel _channel;
-        
-        static CookieContainer _cookieContainer;        
-        public static CookieContainer CookieContainer
+
+        public static CookieContainer CookieContainer { get; } = new CookieContainer();
+
+        static object lockobject = new object();
+        static volatile Client _instance;
+        public static Client Current
         {
             get
             {
-                if (_cookieContainer == null)
-                    _cookieContainer = new CookieContainer();
-                return _cookieContainer;
-            }            
+                lock (lockobject)
+                {
+                    if (_instance == null)
+                        _instance = new Client();
+                    return _instance;
+                }
+            }
         }
 
                 
@@ -75,7 +82,7 @@ namespace WTalk
 
         
 
-        public Client()
+        internal Client()
         {
             _initParams.Add("prop", "StartPage");
             _initParams.Add("fc", "https://hangouts.google.com");
@@ -94,12 +101,13 @@ namespace WTalk
         }
 
         public async Task ConnectAsync()
-        {   
-            await initializeChat().ContinueWith(t=>  {
-                _channel.setAppVer(_header_version);                                
-                _channel.Listen();
-            });
-            
+        {
+            await initializeChat();
+            _channel.setAppVer(_header_version);
+            await Task.Factory.StartNew(async () =>
+            {
+                await _channel.Listen();
+            }, TaskCreationOptions.LongRunning);
 
         }
 
@@ -367,7 +375,7 @@ namespace WTalk
             using (HttpResponseMessage message = await _client.PostProtoJson("presence/querypresence", _api_key, request))
             {
                 QueryPresenceResponse response = await message.Content.ReadAsProtoJson<QueryPresenceResponse>();
-                response.presence_result.Where(c => _contacts.ContainsKey(c.user_id.gaia_id)).AsParallel().ForAll((p) =>
+                response.presence_result.Where(c => _contacts.ContainsKey(c.user_id.gaia_id)).ToList().ForEach((p) =>
                   {
                       _contacts[p.user_id.gaia_id].presence = p.presence;
                       if (OnPresenceChanged != null)
@@ -630,7 +638,7 @@ namespace WTalk
                 else
                 {
 
-                    response.entity.Where(c => c.id != null).AsParallel().ForAll((contact) =>
+                    response.entity.Where(c => c.id != null).ToList().ForEach((contact) =>
                       {
                           if (_contacts.ContainsKey(contact.id.gaia_id))
                               _contacts[contact.id.gaia_id] = contact;

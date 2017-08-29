@@ -82,8 +82,9 @@ namespace coreJson
                 if (!input.ContainsKey(property.Name))
                     continue;
 
-
-                if (input[property.Name] is IDictionary)
+                if(WTalk.Core.Reflection.PrimitiveTypes.IsPrimitive(property.GenericType))
+                    property.Set(result, Convert.ChangeType(input[property.Name], property.GenericType));
+                else if (input[property.Name] is IDictionary)
                     property.Set(result, ParseObject(property.GenericType, (Dictionary<string, object>)input[property.Name]));
                 else if (input[property.Name] is IList)
                     property.Set(result, ParseArray(property.GenericType, (List<object>)input[property.Name]));

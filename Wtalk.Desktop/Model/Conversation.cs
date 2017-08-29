@@ -55,7 +55,7 @@ namespace WTalk.Desktop.Model
                     }
                     catch(Exception e)
                     {
-
+                       
                     }
                 }
                 return _messagesHistory;                

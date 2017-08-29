@@ -1,0 +1,90 @@
+﻿{
+  "CurrentUser": { "DisplayName": "Current User displayName" },
+  "ActiveConversations": [
+    {
+      "Name": "Conv1",
+      "LastMessage": { "LastSegment": "last text" },
+      "Participants": [
+        { "DisplayName": "participant 1" },
+        { "DisplayName": "participant 1" }
+      ],
+      "MainParticipant": { "PhotoUrl": "https://www.google.fr/url?sa=i&rct=j&q=&esrc=s&source=images&cd=&cad=rja&uact=8&ved=0ahUKEwi_nMjI3OrVAhVKXhoKHR8XDm8QjRwIBw&url=https%3A%2F%2Fwww.fotolia.com%2Fid%2F106112551&psig=AFQjCNGpzKhpIMJskC6P6CjRnOQri5Wo4A&ust=1503487228011281" }
+    },
+    {
+      "Name": "Conv1",
+      "LastMessage": { "LastSegment": "last text" }
+    },
+    {
+      "Name": "Conv1",
+      "LastMessage": { "LastSegment": "last text long long long long" }
+    },
+    {
+      "Name": "Conv1",
+      "LastMessage": { "LastSegment": "last text" }
+    },
+    {
+      "Name": "Conv1",
+      "LastMessage": { "LastSegment": "last text" }
+    }
+  ],
+  "Contacts": [
+    {
+      "DisplayName": "Contact1",
+      "Email": "test@test.fr"
+    },
+    {
+      "DisplayName": "Contact1",
+      "Email": "test@test.fr"
+    },
+    {
+      "DisplayName": "Contact1",
+      "Email": "test@test.fr"
+    },
+    {
+      "DisplayName": "Contact1",
+      "Email": "test@test.fr"
+    },
+    {
+      "DisplayName": "Contact1",
+      "Email": "test@test.fr"
+    },
+    {
+      "DisplayName": "Contact1",
+      "Email": "test@test.fr"
+    },
+    {
+      "DisplayName": "Contact1",
+      "Email": "test@test.fr"
+    }
+  ],
+  "SelectedConversation": {
+    "Name": "Selected conversation",
+    "Messages": [
+      {
+        "IncomingMessage": true,
+        "Content": "line 1"
+      },
+      {
+        "IncomingMessage": true,
+        "Content": "line 2"
+      },
+      {
+        "IncomingMessage": false,
+        "Content": "line 3"
+      },
+      {
+        "IncomingMessage": true,
+        "Content": "line 4"
+      },
+      {
+        "IncomingMessage": true,
+        "Content": "line 5"
+      },
+      {
+        "IncomingMessage": true,
+        "Content": "On sait depuis longtemps que travailler avec du texte lisible et contenant du sens est source de distractions, et empêche de se concentrer sur la mise en page elle-même. L'avantage du Lorem Ipsum sur un texte générique comme 'Du texte. Du texte. Du texte.' est qu'il possède une distribution de lettres plus ou moins normale, et en tout cas comparable avec celle du français standard. De nombreuses suites logicielles de mise en page ou éditeurs de sites Web ont fait du Lorem Ipsum leur faux texte par défaut, et une recherche pour 'Lorem Ipsum' vous conduira vers de nombreux sites qui n'en sont encore qu'à leur phase de construction. Plusieurs versions sont apparues avec le temps, parfois par accident, souvent intentionnellement (histoire d'y rajouter de petits clins d'oeil, voire des phrases embarassantes)"
+      }
+    ]
+  }
+
+}

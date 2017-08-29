@@ -14,6 +14,9 @@ namespace WTalk.Desktop
     /// </summary>
     public partial class App : Application
     {
-       
+       public App()
+        {
+            Core.Utils.FileCache.Initialize(System.IO.Directory.GetCurrentDirectory(), "cache");
+        }
     }
 }

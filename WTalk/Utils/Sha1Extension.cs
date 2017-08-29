@@ -7,27 +7,80 @@ using System.Threading.Tasks;
 namespace WTalk.Core.Utils
 {
 
-    public static class SHA1Extension
+    public static class CryptoExtension
     {
-        public static string ComputeSHA1Hash(this string input)
+
+        public static byte[] ComputeSHA256HashByte(this string input)
         {
-            byte[] result = input.ComputeSHA1HashByte();
-            // step 2, convert byte array to hex string
-            StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < result.Length; i++)
-                sb.Append(result[i].ToString("X2"));
-            return sb.ToString();
+            using (System.Security.Cryptography.SHA256 sha = System.Security.Cryptography.SHA256.Create())
+            {
+                return sha.ComputeHash(System.Text.Encoding.UTF8.GetBytes(input));
+            }
         }
+
+        public static string ComputeSHA256Hash(this string input)
+        {
+            string result = string.Join(string.Empty, input.ComputeSHA256HashByte().Select(c => c.ToString("X2")));
+            return result;
+        }
+
 
         public static byte[] ComputeSHA1HashByte(this string input)
         {
-            SHA1Internal sha1 = new SHA1Internal();
-            byte[] buffer = System.Text.Encoding.UTF8.GetBytes(input);
-            sha1.HashCore(buffer, 0, buffer.Length);
-            byte[] result = sha1.HashFinal();
-            sha1.Initialize();
-            return result;
+            using (System.Security.Cryptography.SHA1 sha = System.Security.Cryptography.SHA1.Create())
+            {
+                return sha.ComputeHash(System.Text.Encoding.UTF8.GetBytes(input));
+            }
         }
+
+
+        public static string ComputeSHA1Hash(this string input)
+        {
+            string result = string.Join(string.Empty, input.ComputeSHA1HashByte().Select(c => c.ToString("X2")));
+            return result;            
+        }
+
+        public static string Md5Hash(this string s)
+        {
+            // step 1, calculate MD5 hash from input
+            using (System.Security.Cryptography.MD5 md5 = System.Security.Cryptography.MD5.Create())
+            {
+                byte[] inputBytes = System.Text.Encoding.ASCII.GetBytes(s);
+                byte[] hash = md5.ComputeHash(inputBytes);
+
+
+                string result = string.Join(string.Empty, hash.Select(c => c.ToString("X2")));
+
+                return result;
+            }
+        }
+
+
+
+
+
+
+
+
+        //public static string ComputeSHA1Hash(this string input)
+        //{
+        //    byte[] result = input.ComputeSHA1HashByte();
+        //    // step 2, convert byte array to hex string
+        //    StringBuilder sb = new StringBuilder();
+        //    for (int i = 0; i < result.Length; i++)
+        //        sb.Append(result[i].ToString("X2"));
+        //    return sb.ToString();
+        //}
+
+        //public static byte[] ComputeSHA1HashByte(this string input)
+        //{
+        //    SHA1Internal sha1 = new SHA1Internal();
+        //    byte[] buffer = System.Text.Encoding.UTF8.GetBytes(input);
+        //    sha1.HashCore(buffer, 0, buffer.Length);
+        //    byte[] result = sha1.HashFinal();
+        //    sha1.Initialize();
+        //    return result;
+        //}
     }
 
     internal class SHA1Internal
