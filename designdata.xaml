@@ -1,0 +1,3 @@
+<data:MainViewModel xmlns:data="clr-namespace:Wtalk.Desktop.ViewModel">
+    <data:MainViewModel.AuthenticationRequired>false</data:MainViewModel.AuthenticationRequired>
+</data:MainViewModel>

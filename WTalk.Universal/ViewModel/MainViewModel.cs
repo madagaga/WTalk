@@ -121,11 +121,12 @@ namespace WTalk.Universal.ViewModel
         public RelayCommand SendMessageCommand { get; private set; }
         private async void SendMessage()
         {
-            if(!string.IsNullOrEmpty(MessageContent))
+            if (!string.IsNullOrEmpty(MessageContent))
+            {
                 await _client.SendChatMessageAsync(SelectedConversation.Id, MessageContent);
-
-            MessageContent = null;
-            OnPropertyChanged(nameof(MessageContent));
+                MessageContent = null;
+                OnPropertyChanged(nameof(MessageContent));
+            }
         }
 
         public RelayCommand SetFocusCommand { get; private set; } 

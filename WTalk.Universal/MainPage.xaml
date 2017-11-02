@@ -21,8 +21,8 @@
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
                         <!-- SplitView pane shows as overlay -->
-                        <!-- Splitview pane will close however <img draggable="false" class="emoji" alt="😦" src="https://s0.wp.com/wp-content/mu-plugins/wpcom-smileys/twemoji/2/svg/1f626.svg"> -->
-                        <Setter Target="mainSplitView.IsPaneOpen" Value="False" />
+                        <!-- Splitview pane will close however -->
+                        <Setter Target="mainSplitView.IsPaneOpen" Value="false" />
                     </VisualState.Setters>
                 </VisualState>
 
@@ -56,18 +56,14 @@
         <!-- main view -->
         <SplitView x:Name="mainSplitView"  IsPaneOpen="False" DisplayMode="Overlay">
             <SplitView.Pane>
-                <Grid Background="#FF3E3E42">
-                    <Grid.RowDefinitions>                        
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="48" />
-                    </Grid.RowDefinitions>                    
-                    <ListView Grid.Row="0" x:Name="sideMenu" >
+                <RelativePanel Background="#FF3E3E42">                    
+                    <ListView x:Name="sideMenu" Width="319">
                         <ListView.Header>
                             <ContentControl  Style="{StaticResource FlipViewHeader}">
                             WTALK
                             </ContentControl>
                         </ListView.Header>
-                        <ListViewItem Style="{StaticResource SplitViewPaneMenuContainerStyle}" Foreground="White" IsSelected="True">
+                        <ListViewItem Style="{StaticResource SplitViewPaneMenuContainerStyle}" Foreground="White" >
                             <StackPanel Orientation="Horizontal">
                                 <FontIcon Glyph="&#xE8F2;" Width="48"/>
                                 <TextBlock FontSize="20" Text="Conversations" Padding="0,8"/>
@@ -81,15 +77,31 @@
                         </ListViewItem>
                         <ListViewItem Visibility="Collapsed"> 
                             Selected conv
-                        </ListViewItem>
+                        </ListViewItem>                        
                         <Interactivity:Interaction.Behaviors>
                             <Core:EventTriggerBehavior EventName="SelectionChanged">
                                 <Core:ChangePropertyAction TargetObject="{Binding ElementName=mainSplitView}" PropertyName="IsPaneOpen" Value="False" />
                             </Core:EventTriggerBehavior>
                         </Interactivity:Interaction.Behaviors>
                     </ListView>
-                    
-                </Grid>
+                    <ListView Width="319" RelativePanel.AlignBottomWithPanel="True" Padding="0,10">
+                        <ListView.Header>
+                            <Border BorderBrush="Gray" BorderThickness="0,1,0,0" Padding="10">
+                                
+                            </Border>
+                        </ListView.Header>
+                        <ListViewItem Style="{StaticResource SplitViewPaneMenuContainerStyle}" Foreground="White">
+                            <StackPanel Orientation="Horizontal">
+                                <Border Style="{StaticResource AvatarIcon}" Width="48" Height="48">
+                                    <Border.Background>
+                                        <ImageBrush Stretch="Fill" ImageSource="{Binding Path=CurrentUser.PhotoUrl, FallbackValue={StaticResource DefaultImage}, TargetNullValue={StaticResource DefaultImage}}"/>
+                                    </Border.Background>
+                                </Border>
+                                <TextBlock FontSize="20" Text="Profile" Padding="0,8"/>
+                            </StackPanel>
+                        </ListViewItem>
+                    </ListView>
+                </RelativePanel>
             </SplitView.Pane>
             <SplitView.Content>
                 <Grid>
@@ -120,8 +132,8 @@
                                                 </Grid.ColumnDefinitions>
                                                 <Border Grid.Column="0" Style="{StaticResource AvatarIcon}">
                                                     <Border.Background>
-                                                        <ImageBrush Stretch="Fill" ImageSource="{StaticResource DefaultImage}"/>
-                                                    </Border.Background>
+                                                    <ImageBrush Stretch="Fill" ImageSource="{Binding Path=MainParticipant.PhotoUrl, FallbackValue={StaticResource DefaultImage}, TargetNullValue={StaticResource DefaultImage}}"/>
+                                                </Border.Background>
                                                 </Border>
                                                 <StackPanel Grid.Column="1" VerticalAlignment="Top">
                                                     <TextBlock Text="{Binding Path=Name}"/>
@@ -169,8 +181,12 @@
                                     <RowDefinition Height="48" />
                                     <RowDefinition Height="*" />
                                 </Grid.RowDefinitions>
-                                <ContentControl Grid.Row="0" Style="{StaticResource conversationDetailHeader}" Background="#ff5722" Foreground="White" />
-                                <ContentControl Grid.Row="1" Style="{StaticResource conversationDetailBody}" />
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="48" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <ContentControl Grid.Row="0" Grid.Column="1" Style="{StaticResource conversationDetailHeader}" />
+                                <ContentControl Grid.Row="1" Grid.ColumnSpan="2" Style="{StaticResource conversationDetailBody}" />
                             </Grid>
                         </FlipViewItem>
                     </FlipView>
@@ -193,7 +209,7 @@
                             </TextBlock>
                         </StackPanel>
 
-                        <Grid x:Name="conversationLargeView" DataContext="{Binding SelectedConversation}" Visibility="Visible">
+                        <Grid x:Name="conversationLargeView" DataContext="{Binding SelectedConversation}" Visibility="Collapsed">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="48" />
                                 <RowDefinition Height="*" />
@@ -216,7 +232,7 @@
                 </Grid>
             </SplitView.Content>
         </SplitView>
-        <ToggleButton  x:Name="HamburgerButton" Foreground="Gray" IsChecked="{Binding IsPaneOpen, ElementName=mainSplitView,Mode=TwoWay}" Style="{StaticResource HamburgerButtonStyle}" >
+        <ToggleButton  x:Name="HamburgerButton" Foreground="White" IsChecked="{Binding IsPaneOpen, ElementName=mainSplitView,Mode=TwoWay}" Style="{StaticResource HamburgerButtonStyle}" >
             <FontIcon Glyph="&#xE700;"/>
         </ToggleButton>
     </Grid>
