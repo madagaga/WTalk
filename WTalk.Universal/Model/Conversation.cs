@@ -18,6 +18,8 @@ namespace WTalk.Universal.Model
 
         public User MainParticipant { get; set; }
 
+        public string MessageContent { get; set; }
+
         internal Conversation() { }
 
         public Conversation(WTalk.Core.ProtoJson.Schema.ConversationState state)

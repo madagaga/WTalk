@@ -29,8 +29,11 @@
   ],
   "Contacts": [
     {
-      "DisplayName": "Contact1",
-      "Email": "test@test.fr"
+      "DisplayName": "Test contact with photo",
+      "Email": "test@test.fr",
+      "PhotoUrl": "https://lh6.googleusercontent.com/-IPDmhVUCt94/AAAAAAAAAAI/AAAAAAAAAOM/nYrO1M9Y2bk/s32-c-k-no/photo.jpg",
+      "Online" :  true
+
     },
     {
       "DisplayName": "Contact1",

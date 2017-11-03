@@ -16,13 +16,10 @@ namespace WTalk.Universal.ViewModel
        
         #region authentication
         AuthenticationManager _authenticationManager;
-
-        public bool AuthenticationRequired
-        {
-            get { return !_authenticationManager.IsAuthenticated; }
-        }
-
+        
         public bool Connected { get; private set; }
+
+        public bool IsBusy { get; private set; } = true;
 
         #endregion
 
@@ -37,9 +34,7 @@ namespace WTalk.Universal.ViewModel
             if (!_authenticationManager.IsAuthenticated)
                 _authenticationManager.Connect();
             
-            _client.ConnectAsync();
-            OnPropertyChanged(nameof(AuthenticationRequired));
-
+            _client.ConnectAsync().ConfigureAwait(false);
 
             _client.OnConnectionEstablished += _client_OnConnectionEstablished;
             _client.OnConversationHistoryReceived += _client_OnConversationHistoryReceived;
@@ -54,25 +49,25 @@ namespace WTalk.Universal.ViewModel
 
         private void _client_OnContactListReceived(object sender, List<Core.ProtoJson.Schema.Entity> e)
         {
-            Contacts = e.Select(c => new User(c)).ToList();
+            Contacts = e.Select(c => new User(c)).OrderBy(c => c.DisplayName).ThenByDescending(c=>c.Online).ToList();
             OnPropertyChanged(nameof(Contacts));
         }
 
         private void _client_OnUserInformationReceived(object sender, Core.ProtoJson.Schema.Entity e)
         {
-            CurrentUser = new User(e);
-           
-                OnPropertyChanged(nameof(CurrentUser));
+           CurrentUser = new User(e);           
+           OnPropertyChanged(nameof(CurrentUser));
           
         }
 
         private void _client_OnConversationHistoryReceived(object sender, List<Core.ProtoJson.Schema.ConversationState> e)
         {
-            ActiveConversations = e.Select(c => new Conversation(c)).ToList();
+            ActiveConversations = e.Select(c => new Conversation(c)).OrderByDescending(c=>c.LastMessage.MessageDate).ToList();
+            OnPropertyChanged(nameof(ActiveConversations));
 
-           
-                OnPropertyChanged(nameof(ActiveConversations));
-            
+            IsBusy = false;
+            OnPropertyChanged(nameof(IsBusy));
+
         }
 
         private void _client_OnConnectionEstablished(object sender, EventArgs e)
@@ -84,8 +79,7 @@ namespace WTalk.Universal.ViewModel
 
             Connected = true;
             
-                OnPropertyChanged(nameof(Connected));
-           
+            OnPropertyChanged(nameof(Connected));           
         }
 
 
@@ -94,8 +88,7 @@ namespace WTalk.Universal.ViewModel
 
         Conversation _selectedConversation;
 
-        public int ScrollPosition { get; set; }
-        public string MessageContent { get; set; }
+        public int ScrollPosition { get; set; }        
         #endregion
 
         #region Contacts
@@ -121,11 +114,11 @@ namespace WTalk.Universal.ViewModel
         public RelayCommand SendMessageCommand { get; private set; }
         private async void SendMessage()
         {
-            if (!string.IsNullOrEmpty(MessageContent))
+            if (!string.IsNullOrEmpty(_selectedConversation.MessageContent))
             {
-                await _client.SendChatMessageAsync(SelectedConversation.Id, MessageContent);
-                MessageContent = null;
-                OnPropertyChanged(nameof(MessageContent));
+                await _client.SendChatMessageAsync(SelectedConversation.Id, _selectedConversation.MessageContent);
+                _selectedConversation.MessageContent = null;
+                _selectedConversation.OnPropertyChanged(nameof(_selectedConversation.MessageContent));
             }
         }
 
@@ -133,7 +126,7 @@ namespace WTalk.Universal.ViewModel
         public async void SetFocus()
         {
             //if (SelectedConversation.HasUnreadMessages)
-                _client.UpdateWaterMarkAsync(SelectedConversation.Id, DateTime.UtcNow);
+                _client.UpdateWaterMarkAsync(SelectedConversation.Id, DateTime.UtcNow).ConfigureAwait(false);
 
             await _client.SetFocusAsync(SelectedConversation.Id);
             

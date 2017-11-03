@@ -192,127 +192,6 @@
         </Setter>
     </Style>
 
-    <Style x:Key="conversationDetailHeader" TargetType="ContentControl">
-        <Setter Property="Height" Value="48"/>        
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate>
-                    <Border Background="{TemplateBinding Background}">
-                    <Grid BorderThickness="0,0,0,1" BorderBrush="#ff5722" Background="Transparent">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition />
-                        </Grid.ColumnDefinitions>
-                        <Border Grid.Column="0" BorderBrush="Gray" BorderThickness="1" CornerRadius="25" Margin="5" Width="40" Height="40">
-                            <Border.Background>
-                                <ImageBrush Stretch="Fill" ImageSource="{Binding Path=MainParticipant.PhotoUrl, FallbackValue={StaticResource DefaultImage}, TargetNullValue={StaticResource DefaultImage}}"/>
-                            </Border.Background>
-                        </Border>
-                        <StackPanel Grid.Column="1"  Margin="10,0,0,0">
-                            <TextBlock VerticalAlignment="Center" Text="{Binding Path=Name}" FontSize="21" />
-                            <TextBlock FontSize="12" Foreground="Green" Text="Online" Margin="0">
-                            <Interactivity:Interaction.Behaviors>
-                                <Core:DataTriggerBehavior Binding="{Binding Participants.Count}" ComparisonCondition="NotEqual" Value="2">
-                                    <Core:ChangePropertyAction PropertyName="Visibility" Value="Collapsed"  />                                                                        
-                                </Core:DataTriggerBehavior>
-                                <Core:DataTriggerBehavior Binding="{Binding MainParticipant.Online}" ComparisonCondition="Equal" Value="False">
-                                    <Core:ChangePropertyAction PropertyName="Text" Value="Offline"  />                                                                        
-                                    <Core:ChangePropertyAction PropertyName="Foreground" Value="Grey"  />   
-                                </Core:DataTriggerBehavior>
-                            </Interactivity:Interaction.Behaviors>
-                            </TextBlock>
-                        </StackPanel>
-                    </Grid>
-                    </Border>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-    </Style>
-
-
-    <Style x:Key="conversationDetailBody" TargetType="ContentControl">        
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate>
-                    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" BorderBrush="#ff5722" BorderThickness="1,0,0,0">                        
-                        <Grid.RowDefinitions>                            
-                            <RowDefinition Height="*"></RowDefinition>
-                            <RowDefinition Height="52"></RowDefinition>
-                        </Grid.RowDefinitions>
-                        
-                        
-                        <ScrollViewer Padding="2,5,2,0" Grid.Row="0" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" VerticalScrollBarVisibility="Hidden">
-                            
-                            <StackPanel>
-                                <ItemsControl ItemsSource="{Binding Path=Messages, Mode=OneWay}">
-                                    <ItemsControl.ItemsPanel>
-                                        <ItemsPanelTemplate>
-                                            <StackPanel/>
-                                        </ItemsPanelTemplate>
-                                    </ItemsControl.ItemsPanel>
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate>
-                                            <StackPanel>
-                                                <Border CornerRadius="5,0,5,5" MinHeight="40" Padding="5" Margin="5" Width="Auto" MinWidth="100">
-                                                    <Interactivity:Interaction.Behaviors>
-                                                        <Core:DataTriggerBehavior Binding="{Binding IncomingMessage}" ComparisonCondition="Equal" Value="True">
-                                                            <Core:ChangePropertyAction PropertyName="HorizontalAlignment" Value="Left"  />
-                                                            <Core:ChangePropertyAction PropertyName="Background" Value="WhiteSmoke"  />
-                                                            <Core:ChangePropertyAction PropertyName="CornerRadius" Value="0,5,5,5"  />
-                                                        </Core:DataTriggerBehavior>
-                                                    </Interactivity:Interaction.Behaviors>
-                                                    <Border.Style>
-                                                        <Style TargetType="Border">
-                                                            <Style.Setters>
-                                                                <Setter Property="HorizontalAlignment" Value="Right" />
-                                                                <Setter Property="Background" Value="Gainsboro" />
-                                                            </Style.Setters>
-                                                        </Style>
-                                                    </Border.Style>
-                                                    <TextBlock Text="{Binding Content}" TextWrapping="Wrap"></TextBlock>
-                                                </Border>
-                                                <!--<TextBlock FontSize="12" FontStyle="Italic" Margin="5" Text="from">
-                                                    <Interactivity:Interaction.Behaviors>
-                                                        <Core:DataTriggerBehavior Binding="{Binding LastMessage.Id}" ComparisonCondition="Equal" Value="{Binding Id}">
-                                                            <Core:ChangePropertyAction PropertyName="Visibility" Value="Collapsed"  />
-                                                        </Core:DataTriggerBehavior>
-                                                    </Interactivity:Interaction.Behaviors>  
-                                                </TextBlock>-->
-                                            </StackPanel>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
-                            </StackPanel>
-                        </ScrollViewer>
-                        <Grid Grid.Row="1" BorderThickness="0,1,0,0" BorderBrush="#ff5722" DataContext="{Binding Path=DataContext, ElementName=mainWindow}">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="50" />
-                            </Grid.ColumnDefinitions>
-                            <TextBox  Text="{Binding MessageContent, Mode=TwoWay}" Height="40" BorderThickness="0" >
-                                <Interactivity:Interaction.Behaviors>
-                                    <Core:EventTriggerBehavior EventName="GotFocus">
-                                        <Core:InvokeCommandAction Command="{Binding SetFocusCommand}" />
-                                    </Core:EventTriggerBehavior>
-                                    <Core:EventTriggerBehavior EventName="KeyUp">
-                                        <Core:InvokeCommandAction Command="{Binding SetTypingCommand}" />
-                                    </Core:EventTriggerBehavior>
-                                </Interactivity:Interaction.Behaviors>
-                            </TextBox>
-                            <Border Grid.Column="1" Background="#ff5722" CornerRadius="30" Height="40" Width="40">
-                                <Button Background="Transparent" Padding="0"  Margin="9,2,0,0"  Foreground="White" Command="{Binding SendMessageCommand}">
-                                    <FontIcon Glyph="&#xE122;"/>
-                                </Button>
-                            </Border>
-                        </Grid>
-                    </Grid>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-    </Style>
-
-    
-
     <Style x:Key="SplitViewPaneMenuContainerStyle" TargetType="ListViewItem">
         <Setter Property="MinWidth" Value="{StaticResource SplitViewCompactPaneThemeLength}"/>
         <Setter Property="Height" Value="48"/>
@@ -351,14 +230,13 @@
         </Setter>
     </Style>
 
-    <Style x:Key="AvatarIcon" TargetType="Border"  >
+    <Style x:Key="AvatarIcon" TargetType="Ellipse"  >
         <Setter Property="Margin" Value="0,0,5,0" />
-        <Setter Property="BorderBrush" Value="Gray" />
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="CornerRadius" Value="25"/>
-    </Style>
+        <Setter Property="Stroke" Value="Gray" />
+        <Setter Property="StrokeThickness" Value="1" />            
+    </Style>    
 
-    <Style x:Key="FlipViewHeader" TargetType="ContentControl">
+    <Style x:Key="ListViewHeader" TargetType="ContentControl">
         <Setter Property="Height" Value="48" />
         <Setter Property="FontSize" Value="20" />
         <Setter Property="Foreground" Value="White" />
@@ -374,8 +252,6 @@
         </Setter>
         
     </Style>
-   
-
 
     <Style x:Key="HamburgerButtonStyle" TargetType="ToggleButton">
         <Setter Property="Height" Value="48" />
@@ -563,5 +439,12 @@
             </Setter.Value>
         </Setter>
     </Style>
+    
+    <!-- -->
+
+    <!-- window width adaptive snap points-->
+    <x:Double x:Key="MinWindowSnapPoint">320</x:Double>
+    <x:Double x:Key="MediumWindowSnapPoint">720</x:Double>
+    <x:Double x:Key="LargeWindowSnapPoint">1024</x:Double>
 
 </ResourceDictionary>

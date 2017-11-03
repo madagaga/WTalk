@@ -41,7 +41,7 @@ namespace WTalk.Universal
                 Windows.Web.Http.HttpCookie oauth_code = cookieManager.GetCookies(args.Uri).Cast<Windows.Web.Http.HttpCookie>().FirstOrDefault(c => c.Name == "oauth_code");
                 WTalk.AuthenticationManager.Current.AuthenticateWithCode(oauth_code.Value);
                 Frame rootFrame = Window.Current.Content as Frame;
-                rootFrame.Navigate(typeof(MainPage));                
+                AppShell.Current.AppFrame.Navigate(typeof(Views.MasterDetailPage), typeof(Views.ConversationListPage));                
                 return;
             }
         }

@@ -45,16 +45,16 @@ namespace WTalk.Universal
                 this.DebugSettings.EnableFrameRateCounter = true;
             }
 #endif
-            Frame rootFrame = Window.Current.Content as Frame;
+            AppShell shell = Window.Current.Content as AppShell;
 
             // Do not repeat app initialization when the Window already has content,
             // just ensure that the window is active
-            if (rootFrame == null)
+            if (shell == null)
             {
                 // Create a Frame to act as the navigation context and navigate to the first page
-                rootFrame = new Frame();
+                shell = new AppShell();
 
-                rootFrame.NavigationFailed += OnNavigationFailed;
+                shell.AppFrame.NavigationFailed += OnNavigationFailed;
 
                 if (e.PreviousExecutionState == ApplicationExecutionState.Terminated)
                 {
@@ -62,25 +62,28 @@ namespace WTalk.Universal
                 }
 
                 // Place the frame in the current Window
-                Window.Current.Content = rootFrame;
+                Window.Current.Content = shell;
             }
 
             if (e.PrelaunchActivated == false)
             {
-                if (rootFrame.Content == null)
+                if (shell.AppFrame.Content == null)
                 {
                     if (Client.Current == null)
                         return;
+
                     Core.Utils.FileCache.Initialize(Windows.Storage.ApplicationData.Current.LocalFolder.Path, "cache");
                     AuthenticationManager.Current.Connect();
+
                     if (!AuthenticationManager.Current.IsAuthenticated)
-                        rootFrame.Navigate(typeof(LoginPage), e.Arguments);
+                        shell.AppFrame.Navigate(typeof(LoginPage), e.Arguments);
                     else
                     {
                         //When the navigation stack isn't restored navigate to the first page,
                         // configuring the new page by passing required information as a navigation
                         // parameter
-                        rootFrame.Navigate(typeof(MainPage), e.Arguments);
+                        shell.InitializeViewModel();
+                        shell.AppFrame.Navigate(typeof(Views.MasterDetailPage), typeof(Views.ConversationListPage), new Windows.UI.Xaml.Media.Animation.SuppressNavigationTransitionInfo());
                     }
                 }
                 // Ensure the current window is active
